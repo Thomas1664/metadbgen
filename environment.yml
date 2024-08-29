@@ -1,0 +1,3 @@
+name: dev
+dependencies:
+  - python=3.12
