@@ -12,4 +12,5 @@ Previously, taxonomical data were obtained from [Index Fungorum](https://www.ind
 
 Therefore, we use the [taxonomy browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) from NCBI. It offers an API and lineage information.
 
-The taxonomical information will be used to validate the organism assignments of downloaded sequences.
+The taxonomical information will be used to validate the organism assignments of downloaded sequences and for adding taxonomic information to the fasta header for USEARCH.
+To avoid issues with changing organism names, we will use taxids instead of names. Please note that this countermeasure doesn't help if the lineage changes. 
