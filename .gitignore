@@ -164,3 +164,4 @@ cython_debug/
 *.db
 *.db-journal
 *.xlsx
+.env
