@@ -2,3 +2,7 @@ biopython
 pandas
 numpy
 pytest
+python-dotenv
+httpx
+beautifulsoup4
+lxml
