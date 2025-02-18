@@ -37,7 +37,7 @@ class HttpClient:
             'WebEnv': web_env,
             'retmode': 'text',
             'rettype': 'gb',
-            'retmax': '1000',
+            'retmax': '500',
             'retstart': ret_start
         })
         response.raise_for_status()
