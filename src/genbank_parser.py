@@ -86,4 +86,7 @@ def parse_genbank_file(gb_path: str, csv_writer):
     seqs = SeqIO.parse(gb_path, 'genbank')
     for seq in seqs:
         record = parse_record(seq)
+        if record.cox2_start == 'N/A':
+            if not check_title(record.title):
+                continue
         dataclass_to_csv_row(csv_writer, record)
