@@ -6,3 +6,4 @@ python-dotenv
 httpx
 beautifulsoup4
 lxml
+scikit-learn
