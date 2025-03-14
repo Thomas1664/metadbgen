@@ -28,7 +28,7 @@ def dataclass_to_csv_header(csv_writer, header):
     csv_writer.writerow(header.__annotations__.keys())
 
 
-cox2_aliases = {"cox2", "coxII", "COX2", "COXII", "Cox2", "CoxII", 'cytochrome c oxidase subunit II', 'cytochrome c oxidase subunit 2', 'cytochrome oxidase subunit II', 'cytochrome oxidase subunit 2'}
+cox2_aliases = {'cox2', 'coxII', 'COX2', 'COXII', 'Cox2', 'CoxII', 'cytochrome c oxidase subunit II', 'cytochrome c oxidase subunit 2', 'cytochrome oxidase subunit II', 'cytochrome oxidase subunit 2'}
 
 def check_title(title: str):
     # TODO: check for false positives; only if cox2 pos not found in features
