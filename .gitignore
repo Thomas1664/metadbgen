@@ -166,3 +166,4 @@ cython_debug/
 *.xlsx
 .env
 data/*.gb
+.conda

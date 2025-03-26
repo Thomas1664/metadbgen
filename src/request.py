@@ -55,8 +55,8 @@ class HttpClient:
 
 async def main():
     client = HttpClient()
-    response = await client.esearch('cox2 AND oomycota[organism]')
-    
+    response = await client.esearch('(cox2 OR coxII) AND oomycota[organism]')
+
     await client.fetch_results(*response, 'data/cox2.gb')
-    
+
 asyncio.run(main())
