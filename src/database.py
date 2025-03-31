@@ -57,7 +57,7 @@ def filter_data(df: pd.DataFrame):
     # remove nom. inval. species
     filtered = remove_if_contains_substr(filtered, 'title', 'nom. inval.')
     filtered = remove_if_contains_substr(filtered, 'organism_name', 'nom. inval.')
-    # trim sequences to cox2 region
+    # Remove sequences that are too short
     trimmed = filter_short_cox2(filtered.copy())
     # sanitize organism name
     trimmed['organism_name_sanitized'] = trimmed['organism_name']
