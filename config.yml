@@ -1,0 +1,13 @@
+base_dir: data
+sample_name: cox2_2019
+db_name: cox2_th
+gb_prefix: data/download
+query_str: "(cox2 OR coxII) AND oomycota[organism]"
+tax_file: "data/taxonomy_result.xml"
+primer_f:
+  seq: GGCAAATGGGTTTTCAAGATCC
+  min_len: 18
+primer_r:
+  seq: GGTANTGGANNTATGAATATTC
+  min_len: 20
+min_seq_len: 200

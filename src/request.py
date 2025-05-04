@@ -43,7 +43,9 @@ class HttpClient:
         response.raise_for_status()
 
         path = Path(out_file)
-        with open(f'{path.stem}_{ret_start}{path.suffix}', 'w') as file:
+        out_file = f'{path.parent}/{path.stem}_{ret_start}{path.suffix}'
+        print(out_file)
+        with open(out_file, 'w') as file:
             print(response.text, file=file)
     
     async def fetch_results(self, query_key: str, web_env: str, n_items: str, out_file, db = 'nuccore'):
@@ -53,10 +55,8 @@ class HttpClient:
             #executor.map(lambda start: asyncio.run(self.efetch(query_key, web_env, start, out_file, db)), retstart_values)
             await self.efetch(query_key, web_env, str(start), out_file, db)
 
-async def main():
+async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()
-    response = await client.esearch('(cox2 OR coxII) AND oomycota[organism]')
+    response = await client.esearch(query_str)
 
-    await client.fetch_results(*response, 'data/cox2.gb')
-
-asyncio.run(main())
+    await client.fetch_results(*response, file_prefix)
