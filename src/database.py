@@ -133,6 +133,8 @@ def merge_taxonomy(meta_in: str, tax: str):
     #TODO: Fix missing taxonomy entries
     meta_and_tax = meta_and_tax.dropna(subset=['genus', 'family'])
     assert not meta_and_tax['genus'].isna().any()
+    if meta_and_tax['genus'].isna().any():
+        raise ValueError()
     return meta_and_tax
 
 def make_qiime_db(meta_df: pd.DataFrame, fasta_path: str, tax_out_path: str):

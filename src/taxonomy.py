@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from lxml import etree
 from dataclasses import dataclass
 import csv
 import pandas as pd
@@ -34,7 +35,8 @@ def parse_taxon(taxon: ET.Element):
 
 def parse_xml(file_path: str, csv_writer):
     """Parse XML file and extract taxonomical information."""
-    tree = ET.parse(file_path)
+    parser = etree.XMLParser(resolve_entities=False)
+    tree = etree.parse(file_path, parser)
     root = tree.getroot()
 
     for taxon in root.findall("Taxon"):
