@@ -1,3 +1,12 @@
-name: dev
+name: cox2-db
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
 dependencies:
   - python=3.12
+  - pip
+  - vsearch=2.30.0
+  - ipykernel
+  - pip:
+      - -r requirements.txt

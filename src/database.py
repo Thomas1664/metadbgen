@@ -79,6 +79,12 @@ def trim(df: pd.DataFrame):
     df['sequence'] = df.apply(lambda row: _trim_seq(row['cox2_start'], row['cox2_end'], row['sequence']), axis=1)
     return df
 
+def import_trim(in_meta: str, fasta: str, out_meta: str):
+    df = pd.read_csv(in_meta, sep='\t')
+    trim = import_fasta_no_tax(df, fasta)
+    trim['sequence_length_trimmed'] = trim['sequence'].str.len()
+    trim.to_csv(out_meta, sep='\t', index=False)
+
 def reverse_complement(df: pd.DataFrame):
     df['sequence'] = df.apply(lambda row: str(Seq(row['sequence']).reverse_complement()) if row['cox2_strand'] == -1 else row['sequence'], axis=1)
     return df
@@ -90,7 +96,50 @@ def export_fasta_no_tax(df: pd.DataFrame, file: str):
             print(row['sequence'], file=out)
 
 def import_fasta_no_tax(df: pd.DataFrame, file: str):
-    rows = [{'accession': record.id, 'sequence': record.seq} for record in SeqIO.parse(file, 'fasta')]
+    rows = [{'accession': record.id, 'sequence': str(record.seq)} for record in SeqIO.parse(file, 'fasta')]
     seq = pd.DataFrame(rows)
     df = df.drop(columns=['sequence'])
     return df.merge(seq, how='inner', on='accession')
+
+def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
+    merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label')
+    merged['trimed_seq_len'] = merged['sequence'].str.len()
+    df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len'], ascending=[True, True, False])
+
+    def filter_func(group: pd.DataFrame):
+        # only keep identical sequences if they are from different species
+        # Removes identical (but potentially shorter) sequences from the same species
+        # ==> Remove redundant sequences that don't give any new information
+        # PRE: each group is sorted (desc) by trimed_seq_len
+        if group.shape[0] == 1:
+            return group
+        subgroup = group.groupby('tax_id', group_keys=False)
+        return subgroup.apply(lambda sub: sub.iloc[0])
+
+    return df_sorted.copy().groupby('cluster_id', group_keys=False).apply(filter_func)
+
+
+def import_clust_results(path: str):
+    clust_res = pd.read_csv(path, sep='\t', header=None)
+    clust_res.columns = ['type', 'cluster_id', 'query_length', 'similarity', 'strand', 0, 1, 'align_res', 'query_label', 'centroid_label']
+    clust_res = clust_res[['type', 'cluster_id', 'query_length', 'similarity', 'strand', 'align_res', 'query_label']]
+    return clust_res[(clust_res['type'] == 'S') | (clust_res['type'] == 'H')]
+
+def merge_taxonomy(meta_in: str, tax: str):
+    meta = pd.read_csv(meta_in, sep='\t')
+    tax_df = pd.read_csv(tax, sep='\t')
+    meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='left')
+    print(meta_and_tax[meta_and_tax['genus'].isna()])
+    #TODO: Fix missing taxonomy entries
+    meta_and_tax = meta_and_tax.dropna(subset=['genus', 'family'])
+    assert not meta_and_tax['genus'].isna().any()
+    return meta_and_tax
+
+def make_qiime_db(meta_df: pd.DataFrame, fasta_path: str, tax_out_path: str):
+    export_fasta_no_tax(meta_df, fasta_path)
+    
+    with open(tax_out_path, "w") as tax_out:
+        for _, row in meta_df.iterrows():
+            taxonomy = f'd__{row["domain"]};k__{row["kingdom"]};p__{row["phylum"]};c__{row["class"]};o__{row["order"]};f__{row["family"]};g__{row["genus"]};s__{row["organism_name_sanitized"]}'
+            taxonomy = taxonomy.replace(" ", "+")
+            print(f'{row["accession"]}\t{taxonomy}', file=tax_out)
