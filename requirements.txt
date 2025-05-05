@@ -9,3 +9,5 @@ lxml
 scikit-learn
 cutadapt
 snakemake
+matplotlib
+plotly
