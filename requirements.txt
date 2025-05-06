@@ -11,3 +11,4 @@ cutadapt
 snakemake
 matplotlib
 plotly
+seaborn
