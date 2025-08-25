@@ -4,9 +4,11 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.12
+  - python=3.10
   - pip
   - vsearch=2.30.0
   - ipykernel
+  - snakemake=7.32.4
+  - snakemake-minimal=7.32.4
   - pip:
       - -r requirements.txt

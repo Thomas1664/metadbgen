@@ -1,9 +1,10 @@
 base_dir: data
-sample_name: cox2_2019
+sample_name: db_leftover
 db_name: cox2_th
 gb_prefix: data/download
 query_str: "(cox2 OR coxII) AND oomycota[organism]"
-tax_file: "data/taxonomy_result.xml"
+tax_query: "(oomycota[Subtree]) AND species[Rank]"
+tax_backup: data/taxonomy/NameUsage.tsv
 primer_f:
   seq: GGCAAATGGGTTTTCAAGATCC
   min_len: 18

@@ -8,7 +8,6 @@ beautifulsoup4
 lxml
 scikit-learn
 cutadapt
-snakemake
 matplotlib
 plotly
 seaborn
