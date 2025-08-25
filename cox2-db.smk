@@ -85,7 +85,6 @@ rule trim:
         meta = rules.clean_db.output.meta,
         script = 'trim.py'
     output:
-        fasta_f = f"{db_prefix}/seq-trimmed_f.fasta",
         fasta_tmp = f"{db_prefix}/seq-trimmed_tmp.fasta",
         fasta = f"{db_prefix}/seq-trimmed.fasta",
         meta = f"{db_prefix}/seq-meta-trimmed.csv",
@@ -97,8 +96,7 @@ rule trim:
         min_seq_len = config['min_seq_len']
     shell:
         """
-        cutadapt -g {params.primer_f_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 -o {output.fasta_f} {input.fasta}
-        cutadapt -a {params.primer_r_seq} --revcomp --overlap {params.primer_r_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} -o {output.fasta_tmp} {output.fasta_f}
+        cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} -o {output.fasta_tmp} {input.fasta}
         cutadapt -g TTCAAGATCC --revcomp --overlap 8 -e 0.0 -o {output.fasta} {output.fasta_tmp}
         python {input.script} {input.meta} {output.fasta} {output.meta}
         """
