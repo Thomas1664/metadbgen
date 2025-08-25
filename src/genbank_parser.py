@@ -24,16 +24,6 @@ def dataclass_to_csv_row(csv_writer, row):
 def dataclass_to_csv_header(csv_writer, header):
     csv_writer.writerow(header.__annotations__.keys())
 
-
-cox2_aliases = {'cox2', 'coxII', 'COX2', 'COXII', 'Cox2', 'CoxII', 'cytochrome c oxidase subunit II', 'cytochrome c oxidase subunit 2', 'cytochrome oxidase subunit II', 'cytochrome oxidase subunit 2'}
-
-def check_title(title: str):
-    # TODO: check for false positives; only if cox2 pos not found in features
-    unwanted_tags = ['RNA', 'ITS', 'cox1', 'coxI']
-    if np.array([title.find(tag) != -1 for tag in unwanted_tags]).any():
-        return np.array([title.find(cox2) != -1 for cox2 in cox2_aliases]).any()
-    return True
-
 def parse_taxid(features: list):
     for feature in features:
         if feature.type == "source" and "db_xref" in feature.qualifiers:
