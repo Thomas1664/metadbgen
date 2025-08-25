@@ -9,7 +9,7 @@ db_prefix = f"{config['base_dir']}/{config['db_name']}"
 
 rule all:
     input:
-        f'{gb_prefix}/cox2.gb',
+        f"{gb_prefix}/{config['db_name']}.gb",
         f"{db_prefix}/taxonomy_result.xml",
         f"{db_prefix}/taxonomy.tsv",
         f"{db_prefix}/taxonomy-filtered.tsv",
@@ -34,7 +34,7 @@ rule all:
 
 rule download:
     output:
-        gb_file = f'{gb_prefix}/cox2.gb'
+        gb_file = f"{gb_prefix}/{config['db_name']}.gb",
     params:
         query = config['query_str']
     run:
