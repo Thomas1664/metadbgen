@@ -1,0 +1,1857 @@
+col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship
+5K	C	accepted	phylum	Oomycota	
+BQQ	5K	accepted	family	Lagenaceae	
+637QG	5K	accepted	genus	Lagenidicopsis	
+622BV	5K	accepted	class	Bigyromonadea	
+G3	5K	accepted	class	Peronosporea	
+CW	5K	accepted	class	Hyphochytrea	
+7BW3	5K	accepted	genus	Salispina	
+CBWX2	BQQ	accepted	genus	Pythiella	
+3PVK	BQQ	accepted	genus	Ciliatomyces	
+637P8	BQQ	accepted	genus	Lagena	
+3RWGP	637QG	accepted	species	Lagenidicopsis arctica	N.J. Artemczuk
+6222X	622BV	accepted	order	Developayellales	
+4SS8	G3	accepted	genus	Halioticida	
+3BJ	G3	accepted	order	Haptoglossales	
+3YD	G3	accepted	order	Rhipidiales	
+6236B	G3	accepted	order	Rozellopsidales	
+3ZZ	G3	accepted	order	Saprolegniales	
+NG	G3	accepted	order	Albuginales	
+9Z6	G3	accepted	family	Eurychasmataceae	
+3SH	G3	accepted	order	Peronosporales	
+3FT	G3	accepted	order	Leptomitales	
+PK	G3	accepted	order	Anisolpidiales	
+623DF	G3	accepted	order	Lagenismatales	
+63GSD	G3	accepted	genus	Ostracoblabe	
+CTX	G3	accepted	family	Miraculaceae	
+6236V	G3	accepted	order	Pontismatales	
+3PJ	G3	accepted	order	Olpidiopsidales	
+3DC	CW	accepted	order	Hyphochytriales	
+6XCN9	7BW3	accepted	species	Salispina spinosa	(Fell & Master) Marano, A.L. Jesus & Pires-Zottar.
+6XCMX	7BW3	accepted	species	Salispina lobata	(Fell & Master) A.L. Jesus, Marano & Pires-Zottar.
+79CMY	7BW3	accepted	species	Salispina intermedia	A.L. Jesus, Pires-Zottar. & Marano
+6XCMY	7BW3	accepted	species	Salispina hoi	R. Benn. & Thines
+4QXS9	CBWX2	accepted	species	Pythiella vernalis	Couch
+VBRN	3PVK	accepted	species	Ciliatomyces spectabilis	(I. Foissner & W. Foissner) I. Foissner & W. Foissner
+3RW9P	637P8	accepted	species	Lagena radicicola	Vanterp. & Ledingham
+963	6222X	accepted	family	Developayellaceae	
+3JDVM	4SS8	accepted	species	Halioticida noduliformans	Muraosa & Hatai
+624ZH	3BJ	accepted	family	Haptoglossaceae	
+FPC	3YD	accepted	family	Rhipidiaceae	
+6278N	6236B	accepted	family	Rozellopsidaceae	
+63NWC	6236B	accepted	genus	Pleotrachelus	
+63G9C	6236B	accepted	genus	Olpidiomorpha	
+627FD	6236B	accepted	family	Pseudosphaeritaceae	
+FY6	3ZZ	accepted	family	Saprolegniaceae	
+BXQ	3ZZ	accepted	family	Leptolegniaceae	
+ZH8	3ZZ	accepted	genus	Aquastella	
+3CT3	3ZZ	accepted	genus	Branchiomyces	
+C9X6S	3ZZ	accepted	family	Haliphthoraceae	
+66B	NG	accepted	family	Albuginaceae	
+C9XK9	9Z6	accepted	genus	Eurychasmidium	
+C9XK8	9Z6	accepted	genus	Eurychasma	
+GC6	3SH	accepted	family	Sirolpidiaceae	
+4BPX	3SH	accepted	genus	Endosphaerium	
+8Q4	3SH	accepted	family	Crypticolaceae	
+MSF	3SH	accepted	genus	Achlyopsis	
+FH4	3SH	accepted	family	Pythiogetonaceae	
+624PR	3SH	accepted	family	Myzocytiopsidaceae	
+3G4H	3SH	accepted	genus	Calycofera	
+6266K	3SH	accepted	family	Peronosporaceae	
+9L6	3SH	accepted	family	Ectrogellaceae	
+FH2	3SH	accepted	family	Pythiaceae	
+FWL	3SH	accepted	family	Salisapiliaceae	
+627MB	3SH	accepted	family	Pontismataceae	
+BXR	3FT	accepted	family	Leptolegniellaceae	
+9HJ	3FT	accepted	family	Ducellieriaceae	
+6L3	3FT	accepted	family	Apodachlyellaceae	
+BXS	3FT	accepted	family	Leptomitaceae	
+62HHZ	3FT	accepted	genus	Blastulidium	
+62MBS	3FT	accepted	genus	Cornumyces	
+62HHY	3FT	accepted	genus	Blastulidiopsis	
+6F4	PK	accepted	family	Anisolpidiaceae	
+BQS	623DF	accepted	family	Lagenismataceae	
+75D6G	63GSD	accepted	species	Ostracoblabe implexa	Bornet & Flahault
+5TKS	CTX	accepted	genus	Miracula	
+975	6236V	accepted	family	Diatomophthoraceae	
+DKQ	3PJ	accepted	family	Olpidiopsidaceae	
+4QJ3	3PJ	accepted	genus	Gracea	
+624VR	3DC	accepted	family	Hyphochytriaceae	
+FPK	3DC	accepted	family	Rhizidiomycetaceae	
+62PBM	963	accepted	genus	Developayella	
+4TN6	624ZH	accepted	genus	Haptoglossa	
+5YD7	FPC	accepted	genus	Nellymyces	
+C92YJ	FPC	accepted	genus	Araiospora	
+CBYP2	FPC	accepted	genus	Rhipidium	
+C92KJ	FPC	accepted	genus	Aqualinderella	
+CBHVX	FPC	accepted	genus	Mindeniella	
+CCHFW	FPC	accepted	genus	Sapromyces	
+CBYSK	6278N	accepted	genus	Rozellopsis	
+782CV	63NWC	accepted	species	Pleotrachelus wildemanii	H.E. Petersen
+6W2D7	63NWC	accepted	species	Pleotrachelus rotatoriorum	Scherff.
+4K8TW	63NWC	accepted	species	Pleotrachelus itersoniliae	(D.J.S. Barr & Bandoni) M.W. Dick
+77QD7	63NWC	accepted	species	Pleotrachelus virulentus	Sahtiy.
+77QD8	63NWC	accepted	species	Pleotrachelus fulgens	Zopf
+782D7	63NWC	accepted	species	Pleotrachelus zopfianus	Morini
+4K8TR	63NWC	accepted	species	Pleotrachelus askaulos	W.H. Bradley
+6VQCV	63NWC	accepted	species	Pleotrachelus radicis	De Wild.
+74KJ4	63G9C	accepted	species	Olpidiomorpha pseudosporae	Scherff.
+7KF7	627FD	accepted	genus	Sphaerita	
+CBTR5	627FD	accepted	genus	Pseudosphaerita	
+YPN	FY6	accepted	genus	Aplanes	
+8YQDP	FY6	accepted	genus	Achlya	
+62H2T	FY6	accepted	genus	Brevilegnia	
+4ZN8	FY6	accepted	genus	Hydatinophagus	
+63F37	FY6	accepted	genus	Newbya	
+6P7L	FY6	accepted	genus	Phragmosporangium	
+CC6PF	FY6	accepted	genus	Sommerstorffia	
+3QDR	FY6	accepted	genus	Cladolegnia	
+768M	FY6	accepted	genus	Pythiopsis	
+3V2D	FY6	accepted	genus	Couchia	
+4MXP	FY6	accepted	genus	Geolegnia	
+6XKG	FY6	accepted	genus	Protoachlya	
+647LT	FY6	accepted	genus	Verrucalvus	
+3G89	FY6	accepted	genus	Calyptralegnia	
+4T56	FY6	accepted	genus	Hamidia	
+7CC7	FY6	accepted	genus	Saprolegnia	
+63WDB	FY6	accepted	genus	Thraustotheca	
+453Z	FY6	accepted	genus	Dictyuchus	
+63T68	FY6	accepted	genus	Scoliolegnia	
+55DP	FY6	accepted	genus	Isoachlya	
+62CYP	FY6	accepted	genus	Aplanopsis	
+CB8QJ	BXQ	accepted	genus	Leptolegnia	
+6BVW	BXQ	accepted	genus	Pachymetra	
+62CW8	BXQ	accepted	genus	Aphanomyces	
+6SBH	BXQ	accepted	genus	Plectospira	
+FZKF	ZH8	accepted	species	Aquastella attenuata	Glockling & D.P. Molloy
+5W2DT	ZH8	accepted	species	Aquastella acicularis	Glockling & D.P. Molloy
+N6Q9	3CT3	accepted	species	Branchiomyces demigrans	Wundsch
+5WRCH	3CT3	accepted	species	Branchiomyces sanguinis	Plehn
+C93QX	C9X6S	accepted	genus	Atkinsiella	
+C9X6T	C9X6S	accepted	genus	Haliphthoros	
+C8SKG	66B	accepted	genus	Albugo	
+882Q	66B	accepted	genus	Wilsoniana	
+75L5	66B	accepted	genus	Pustula	
+3D3L6	C9XK9	accepted	species	Eurychasmidium tumefaciens	(Magnus) Sparrow
+3D3L5	C9XK9	accepted	species	Eurychasmidium sacculum	(H.E. Petersen) M.W. Dick
+3D3L4	C9XK9	accepted	species	Eurychasmidium joyceae	(Sparrow) M.W. Dick
+3D3KZ	C9XK8	accepted	species	Eurychasma dicksonii	(E.P. Wright) Magnus
+CC3Z8	GC6	accepted	genus	Sirolpidium	
+39SD8	4BPX	accepted	species	Endosphaerium funiculatum	D'Eliscu
+62TQS	8Q4	accepted	genus	Halocrusticida	
+3WFY	8Q4	accepted	genus	Crypticola	
+986H	MSF	accepted	species	Achlyopsis entospora	De Wild.
+5MJY	FH4	accepted	genus	Medusoides	
+6RJG	FH4	accepted	genus	Plasmoparopsis	
+768K	FH4	accepted	genus	Pythiogeton	
+3NGM	624PR	accepted	genus	Chlamydomyzium	
+63PGC	624PR	accepted	genus	Protascus	
+4Q3P	624PR	accepted	genus	Gonimochaete	
+63CFS	624PR	accepted	genus	Myzocytiopsis	
+77TF	624PR	accepted	genus	Resticularia	
+Q5PT	3G4H	accepted	species	Calycofera cryptica	R. Benn., J. Kruse & Thines
+63PJ5	6266K	accepted	genus	Protobremia	
+63ST9	6266K	accepted	genus	Sclerospora	
+6LQ6	6266K	accepted	genus	Peronosclerospora	
+72Z6	6266K	accepted	genus	Pseudoperonospora	
+63GFT	6266K	accepted	genus	Nothophytophthora	
+4SXR	6266K	accepted	genus	Halophytophthora	
+6RJJ	6266K	accepted	genus	Plasmoverna	
+636L4	6266K	accepted	genus	Hyaloperonospora	
+39KH	6266K	accepted	genus	Benua	
+6G4V	6266K	accepted	genus	Paraperonospora	
+63T4Q	6266K	accepted	genus	Sclerophthora	
+6T8W	6266K	accepted	genus	Poakatesthia	
+4DMC	6266K	accepted	genus	Eraphthora	
+86Q7	6266K	accepted	genus	Viennotia	
+6RJF	6266K	accepted	genus	Plasmopara	
+44QL	6266K	accepted	genus	Dicksonomyces	
+4QN2	6266K	accepted	genus	Graminivora	
+CBTBT	6266K	accepted	genus	Peronospora	
+CBSJF	6266K	accepted	genus	Phytophthora	
+C93JZ	6266K	accepted	genus	Basidiophora	
+BW9XT	6266K	accepted	genus	Bremia	
+65QP	6266K	accepted	genus	Novotelnova	
+6LP6	6266K	accepted	genus	Perofascia	
+C9P39	9L6	accepted	genus	Ectrogella	
+CB4M5	FH2	accepted	genus	Lagenidium	
+62S5S	FH2	accepted	genus	Elongisporangium	
+4NZD	FH2	accepted	genus	Globisporangium	
+44CH	FH2	accepted	genus	Diasporangium	
+6QDZ	FH2	accepted	genus	Pilasporangium	
+6Q4Y	FH2	accepted	genus	Phytopythium	
+62D2M	FH2	accepted	genus	Aquaperonospora	
+643MB	FH2	accepted	genus	Salilagenidium	
+6F56	FH2	accepted	genus	Paralagenidium	
+768P	FH2	accepted	genus	Pythium	
+3Z4V	FH2	accepted	genus	Cystosiphon	
+7YF5	FH2	accepted	genus	Trachysphaera	
+CBFNS	FH2	accepted	genus	Myzocytium	
+7BVW	FWL	accepted	genus	Salisapilia	
+CBV54	627MB	accepted	genus	Petersenia	
+CBRRH	627MB	accepted	genus	Pontisma	
+5YGH	BXR	accepted	genus	Nematophthora	
+62CVS	BXR	accepted	genus	Aphanodictyon	
+62D7W	BXR	accepted	genus	Aphanomycopsis	
+CB8QL	BXR	accepted	genus	Leptolegniella	
+C94NT	BXR	accepted	genus	Brevilegniella	
+48M4	9HJ	accepted	genus	Ducellieria	
+C8YPT	6L3	accepted	genus	Apodachlyella	
+4GQD	6L3	accepted	genus	Eurychasmopsis	
+63NWB	BXS	accepted	genus	Plerogone	
+5D6T	BXS	accepted	genus	Leptomitus	
+C8YPS	BXS	accepted	genus	Apodachlya	
+M2X7	62HHZ	accepted	species	Blastulidium paedophthorum	Pérez
+YGG9	62MBS	accepted	species	Cornumyces muenscheri	(Cutter) M.W. Dick
+YGG4	62MBS	accepted	species	Cornumyces catenophlyctidis	(B.M. Sundaram) M.W. Dick
+YGG5	62MBS	accepted	species	Cornumyces destruens	(Sparrow) M.W. Dick
+YGG6	62MBS	accepted	species	Cornumyces endogenus	(Karling) M.W. Dick
+6B4LZ	62MBS	accepted	species	Cornumyces pygmaeus	(Zopf) M.W. Dick
+YGG8	62MBS	accepted	species	Cornumyces karlingiae	(Karling) M.W. Dick
+YGGB	62MBS	accepted	species	Cornumyces utriculobus	(C.E. Mill.) M.W. Dick
+YGG7	62MBS	accepted	species	Cornumyces irregularis	(Const.) M.W. Dick
+M2X6	62HHY	accepted	species	Blastulidiopsis chattonii	Sigot
+C8VPH	6F4	accepted	genus	Anisolpidium	
+CB4MC	BQS	accepted	genus	Lagenisma	
+43LLD	5TKS	accepted	species	Miracula helgolandica	Buaya, Hanic & Thines
+6RLJM	5TKS	accepted	species	Miracula moenusica	A. Buaya & Thines
+62PFP	975	accepted	genus	Diatomophthora	
+63NW9	DKQ	accepted	genus	Pleocystidium	
+CBGJW	DKQ	accepted	genus	Olpidiopsis	
+3H539	4QJ3	accepted	species	Gracea waterhouseae	Karling ex M.W. Dick
+3H538	4QJ3	accepted	species	Gracea gracilis	(E.J. Butler) M.W. Dick
+C95DJ	624VR	accepted	genus	Canteriomyces	
+6324K	624VR	accepted	genus	Cystochytrium	
+CB4YH	624VR	accepted	genus	Hyphochytrium	
+77H9	FPK	accepted	genus	Reessia	
+CB8DJ	FPK	accepted	genus	Latrostium	
+CBYSJ	FPK	accepted	genus	Rhizidiomyces	
+355V2	62PBM	accepted	species	Developayella elegans	S.M. Tong
+3JQJL	4TN6	accepted	species	Haptoglossa heteromorpha	Glockling & Beakes
+3JQJM	4TN6	accepted	species	Haptoglossa heterospora	Drechsler
+3JQJP	4TN6	accepted	species	Haptoglossa intermedia	G.L. Barron
+3JQJN	4TN6	accepted	species	Haptoglossa humicola	G.L. Barron
+3JQJQ	4TN6	accepted	species	Haptoglossa mirabilis	G.L. Barron
+3JQJT	4TN6	accepted	species	Haptoglossa zoospora	J.G.N. Davidson & G.L. Barron
+3JQJH	4TN6	accepted	species	Haptoglossa dickii	Glockling
+3JQJJ	4TN6	accepted	species	Haptoglossa elegans	G.L. Barron
+3JQJR	4TN6	accepted	species	Haptoglossa northumbrica	Glockling & Beakes
+3JQJS	4TN6	accepted	species	Haptoglossa polymorpha	Glockling & Beakes
+3JQJG	4TN6	accepted	species	Haptoglossa beakesii	Glockling
+3JQJK	4TN6	accepted	species	Haptoglossa erumpens	Glockling
+465N3	5YD7	accepted	species	Nellymyces megaceros	A. Batko
+G4P2	C92YJ	accepted	species	Araiospora coronata	Linder
+G4P3	C92YJ	accepted	species	Araiospora pulchra	Thaxt.
+G4P4	C92YJ	accepted	species	Araiospora spinosa	(Cornu) Thaxt.
+G4P5	C92YJ	accepted	species	Araiospora streptandra	Kevorkian
+6WSXT	CBYP2	accepted	species	Rhipidium thaxteri	Minden
+78T9R	CBYP2	accepted	species	Rhipidium americanum	Thaxt.
+794Y3	CBYP2	accepted	species	Rhipidium continuum	Cornu
+78SY6	CBYP2	accepted	species	Rhipidium parthenosporum	Kanouse
+794XR	CBYP2	accepted	species	Rhipidium compactum	V.D. Matthews
+6X4Y6	CBYP2	accepted	species	Rhipidium interruptum	Cornu
+FZGK	C92KJ	accepted	species	Aqualinderella fermentans	R. Emers. & W. Weston
+43J8T	CBHVX	accepted	species	Mindeniella asymmetrica	T.W. Johnson
+73M7B	CBHVX	accepted	species	Mindeniella spinospora	Kanouse
+6XKP8	CCHFW	accepted	species	Sapromyces elongatus	(Cornu) Thaxt.
+79KP7	CCHFW	accepted	species	Sapromyces dubius	Fritsch
+6XKP7	CCHFW	accepted	species	Sapromyces androgynus	Thaxt.
+79KP8	CCHFW	accepted	species	Sapromyces indicus	M.O.P. Iyengar, K. Ramakr. & Subram.
+6X9K6	CBYSK	accepted	species	Rozellopsis septigena	Karling ex Cejp
+4THQB	CBYSK	accepted	species	Rozellopsis simulans	(A. Fisch.) Karling ex Cejp
+4THQ8	CBYSK	accepted	species	Rozellopsis fischeri	Cejp
+4THQC	CBYSK	accepted	species	Rozellopsis uliginosa	A. Batko
+4THQ9	CBYSK	accepted	species	Rozellopsis inflata	(E.J. Butler) Karling ex Cejp
+4YPHX	7KF7	accepted	species	Sphaerita entamoebae	E.R. Becker
+4YPHW	7KF7	accepted	species	Sphaerita endogena	P.A. Dang.
+4YPJ7	7KF7	accepted	species	Sphaerita trachelomonadis	Skvortsov
+4YPJ2	7KF7	accepted	species	Sphaerita normeti	A. Lwoff
+4YPHY	7KF7	accepted	species	Sphaerita hoarei	Lubinsky
+4YPJ3	7KF7	accepted	species	Sphaerita nucleophaga	Mattes
+4YPJ5	7KF7	accepted	species	Sphaerita plasmophaga	Mattes
+4YPHT	7KF7	accepted	species	Sphaerita amoebae	Mattes
+6YWC5	7KF7	accepted	species	Sphaerita dangeardii	Chatton & Brodskii
+4YPJ4	7KF7	accepted	species	Sphaerita phaci	T.L. Jahn
+4YPHZ	7KF7	accepted	species	Sphaerita minor	A.M. Cunha & Muniz
+78HTC	CBTR5	accepted	species	Pseudosphaerita radiata	(P.A. Dang.) Karling
+6WHTC	CBTR5	accepted	species	Pseudosphaerita euglenae	P.A. Dang.
+78HTD	CBTR5	accepted	species	Pseudosphaerita dinobryi	(Canter) M.W. Dick
+FNLG	YPN	accepted	species	Aplanes ozeensis	Kobayasi
+983N	8YQDP	accepted	species	Achlya orion	Coker & Couch
+984G	8YQDP	accepted	species	Achlya subterranea	Coker & Braxton
+982R	8YQDP	accepted	species	Achlya debaryana	Humphrey
+982N	8YQDP	accepted	species	Achlya conspicua	Coker
+9838	8YQDP	accepted	species	Achlya kamatii	Date
+64GVL	8YQDP	accepted	species	Achlya bisexualis	Coker & Couch
+982Y	8YQDP	accepted	species	Achlya formosana	Chiou & H.S. Chang
+9848	8YQDP	accepted	species	Achlya rodrigueziana	F.T. Wolf
+984D	8YQDP	accepted	species	Achlya spiracaulis	T.W. Johnson
+64H7L	8YQDP	accepted	species	Achlya echinulata	Beroqui
+9824	8YQDP	accepted	species	Achlya ambisexualis	Raper
+982G	8YQDP	accepted	species	Achlya bonariensis	Beroqui
+9837	8YQDP	accepted	species	Achlya intricata	Beneke
+9833	8YQDP	accepted	species	Achlya haehneliana	Cejp
+983T	8YQDP	accepted	species	Achlya papillosa	Humphrey
+983Q	8YQDP	accepted	species	Achlya oryzae	S. Ito & Nagai
+984B	8YQDP	accepted	species	Achlya sparrowii	Reischer
+982V	8YQDP	accepted	species	Achlya flagellata	Coker
+984L	8YQDP	accepted	species	Achlya turfosa	Johannes
+9829	8YQDP	accepted	species	Achlya anomala	Steciow & Marano
+982Z	8YQDP	accepted	species	Achlya fuegiana	Steciow
+982X	8YQDP	accepted	species	Achlya flexuosa	Nagai
+982S	8YQDP	accepted	species	Achlya diffusa	J.V. Harv. ex T.W. Johnson
+64H6N	8YQDP	accepted	species	Achlya spiralis	B. Paul & Steciow
+97ZZ	8YQDP	accepted	species	Achlya abortispora	B. Paul & El Andr.
+984K	8YQDP	accepted	species	Achlya tuberculata	Ziegler
+984J	8YQDP	accepted	species	Achlya truncatiformis	M.W. Dick & Mark A. Spencer
+983G	8YQDP	accepted	species	Achlya michiganensis	T.W. Johnson
+982B	8YQDP	accepted	species	Achlya aquatica	Dayal & J. Thakur
+9825	8YQDP	accepted	species	Achlya ambispora	Steciow
+983S	8YQDP	accepted	species	Achlya pacifica	J.V. Harv.
+9847	8YQDP	accepted	species	Achlya robusta	Steciow & Elíades
+982M	8YQDP	accepted	species	Achlya colorata	Pringsh.
+982P	8YQDP	accepted	species	Achlya crenulata	Ziegler
+9842	8YQDP	accepted	species	Achlya pseudoradiosa	A.L. Rogers & Beneke
+9832	8YQDP	accepted	species	Achlya glomerata	Coker
+983Z	8YQDP	accepted	species	Achlya pseudoachlyoides	(Beneke) T.W. Johnson & R.L. Seym.
+9827	8YQDP	accepted	species	Achlya androcomposita	Hamid
+9836	8YQDP	accepted	species	Achlya inflata	Coker & Braxton
+983Y	8YQDP	accepted	species	Achlya proliferoides	Coker
+9822	8YQDP	accepted	species	Achlya abortiva	Coker & Braxton
+983W	8YQDP	accepted	species	Achlya primoachlya	(Coker & Couch) T.W. Johnson & R.L. Seym.
+983R	8YQDP	accepted	species	Achlya oviparvula	A.L. Rogers & Beneke
+9834	8YQDP	accepted	species	Achlya heterosexualis	Whiffen
+9843	8YQDP	accepted	species	Achlya racemosa	Hildebr.
+9839	8YQDP	accepted	species	Achlya kashyapia	Chaudhuri & Kochhar
+983D	8YQDP	accepted	species	Achlya lobata	Ziegler & Gilpin
+9846	8YQDP	accepted	species	Achlya regularis	Coker & J. Leitn.
+64GVK	8YQDP	accepted	species	Achlya klebsiana	Pieters
+982L	8YQDP	accepted	species	Achlya caroliniana	Coker
+9826	8YQDP	accepted	species	Achlya americana	Humphrey
+982T	8YQDP	accepted	species	Achlya dubia	Coker
+9823	8YQDP	accepted	species	Achlya achlyoides	(Coker) T.W. Johnson & R.L. Seym.
+982F	8YQDP	accepted	species	Achlya bispora	(Couch) Langsam
+9844	8YQDP	accepted	species	Achlya radiosa	Maurizio
+9835	8YQDP	accepted	species	Achlya imperfecta	Coker
+983X	8YQDP	accepted	species	Achlya prolifera	Nees
+693HF	62H2T	accepted	species	Brevilegnia irregularis	Rossy-Vald.
+5X3HD	62H2T	accepted	species	Brevilegnia longicaulis	T.W. Johnson
+5X3J5	62H2T	accepted	species	Brevilegnia montana	(Coker & Braxton) T.W. Johnson
+5WRHD	62H2T	accepted	species	Brevilegnia linearis	Coker
+5WRJ5	62H2T	accepted	species	Brevilegnia minutandra	Höhnk
+5X3HF	62H2T	accepted	species	Brevilegnia globosa	Ziegler
+693HG	62H2T	accepted	species	Brevilegnia diclina	J.V. Harv.
+68RJ5	62H2T	accepted	species	Brevilegnia parvispora	Höhnk
+693J5	62H2T	accepted	species	Brevilegnia subclavata	Couch
+5WRJ4	62H2T	accepted	species	Brevilegnia unisperma	(Coker & Braxton) Coker & Braxton
+693HD	62H2T	accepted	species	Brevilegnia megasperma	J.V. Harv.
+68RHG	62H2T	accepted	species	Brevilegnia crassa	Rossy-Vald.
+5WRHF	62H2T	accepted	species	Brevilegnia ensenadensis	Steciow
+68RHD	62H2T	accepted	species	Brevilegnia macrospora	Eek
+68RHF	62H2T	accepted	species	Brevilegnia gracilis	Eek
+3MZ83	4ZN8	accepted	species	Hydatinophagus apsteinii	Valkanov
+3MZ82	4ZN8	accepted	species	Hydatinophagus americanus	A.F. Bartsch & F.T. Wolf
+47BSS	63F37	accepted	species	Newbya oblongata	(de Bary) Mark A. Spencer
+47BSX	63F37	accepted	species	Newbya spinosa	(de Bary) Mark A. Spencer & M.W. Dick
+47BSV	63F37	accepted	species	Newbya polyandra	(Hildebr.) Mark A. Spencer
+47BSQ	63F37	accepted	species	Newbya dichotoma	Steciow, E. Lara & Belbahri
+47BSN	63F37	accepted	species	Newbya brasiliensis	(A.I. Milanez) Mark A. Spencer
+47BSP	63F37	accepted	species	Newbya curvicollis	(Beroqui) Mark A. Spencer
+47BSL	63F37	accepted	species	Newbya androgyna	(W. Archer) Pires-Zottar. & S.C.O. Rocha
+749QD	63F37	accepted	species	Newbya pascuicola	M.C. Vick & M.W. Dick
+47BSR	63F37	accepted	species	Newbya megasperma	(Humphrey) Mark A. Spencer
+47BST	63F37	accepted	species	Newbya oligocantha	(de Bary) Mark A. Spencer
+47BSM	63F37	accepted	species	Newbya apiculata	(de Bary) M.W. Dick & Mark A. Spencer
+47BSY	63F37	accepted	species	Newbya stellata	(de Bary) Mark A. Spencer & M.W. Dick
+47BSW	63F37	accepted	species	Newbya recurva	(Cornu) M.W. Dick & Mark A. Spencer
+77CP4	6P7L	accepted	species	Phragmosporangium uniseriatum	R.L. Seym.
+4Y8Y2	CC6PF	accepted	species	Sommerstorffia spinosa	Arnaudov
+5YWDM	3QDR	accepted	species	Cladolegnia glomerata	W. Richt. ex Johannes
+4QXTX	768M	accepted	species	Pythiopsis papillata	M. Ôkubo & Kobayasi
+4QXTY	768M	accepted	species	Pythiopsis papilliformis	R.L. Seym.
+4QXTZ	768M	accepted	species	Pythiopsis subcentrica	Chiou & H.S. Chang
+4QXTN	768M	accepted	species	Pythiopsis cymosa	de Bary
+78Q62	768M	accepted	species	Pythiopsis terrestris	Chiou & H.S. Chang
+4QXTS	768M	accepted	species	Pythiopsis irregularis	R.L. Seym.
+4QXTQ	768M	accepted	species	Pythiopsis humphreyana	Coker
+6B9VG	3V2D	accepted	species	Couchia circumplexa	W.W. Martin
+6B9VH	3V2D	accepted	species	Couchia amphora	W.W. Martin
+6B9VC	3V2D	accepted	species	Couchia limnophila	W.W. Martin
+3FPZX	4MXP	accepted	species	Geolegnia intermedia	Höhnk
+3FPZY	4MXP	accepted	species	Geolegnia septisporangia	Coker & J.V. Harv.
+3FPZW	4MXP	accepted	species	Geolegnia inflata	Coker & J.V. Harv.
+3FPZV	4MXP	accepted	species	Geolegnia helicoides	Steciow, E. Lara, Belbahri, Pillonel & Pelizza
+4N4L3	6XKG	accepted	species	Protoachlya benekei	(J.S. Furtado) T.W. Johnson & R.L. Seym.
+4N4L4	6XKG	accepted	species	Protoachlya hypogyna	Shanor & Conover
+4N4L6	6XKG	accepted	species	Protoachlya nainitalensis	M. Upadhyay & Khulbe
+4N4L9	6XKG	accepted	species	Protoachlya polyspora	(Lindst.) Apinis
+4N4L5	6XKG	accepted	species	Protoachlya mucronata	(Ziegler) T.W. Johnson & R.L. Seym.
+4N4L8	6XKG	accepted	species	Protoachlya paradoxa	Coker
+4N4L7	6XKG	accepted	species	Protoachlya oryzae	Khulbe
+5B7SP	647LT	accepted	species	Verrucalvus flavofaciens	P. Wong & M.W. Dick
+Q784	3G89	accepted	species	Calyptralegnia ripariensis	Höhnk
+Q782	3G89	accepted	species	Calyptralegnia achlyoides	(Coker & Couch) Coker
+Q783	3G89	accepted	species	Calyptralegnia basraensis	Muhsin
+3JHJZ	4T56	accepted	species	Hamidia indica	Chaudhuri
+79KPV	7CC7	accepted	species	Saprolegnia aenigmatica	Sand.-Sierra & Diég.-Urib.
+6XL2G	7CC7	accepted	species	Saprolegnia semihypogyna	S. Inaba & Tokum.
+79KP3	7CC7	accepted	species	Saprolegnia variabilis	Minden
+79KQ5	7CC7	accepted	species	Saprolegnia eccentrica	(Coker) R.L. Seym.
+6XKPZ	7CC7	accepted	species	Saprolegnia furcata	Maurizio
+79KPZ	7CC7	accepted	species	Saprolegnia glomerata	(Tiesenh.) A. Lund
+6XL2D	7CC7	accepted	species	Saprolegnia stagnalis	Tiesenh.
+6XL25	7CC7	accepted	species	Saprolegnia delica	Coker
+6XKPT	7CC7	accepted	species	Saprolegnia crustosa	Maurizio
+6XL24	7CC7	accepted	species	Saprolegnia australis	R.F. Elliott
+6XKQG	7CC7	accepted	species	Saprolegnia salmonis	Hussein & Hatai
+6XKQC	7CC7	accepted	species	Saprolegnia oliviae	Steciow
+79KP6	7CC7	accepted	species	Saprolegnia uliginosa	Johannes
+79KQ8	7CC7	accepted	species	Saprolegnia latvica	Apinis
+6XKPX	7CC7	accepted	species	Saprolegnia longicaulis	Steciow
+6XKPW	7CC7	accepted	species	Saprolegnia hypogyna	(Pringsh.) Pringsh.
+6XKQD	7CC7	accepted	species	Saprolegnia spiralis	Cornu
+79KPX	7CC7	accepted	species	Saprolegnia megasperma	Coker
+79L2D	7CC7	accepted	species	Saprolegnia subterranea	Dissmann
+79L2F	7CC7	accepted	species	Saprolegnia richteri	P.G. Richt. ex R.L. Seym.
+6XKPY	7CC7	accepted	species	Saprolegnia ferax	(Gruith.) Kütz.
+79L27	7CC7	accepted	species	Saprolegnia anisospora	de Bary
+79KQ9	7CC7	accepted	species	Saprolegnia milnae	Steciow
+6XL2B	7CC7	accepted	species	Saprolegnia monilifera	de Bary
+79L28	7CC7	accepted	species	Saprolegnia litoralis	Coker
+79KQB	7CC7	accepted	species	Saprolegnia monoica	Pringsh.
+6XKP3	7CC7	accepted	species	Saprolegnia unispora	(Coker & Couch) R.L. Seym.
+79KQC	7CC7	accepted	species	Saprolegnia parasitica	Coker
+6XKQF	7CC7	accepted	species	Saprolegnia pseudocrustosa	A. Lund
+79KQG	7CC7	accepted	species	Saprolegnia shikotsuensis	Hatai, Egusa & Awakura
+79KP5	7CC7	accepted	species	Saprolegnia truncata	R.L. Seym.
+79KPT	7CC7	accepted	species	Saprolegnia diclina	Humphrey
+6XKPS	7CC7	accepted	species	Saprolegnia anomala	Gandhe & Kurne
+79L24	7CC7	accepted	species	Saprolegnia chandigarhensis	Prasher
+6XKQ9	7CC7	accepted	species	Saprolegnia luxurians	(Bhargava & G.C. Srivast.) R.L. Seym.
+6XKP2	7CC7	accepted	species	Saprolegnia tokugawana	Emoto
+6XL29	7CC7	accepted	species	Saprolegnia maragheica	A.C. Bouket, Y. Tanaka, Uzuhashi, Tojo & Belbahri
+79KQ4	7CC7	accepted	species	Saprolegnia bulbosa	Steciow
+79L2C	7CC7	accepted	species	Saprolegnia polymorpha	Willoughby
+79L2B	7CC7	accepted	species	Saprolegnia multispora	B. Paul & Steciow
+79KPW	7CC7	accepted	species	Saprolegnia lapponica	Gäum.
+6XKQ8	7CC7	accepted	species	Saprolegnia irregularis	T.W. Johnson & R.L. Seym.
+6XKP6	7CC7	accepted	species	Saprolegnia turfosa	(Minden) Gäum.
+79L29	7CC7	accepted	species	Saprolegnia mixta	de Bary
+6XL2F	7CC7	accepted	species	Saprolegnia racemosa	Sand.-Sierra & Diég.-Urib.
+56LMZ	63WDB	accepted	species	Thraustotheca caucasica	Woronow
+56LN2	63WDB	accepted	species	Thraustotheca clavata	(de Bary) Humphrey
+56LN3	63WDB	accepted	species	Thraustotheca irregularis	Coker & M.W. Ward
+56LN5	63WDB	accepted	species	Thraustotheca terrestris	Steciow & Elíades
+35VVK	453Z	accepted	species	Dictyuchus monosporus	Leitg.
+35VVJ	453Z	accepted	species	Dictyuchus missouriensis	Couch
+35VVQ	453Z	accepted	species	Dictyuchus sterilis	Coker
+35VVH	453Z	accepted	species	Dictyuchus magnusii	Lindst.
+35VVL	453Z	accepted	species	Dictyuchus pisci	Khulbe & Sati
+35VVP	453Z	accepted	species	Dictyuchus pseudodictyon	Coker & Braxton
+6CSVP	453Z	accepted	species	Dictyuchus anomalus	Nagai
+35VVG	453Z	accepted	species	Dictyuchus lucknowensis	J.N. Rai & J.K. Misra
+4VRWY	63T68	accepted	species	Scoliolegnia asterophora	(de Bary) M.W. Dick
+4VRX4	63T68	accepted	species	Scoliolegnia subeccentrica	M.W. Dick
+4VRWZ	63T68	accepted	species	Scoliolegnia blelhamensis	M.W. Dick
+4VRX2	63T68	accepted	species	Scoliolegnia centrica	Khulbe
+4VRX3	63T68	accepted	species	Scoliolegnia hypogyna	Steciow, López-Lastra & M.W. Dick
+6MXLQ	55DP	accepted	species	Isoachlya intermedia	(Coker & J.V. Harv.) Coker
+3Q7GH	55DP	accepted	species	Isoachlya terrestris	W. Richt. ex Cejp
+3Q7GD	55DP	accepted	species	Isoachlya paradoxa	(Coker) Kauffman
+3Q7GF	55DP	accepted	species	Isoachlya rhaetica	(Maurizio) Cejp
+3Q7GG	55DP	accepted	species	Isoachlya subterranea	Dissmann
+3Q7G7	55DP	accepted	species	Isoachlya curvata	(Minden) Cejp
+3Q7GJ	55DP	accepted	species	Isoachlya toruloides	Kauffman & Coker
+3Q7GK	55DP	accepted	species	Isoachlya torulosa	(de Bary) Cejp
+FNLZ	62CYP	accepted	species	Aplanopsis terrestris	Höhnk
+3TQT3	CB8QJ	accepted	species	Leptolegnia subterranea	Coker & J.V. Harv.
+3TQSX	CB8QJ	accepted	species	Leptolegnia eccentrica	Coker
+3TQT2	CB8QJ	accepted	species	Leptolegnia pontica	N.J. Artemczuk
+6PGBC	CB8QJ	accepted	species	Leptolegnia bandoniensis	A.P. Swan
+3TQSY	CB8QJ	accepted	species	Leptolegnia hemihypogyna	R.L. Seym.
+3TQSV	CB8QJ	accepted	species	Leptolegnia caudata	de Bary
+3TQSW	CB8QJ	accepted	species	Leptolegnia chapmanii	R.L. Seym.
+3TQST	CB8QJ	accepted	species	Leptolegnia baltica	Höhnk & Vallin
+3TQSZ	CB8QJ	accepted	species	Leptolegnia piligena	(M. Ôkubo & Kobayasi) Karling
+4BT57	6BVW	accepted	species	Pachymetra chaunorhiza	B.J. Croft & M.W. Dick
+FBGK	62CW8	accepted	species	Aphanomyces magnusii	Schikora
+67LVN	62CW8	accepted	species	Aphanomyces invadans	Willoughby, R.J. Roberts & Chinabut
+FBGC	62CW8	accepted	species	Aphanomyces helicoides	Minden
+FBG3	62CW8	accepted	species	Aphanomyces camptostylus	Drechsler
+FBGB	62CW8	accepted	species	Aphanomyces gordejevi	Skvortsov
+FBGS	62CW8	accepted	species	Aphanomyces polysporus	Milovtz.
+FBGQ	62CW8	accepted	species	Aphanomyces phycophilus	de Bary
+FBG7	62CW8	accepted	species	Aphanomyces daphniae	Prowse
+FBGF	62CW8	accepted	species	Aphanomyces iridis	Ichit. & Tak. Kodama
+FBGT	62CW8	accepted	species	Aphanomyces raphani	J.B. Kendr.
+5VM7N	62CW8	accepted	species	Aphanomyces frigidophilus	Kitanch. & Hatai
+FBGN	62CW8	accepted	species	Aphanomyces parasiticus	Coker
+FBGG	62CW8	accepted	species	Aphanomyces irregularis	W.W. Scott
+FBG8	62CW8	accepted	species	Aphanomyces euteiches	Drechsler
+FBG9	62CW8	accepted	species	Aphanomyces exoparasiticus	Coker & Couch
+FBG4	62CW8	accepted	species	Aphanomyces cladogamus	Drechsler
+FBFX	62CW8	accepted	species	Aphanomyces apophysii	Lacy
+FBGR	62CW8	accepted	species	Aphanomyces pisci	R.C. Srivast.
+FBGY	62CW8	accepted	species	Aphanomyces stellatus	de Bary
+FBGW	62CW8	accepted	species	Aphanomyces sinensis	D. Takuma, Hatai & A. Sano
+FBGD	62CW8	accepted	species	Aphanomyces hydatinae	Valkanov
+FBGV	62CW8	accepted	species	Aphanomyces scaber	de Bary
+FBG5	62CW8	accepted	species	Aphanomyces cochlioides	Drechsler
+FBFZ	62CW8	accepted	species	Aphanomyces bosminae	W.W. Scott
+FBGJ	62CW8	accepted	species	Aphanomyces laevis	de Bary
+67M7N	62CW8	accepted	species	Aphanomyces salsuginosus	D. Takuma, Hatai & A. Sano
+FBGP	62CW8	accepted	species	Aphanomyces patersonii	W.W. Scott
+FBG6	62CW8	accepted	species	Aphanomyces coniger	H.E. Petersen
+FBGZ	62CW8	accepted	species	Aphanomyces volgensis	Domashova
+FBGX	62CW8	accepted	species	Aphanomyces sparrowii	Cutter
+FBG2	62CW8	accepted	species	Aphanomyces brassicae	S.L. Singh & Pavgi
+FBFY	62CW8	accepted	species	Aphanomyces astaci	Schikora
+FBGH	62CW8	accepted	species	Aphanomyces keratinophilus	(M. Ôkubo & Kobayasi) R.L. Seym. & T.W. Johnson
+FBGM	62CW8	accepted	species	Aphanomyces ovidestruens	Gickelh.
+5VLVN	62CW8	accepted	species	Aphanomyces acinetophagus	A.F. Bartsch & F.T. Wolf
+FBFW	62CW8	accepted	species	Aphanomyces amphigynus	Cutter
+FBGL	62CW8	accepted	species	Aphanomyces norvegicus	Wille
+4K3WB	6SBH	accepted	species	Plectospira myriandra	Drechsler
+77QHH	6SBH	accepted	species	Plectospira gemmifera	Drechsler
+4K3W8	6SBH	accepted	species	Plectospira agama	Drechsler
+4K3WC	6SBH	accepted	species	Plectospira plagiocaula	Drechsler
+JGQ2	C93QX	accepted	species	Atkinsiella dubia	(D. Atkins) Vishniac
+6KYR8	C9X6T	accepted	species	Haliphthoros philippinensis	Hatai, Bian, Batic. & Egusa
+6KZ2W	C9X6T	accepted	species	Haliphthoros zoophthorum	(Vishniac) M.W. Dick
+6KYQW	C9X6T	accepted	species	Haliphthoros milfordensis	Vishniac
+BGR2	C8SKG	accepted	species	Albugo lepidii	A.N.S. Rao
+BGQF	C8SKG	accepted	species	Albugo cynoglossi	(Unamuno) Cif. & Biga
+BGR9	C8SKG	accepted	species	Albugo minor	(Speg.) Cif.
+BGQJ	C8SKG	accepted	species	Albugo evansii	Syd. & P. Syd.
+BGR4	C8SKG	accepted	species	Albugo macalpineana	J. Walker & Priest
+BGQK	C8SKG	accepted	species	Albugo evolvuli	(Damle) Safeeulla & Thirum.
+BGRK	C8SKG	accepted	species	Albugo portulacearum	(Schltdl.) Kochman & T. Majewski
+BGRS	C8SKG	accepted	species	Albugo sibirica	(Zalewski) G.W. Wilson
+BGR6	C8SKG	accepted	species	Albugo mangenotii	Mayor & Vienn.-Bourg.
+BGRX	C8SKG	accepted	species	Albugo thlaspeos	(Pers.) Sawada
+BGS2	C8SKG	accepted	species	Albugo trianthemae	G.W. Wilson
+BGRM	C8SKG	accepted	species	Albugo pulverulentus	(Berk. & M.A. Curtis) Kuntze
+BGQS	C8SKG	accepted	species	Albugo ipomoeae-aquaticae	Sawada
+BGQ5	C8SKG	accepted	species	Albugo austroafricana	Syd. & P. Syd.
+BGR3	C8SKG	accepted	species	Albugo lepigoni	(de Bary) Kuntze
+BGQR	C8SKG	accepted	species	Albugo hyoscyami	Z.Y. Zhang, Ying X. Wang & Z.S. Fu
+667TK	C8SKG	accepted	species	Albugo solivarum	(Speg.) Herter
+BGQD	C8SKG	accepted	species	Albugo cladothricis	G.W. Wilson
+BGQ2	C8SKG	accepted	species	Albugo aechmantherae	Z.Y. Zhang & Ying X. Wang
+BGRP	C8SKG	accepted	species	Albugo quadrata	(Kalchbr. & Cooke) Kuntze
+65VTK	C8SKG	accepted	species	Albugo molluginis	S. Ito
+BGQW	C8SKG	accepted	species	Albugo keeneri	Solheim & Gilb.
+BGQY	C8SKG	accepted	species	Albugo laibachii	Thines & Y.J. Choi
+BGRD	C8SKG	accepted	species	Albugo pes-tigridis	Gharse
+BGRL	C8SKG	accepted	species	Albugo pratapi	Damle
+BGS3	C8SKG	accepted	species	Albugo tropica	(Lagerh.) Lagerh. ex G.W. Wilson
+BGQV	C8SKG	accepted	species	Albugo ipomoeae-pes-caprae	Cif.
+BGRR	C8SKG	accepted	species	Albugo rorippae	Y.J. Choi, H.D. Shin, Ploch & Thines
+BGQ4	C8SKG	accepted	species	Albugo arenosa	Mirzaee & Thines
+BGPZ	C8SKG	accepted	species	Albugo achyranthis	(Henn.) Miyabe
+BGQN	C8SKG	accepted	species	Albugo hesleri	Y.J. Choi, Ploch & Thines
+BGS5	C8SKG	accepted	species	Albugo wasabiae	Hara
+BGQG	C8SKG	accepted	species	Albugo eomeconis	Z.Y. Zhang & Ying X. Wang
+BGR8	C8SKG	accepted	species	Albugo mesembryanthemi	S.D. Baker
+BGQC	C8SKG	accepted	species	Albugo chardonii	W. Weston
+BGRT	C8SKG	accepted	species	Albugo solivae	J. Schröt.
+BGQZ	C8SKG	accepted	species	Albugo leimonia	Ploch, Thines, C. Rost & Y.J. Choi
+BGRH	C8SKG	accepted	species	Albugo polygoni	Z.D. Jiang & P.K. Chi
+BGQT	C8SKG	accepted	species	Albugo ipomoeae-hardwickii	Sawada
+BGQH	C8SKG	accepted	species	Albugo eurotiae	Tranzschel
+BGQ8	C8SKG	accepted	species	Albugo capparis	(de Bary) Kuntze
+BGQM	C8SKG	accepted	species	Albugo gomphrenae	(Speg.) Cif. & Biga
+BGRF	C8SKG	accepted	species	Albugo pileae	J.F. Tao & Y. Qin
+BGS4	C8SKG	accepted	species	Albugo voglmayrii	Y.J. Choi, Thines & H.D. Shin
+BGQP	C8SKG	accepted	species	Albugo hohenheimia	Thines, Ploch & Y.J. Choi
+BGQX	C8SKG	accepted	species	Albugo koreana	Y.J. Choi, Thines & H.D. Shin
+BGQ7	C8SKG	accepted	species	Albugo candida	(Pers. ex J.F. Gmel.) Roussel
+BGQL	C8SKG	accepted	species	Albugo froelichiae	G.W. Wilson
+BGRY	C8SKG	accepted	species	Albugo tillaeae	(Lagerh.) G.W. Wilson
+BGRQ	C8SKG	accepted	species	Albugo resedae	(Jacz.) Cif. & Biga
+5TW5K	C8SKG	accepted	species	Albugo ipomoeae-panduratae	(Schwein.) Swingle
+5BZT4	882Q	accepted	species	Wilsoniana portulacae	(DC.) Thines
+5BZSZ	882Q	accepted	species	Wilsoniana bliti	(Biv.) Thines
+5BZT3	882Q	accepted	species	Wilsoniana platensis	(Speg.) Thines
+5BZT2	882Q	accepted	species	Wilsoniana occidentalis	(G.W. Wilson) Abdul Haq & Shahzad
+5BZSX	882Q	accepted	species	Wilsoniana achyranthis	(Henn.) Thines
+4QL2Z	75L5	accepted	species	Pustula centaurii	(Hansf.) Thines, C. Rost & Y.J. Choi
+4QL33	75L5	accepted	species	Pustula helianthicola	C. Rost & Thines
+4QL2Y	75L5	accepted	species	Pustula cancriniae	B. Xu & Z.D. Jiang
+4QL35	75L5	accepted	species	Pustula junggarensis	B. Xu & Z.D. Jiang
+4QL34	75L5	accepted	species	Pustula hydrocotyles	(Petr.) Thines
+78P6Q	75L5	accepted	species	Pustula xinyuanensis	B. Xu, Y.J. Choi & Z.D. Jiang
+4QL37	75L5	accepted	species	Pustula spinulosa	(de Bary) Thines
+4QL2X	75L5	accepted	species	Pustula brasiliensis	(Speg.) Y.J. Choi & Thines
+4QL38	75L5	accepted	species	Pustula swertiae	(Berl. & Kom.) Y.J. Choi & H.D. Shin
+4QL32	75L5	accepted	species	Pustula chardiniae	(Bremer & Petr.) Thines
+4QL39	75L5	accepted	species	Pustula tragopogonis	(Pers.) Thines
+4XRB9	CC3Z8	accepted	species	Sirolpidium glenodinianum	(P.A. Dang.) M.W. Dick
+4XRB8	CC3Z8	accepted	species	Sirolpidium bryopsidis	(de Bruyne) H.E. Petersen
+6Z364	CC3Z8	accepted	species	Sirolpidium salinum	(P.A. Dang.) M.W. Dick
+4XRB7	CC3Z8	accepted	species	Sirolpidium andreei	(Lagerh.) M.W. Dick
+4XRBC	CC3Z8	accepted	species	Sirolpidium marinum	(P.A. Dang.) M.W. Dick
+6Z35S	CC3Z8	accepted	species	Sirolpidium globosum	(Anastasiou & Churchl.) M.W. Dick
+4XRBD	CC3Z8	accepted	species	Sirolpidium paradoxum	(H.E. Petersen) M.W. Dick
+3JF3W	62TQS	accepted	species	Halocrusticida awabi	(Kitanch., K. Nakam., S. Wada & Hatai) K. Nakam. & Hatai
+3JF3Z	62TQS	accepted	species	Halocrusticida hamanaensis	(Bian & Egusa) K. Nakam. & Hatai
+3JF43	62TQS	accepted	species	Halocrusticida panuliri	(Kitanch. & Hatai) K. Nakam. & Hatai
+3JF3Y	62TQS	accepted	species	Halocrusticida entomophaga	(W.W. Martin) K. Nakam. & Hatai
+3JF3X	62TQS	accepted	species	Halocrusticida baliensis	Hatai, Roza & T. Nakay.
+3JF42	62TQS	accepted	species	Halocrusticida okinawaensis	(K. Nakam. & Hatai) K. Nakam. & Hatai
+3JF44	62TQS	accepted	species	Halocrusticida parasitica	(K. Nakam. & Hatai) K. Nakam. & Hatai
+6BKYX	3WFY	accepted	species	Crypticola clavulifera	Humber, Frances & A.W. Sweeney
+6R8FX	5MJY	accepted	species	Medusoides argyrocodium	Voglmayr
+4JMD7	6RJG	accepted	species	Plasmoparopsis rigida	De Wild.
+4QXSX	768K	accepted	species	Pythiogeton dichotomum	Tokun.
+4QXT2	768K	accepted	species	Pythiogeton oblongilobum	J.H. Huang, Chi Y. Chen & Yi S. Lin
+4QXTB	768K	accepted	species	Pythiogeton zeae	Jee, H.H. Ho & W.D. Cho
+4QXT8	768K	accepted	species	Pythiogeton transversum	Minden
+4QXT4	768K	accepted	species	Pythiogeton proliferatum	J.H. Huang, Chi Y. Chen & Yi S. Lin
+6X262	768K	accepted	species	Pythiogeton utriforme	Minden
+4QXT5	768K	accepted	species	Pythiogeton puliense	J.H. Huang & Y.H. Lin
+4QXT7	768K	accepted	species	Pythiogeton sterile	Hamid
+4QXT9	768K	accepted	species	Pythiogeton uniforme	A. Lund
+4QXSY	768K	accepted	species	Pythiogeton microzoosporum	J.H. Huang, Chi Y. Chen & Yi S. Lin
+4QXSW	768K	accepted	species	Pythiogeton autossytum	Drechsler
+4QXSV	768K	accepted	species	Pythiogeton abundans	J.H. Huang, Chi Y. Chen & Yi S. Lin
+4QXT3	768K	accepted	species	Pythiogeton paucisporum	J.H. Huang, Chi Y. Chen & Yi S. Lin
+4QXT6	768K	accepted	species	Pythiogeton ramosum	Minden
+4QXSZ	768K	accepted	species	Pythiogeton nigrescens	A. Batko
+69WRN	3NGM	accepted	species	Chlamydomyzium anomalum	(G.L. Barron) M.W. Dick
+5XWRP	3NGM	accepted	species	Chlamydomyzium internum	Glockling
+5Y8RP	3NGM	accepted	species	Chlamydomyzium septatum	(Karling) M.W. Dick
+5XX3P	3NGM	accepted	species	Chlamydomyzium oviparasiticum	(G.L. Barron) M.W. Dick
+69X3N	3NGM	accepted	species	Chlamydomyzium aplanosporum	Glockling
+5Y93P	3NGM	accepted	species	Chlamydomyzium sphaericum	Glockling
+4N2G4	63PGC	accepted	species	Protascus colorans	Wolk
+4N2G6	63PGC	accepted	species	Protascus subuliformis	P.A. Dang.
+6L37L	4Q3P	accepted	species	Gonimochaete lignicola	G.L. Barron
+6KR7L	4Q3P	accepted	species	Gonimochaete horridula	Drechsler
+6KQVM	4Q3P	accepted	species	Gonimochaete pyriformis	G.L. Barron
+6L2VL	4Q3P	accepted	species	Gonimochaete latitubus	S.Y. Newell, Cefalu & Fell
+45HT5	63CFS	accepted	species	Myzocytiopsis distylae	(Karling) M.W. Dick
+45HT9	63CFS	accepted	species	Myzocytiopsis humana	(Karling) M.W. Dick
+45HTM	63CFS	accepted	species	Myzocytiopsis zoophthora	(Sparrow) M.W. Dick
+45HT4	63CFS	accepted	species	Myzocytiopsis bolata	Glockling
+45HT8	63CFS	accepted	species	Myzocytiopsis glutinospora	(G.L. Barron) M.W. Dick
+45HT6	63CFS	accepted	species	Myzocytiopsis elegans	(Perronc.) M.W. Dick
+45HTK	63CFS	accepted	species	Myzocytiopsis subuliformis	M.W. Dick
+45HTD	63CFS	accepted	species	Myzocytiopsis lenticularis	(G.L. Barron) M.W. Dick
+45HTC	63CFS	accepted	species	Myzocytiopsis intermedia	(G.L. Barron) M.W. Dick
+45HTB	63CFS	accepted	species	Myzocytiopsis indica	(U.P. Singh) M.W. Dick
+45HTH	63CFS	accepted	species	Myzocytiopsis papillata	(G.L. Barron) M.W. Dick
+45HTJ	63CFS	accepted	species	Myzocytiopsis parthenospora	(Karling) M.W. Dick
+6S56F	63CFS	accepted	species	Myzocytiopsis humicola	(G.L. Barron & Percy) M.W. Dick
+45HTL	63CFS	accepted	species	Myzocytiopsis vermicola	(Zopf) M.W. Dick
+73T6F	63CFS	accepted	species	Myzocytiopsis microspora	(Karling) M.W. Dick
+45HTG	63CFS	accepted	species	Myzocytiopsis osiris	Glockling
+6WSNQ	77TF	accepted	species	Resticularia zygnematicola	(M.W. Dick) Redhead
+78SNN	77TF	accepted	species	Resticularia petersenii	(A. Lund) Redhead
+78SNL	77TF	accepted	species	Resticularia nodosa	P.A. Dang.
+794NM	77TF	accepted	species	Resticularia dictyospora	(M.W. Dick) Redhead
+6WSNN	77TF	accepted	species	Resticularia oedogonii	Skvortsov
+6X4NL	77TF	accepted	species	Resticularia marchaliana	(De Wild.) Redhead
+794NN	77TF	accepted	species	Resticularia sacculoides	(Serbinow) Redhead
+78SNM	77TF	accepted	species	Resticularia boodlei	Fritsch
+6WSNL	77TF	accepted	species	Resticularia elliptica	(De Wild.) Redhead
+6X4NN	77TF	accepted	species	Resticularia papillosa	(Cocc.) Redhead
+4N4PY	63PJ5	accepted	species	Protobremia sphaerosperma	(Săvul.) Voglmayr, Riethm., Göker, Weiss & Oberw.
+4VQKV	63ST9	accepted	species	Sclerospora graminicola	(Sacc.) J. Schröt.
+4VQKX	63ST9	accepted	species	Sclerospora iseilematis	Thirum. & Naras.
+4VQL3	63ST9	accepted	species	Sclerospora magnusiana	Sorokīn
+4VQKW	63ST9	accepted	species	Sclerospora indica	E.J. Butler
+4VQLC	63ST9	accepted	species	Sclerospora secalina	Naumov
+4F844	6LQ6	accepted	species	Peronosclerospora australiensis	R.G. Shivas, Ryley, Telle, Liberato & Thines
+4F849	6LQ6	accepted	species	Peronosclerospora maydis	(Racib.) C.G. Shaw
+4F84H	6LQ6	accepted	species	Peronosclerospora westonii	(Sriniv., Naras. & Thirum.) C.G. Shaw
+76TBX	6LQ6	accepted	species	Peronosclerospora sargae	R.G. Shivas, Ryley, Telle & Thines
+4F84G	6LQ6	accepted	species	Peronosclerospora spontanea	(W. Weston) C.G. Shaw
+4F847	6LQ6	accepted	species	Peronosclerospora globosa	Kubicek & R.G. Kenneth
+4F848	6LQ6	accepted	species	Peronosclerospora heteropogonis	Siradhana, Dange, Rathore & S.D. Singh
+4F846	6LQ6	accepted	species	Peronosclerospora eriochloae	Ryley & Langdon
+4F84C	6LQ6	accepted	species	Peronosclerospora philippinensis	(W. Weston) C.G. Shaw
+4F84D	6LQ6	accepted	species	Peronosclerospora sacchari	(T. Miyake) Shirai & Hara
+6V5C9	6LQ6	accepted	species	Peronosclerospora miscanthi	(T. Miyake) C.G. Shaw
+4F845	6LQ6	accepted	species	Peronosclerospora dichanthiicola	(Thirum. & Naras.) C.G. Shaw
+4F84F	6LQ6	accepted	species	Peronosclerospora sorghi	(W. Weston & Uppal) C.G. Shaw
+4F84B	6LQ6	accepted	species	Peronosclerospora noblei	(W. Weston) C.G. Shaw
+4P6HJ	72Z6	accepted	species	Pseudoperonospora aethionematis	(Simonyan) G.M. Waterh.
+4P6HP	72Z6	accepted	species	Pseudoperonospora elatostematis	(Togashi & Onuma) Hoerner
+4P6HK	72Z6	accepted	species	Pseudoperonospora cannabina	(G.H. Otth) Curzi
+4P6HT	72Z6	accepted	species	Pseudoperonospora justiciae	(Sawada) Jacz.
+4P6HL	72Z6	accepted	species	Pseudoperonospora cassiae	G.M. Waterh. & Brothers
+4P6HN	72Z6	accepted	species	Pseudoperonospora cubensis	(Berk. & M.A. Curtis) Rostovzev
+4P6HM	72Z6	accepted	species	Pseudoperonospora celtidis	(Waite) G.W. Wilson
+4P6HW	72Z6	accepted	species	Pseudoperonospora urticae	(Lib.) E.S. Salmon & Ware
+4P6HQ	72Z6	accepted	species	Pseudoperonospora elsholtziae	D.Z. Tang
+47TMK	63GFT	accepted	species	Nothophytophthora amphigynosa	T. Jung, Scanu, Bakonyi & M. Horta Jung
+47TMP	63GFT	accepted	species	Nothophytophthora valdiviana	T. Jung, Scanu, Bakonyi, Alv. Durán & M. Horta Jung
+47TMN	63GFT	accepted	species	Nothophytophthora intricata	T. Jung, Scanu, Bakonyi & M. Horta Jung
+47TML	63GFT	accepted	species	Nothophytophthora caduca	T. Jung, Scanu, Bakonyi, Alv. Durán & M. Horta Jung
+47TMM	63GFT	accepted	species	Nothophytophthora chlamydospora	T. Jung, Scanu, Bakonyi, Alv. Durán & M. Horta Jung
+47TMQ	63GFT	accepted	species	Nothophytophthora vietnamensis	T. Jung, Scanu, Bakonyi, Thu & M. Horta Jung
+3JFNK	4SXR	accepted	species	Halophytophthora polymorphica	(Gerr.-Corn. & J.A. Simpson) H.H. Ho & S.C. Jong
+3JFNJ	4SXR	accepted	species	Halophytophthora operculata	(Pegg & Alcorn) H.H. Ho & S.C. Jong
+3JFN8	4SXR	accepted	species	Halophytophthora avicenniae	(Gerr.-Corn. & J.A. Simpson) H.H. Ho & S.C. Jong
+6KZL6	4SXR	accepted	species	Halophytophthora batemanensis	(Gerr.-Corn. & J.A. Simpson) H.H. Ho & S.C. Jong
+3JFNH	4SXR	accepted	species	Halophytophthora mycoparasitica	(Fell & Master) H.H. Ho & S.C. Jong
+3JFNP	4SXR	accepted	species	Halophytophthora vesicula	(Anastasiou & Churchl.) H.H. Ho & S.C. Jong
+3JFND	4SXR	accepted	species	Halophytophthora exoprolifera	H.H. Ho, Nakagiri & S.Y. Newell
+3JFNC	4SXR	accepted	species	Halophytophthora epistomium	(Fell & Master) H.H. Ho & S.C. Jong
+6KZKN	4SXR	accepted	species	Halophytophthora fluviatilis	Xiao Yang & C.X. Hong
+3JFNL	4SXR	accepted	species	Halophytophthora porrigovesica	Nakagiri, Tad. Ito, Manoch & Tantich.
+3JFNB	4SXR	accepted	species	Halophytophthora elongata	H.H. Ho & H.S. Chang
+3JFN9	4SXR	accepted	species	Halophytophthora bahamensis	(Fell & Master) H.H. Ho & S.C. Jong
+3JFNG	4SXR	accepted	species	Halophytophthora masteri	Nakagiri & S.Y. Newell
+4JMDC	6RJJ	accepted	species	Plasmoverna anemones-dichotomae	(Benua) Constant., Voglmayr, Fatehi & Thines
+6VNT8	6RJJ	accepted	species	Plasmoverna fusca	(Peck) Constant., Voglmayr, Fatehi & Thines
+4JMDB	6RJJ	accepted	species	Plasmoverna alpina	(Johanson) Constant., Voglmayr, Fatehi & Thines
+4JMDF	6RJJ	accepted	species	Plasmoverna hellebori	(Săvul. & Rayss) Constant., Voglmayr, Fatehi & Thines
+4JMDD	6RJJ	accepted	species	Plasmoverna anemones-ranunculoidis	(Săvul. & O. Săvul.) Constant., Voglmayr, Fatehi & Thines
+4JMDG	6RJJ	accepted	species	Plasmoverna isopyri-thalictroidis	(Săvul. & Rayss) Constant., Voglmayr, Fatehi & Thines
+4JMDH	6RJJ	accepted	species	Plasmoverna pygmaea	(Unger) Constant., Voglmayr, Fatehi & Thines
+3MWVB	636L4	accepted	species	Hyaloperonospora dentariae-macrophyllae	(Gäum.) Voglmayr, Y.J. Choi & H.D. Shin
+3MWVZ	636L4	accepted	species	Hyaloperonospora thlaspeos-perfoliati	(Gäum.) Göker, Voglmayr, Riethm., Weiss & Oberw.
+3MWVD	636L4	accepted	species	Hyaloperonospora erophilae	(Gäum.) Göker, Voglmayr, Riethm., Weiss & Oberw.
+3MWV2	636L4	accepted	species	Hyaloperonospora berteroae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+6MGJH	636L4	accepted	species	Hyaloperonospora rorippae-islandicae	(Gäum.) Göker, Voglmayr & Oberw.
+3MWVX	636L4	accepted	species	Hyaloperonospora teesdaliae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWVN	636L4	accepted	species	Hyaloperonospora nasturtii-aquatici	(Gäum.) Voglmayr
+3MWVT	636L4	accepted	species	Hyaloperonospora praecox	Voglmayr & Göker
+3MWVG	636L4	accepted	species	Hyaloperonospora hesperidis	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+6MGJJ	636L4	accepted	species	Hyaloperonospora arabidis-alpinae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWV7	636L4	accepted	species	Hyaloperonospora cardaminopsidis	(A. Gustavsson) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWV3	636L4	accepted	species	Hyaloperonospora brassicae	(Gäum.) Göker, Voglmayr, Riethm., Weiss & Oberw.
+3MWVV	636L4	accepted	species	Hyaloperonospora sisymbrii-loeselii	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWVP	636L4	accepted	species	Hyaloperonospora nesliae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWVY	636L4	accepted	species	Hyaloperonospora thlaspeos-arvensis	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWV9	636L4	accepted	species	Hyaloperonospora cochleariae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWVC	636L4	accepted	species	Hyaloperonospora drabae	(Gäum.) Y.J. Choi, H.D. Shin & Voglmayr
+3MWVK	636L4	accepted	species	Hyaloperonospora lobulariae	(Ubrizsy & Vörös) Göker, Voglmayr & Oberw.
+3MWVJ	636L4	accepted	species	Hyaloperonospora lepidii-perfoliati	(Săvul. & Rayss) Constant.
+6MGJG	636L4	accepted	species	Hyaloperonospora dentariae	(Rabenh.) Voglmayr
+3MWVW	636L4	accepted	species	Hyaloperonospora sisymbrii-sophiae	(Gäum.) Göker, Voglmayr & Oberw.
+3MWVM	636L4	accepted	species	Hyaloperonospora malyi	(Lindtner) Voglmayr
+3MWV4	636L4	accepted	species	Hyaloperonospora camelinae	(Gäum.) Göker, Voglmayr, Riethm., Weiss & Oberw.
+3MWVR	636L4	accepted	species	Hyaloperonospora norvegica	(Gäum.) Y.J. Choi, H.D. Shin & Voglmayr
+3MWVQ	636L4	accepted	species	Hyaloperonospora niessliana	(Berl.) Constant.
+3MWW2	636L4	accepted	species	Hyaloperonospora tribulina	(Pass.) Constant.
+6MGJF	636L4	accepted	species	Hyaloperonospora floerkeae	(Kellerm.) Constant.
+3MWVL	636L4	accepted	species	Hyaloperonospora lunariae	(Gäum.) Constant.
+3MWV6	636L4	accepted	species	Hyaloperonospora cardamines-laciniatae	(Gäum.) Voglmayr
+3MWVH	636L4	accepted	species	Hyaloperonospora isatidis	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWV5	636L4	accepted	species	Hyaloperonospora cardamines-enneaphyllos	Voglmayr
+3MWVS	636L4	accepted	species	Hyaloperonospora parasitica	(Pers.) Constant.
+3MWV8	636L4	accepted	species	Hyaloperonospora cheiranthi	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+6MGJL	636L4	accepted	species	Hyaloperonospora barbareae	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+3MWVF	636L4	accepted	species	Hyaloperonospora galligena	(S. Blumer) Göker, Riethm., Voglmayr, Weiss & Oberw.
+6MGJM	636L4	accepted	species	Hyaloperonospora arabidopsidis	(Gäum.) Göker, Riethm., Voglmayr, Weiss & Oberw.
+LJ3S	39KH	accepted	species	Benua kellermanii	(Ellis & Halst. ex Swingle) Constant.
+4D7RB	6G4V	accepted	species	Paraperonospora tanaceti	(Gäum.) Constant.
+4D7R8	6G4V	accepted	species	Paraperonospora minor	(Săvul. & Rayss) Constant.
+4D7R5	6G4V	accepted	species	Paraperonospora artemisiae-biennis	(Gäum.) Constant.
+4D7R6	6G4V	accepted	species	Paraperonospora chrysanthemi-coronarii	(Sawada) Constant.
+4D7R4	6G4V	accepted	species	Paraperonospora artemisiae-annuae	(L. Ling & M.C. Tai) Constant.
+4D7R3	6G4V	accepted	species	Paraperonospora apiculata	Constant.
+4D7R9	6G4V	accepted	species	Paraperonospora multiformis	(J.F. Tao & Y. Qin) Constant.
+6TQV5	6G4V	accepted	species	Paraperonospora sulphurea	(Gäum.) Constant.
+4D7R7	6G4V	accepted	species	Paraperonospora leptosperma	(de Bary) Constant.
+4VQ9K	63T4Q	accepted	species	Sclerophthora lolii	R.G. Kenneth
+4VQ9N	63T4Q	accepted	species	Sclerophthora rayssiae	R.G. Kenneth, Koltin & I. Wahl
+4VQ9L	63T4Q	accepted	species	Sclerophthora macrospora	(Sacc.) Thirum., C.G. Shaw & Naras.
+4VQ9J	63T4Q	accepted	species	Sclerophthora farlowii	(Griffiths) R.G. Kenneth
+4VQ9M	63T4Q	accepted	species	Sclerophthora northii	(W. Weston) Thirum., C.G. Shaw & Naras.
+4VQ9H	63T4Q	accepted	species	Sclerophthora cryophila	W. Jones
+4KN6X	6T8W	accepted	species	Poakatesthia penniseti	(R.G. Kenneth & J. Kranz) Thines & Göker
+6GB6S	4DMC	accepted	species	Eraphthora butleri	(W. Weston) Telle & Thines
+5BDCZ	86Q7	accepted	species	Viennotia oplismeni	(Vienn.-Bourg.) Göker, Voglmayr, Riethm., M. Weiss & Oberw.
+77NSQ	6RJF	accepted	species	Plasmopara geranii	(Peck) Berl. & De Toni
+6VNT2	6RJF	accepted	species	Plasmopara galinsogae	L. Campb.
+77NSS	6RJF	accepted	species	Plasmopara helichrysi	(Togashi & Egami) J.F. Tao
+4JMC3	6RJF	accepted	species	Plasmopara plantaginicola	T.R. Liu & C.K. Pai
+4JMB6	6RJF	accepted	species	Plasmopara laserpitii	Wartenw. ex Săvul. & Rayss
+4JMCP	6RJF	accepted	species	Plasmopara solidaginis	Novot.
+77NSG	6RJF	accepted	species	Plasmopara cephalophora	Davis
+4JMBP	6RJF	accepted	species	Plasmopara orientalis	Constant.
+4JM9H	6RJF	accepted	species	Plasmopara asterea	Novot.
+77NT6	6RJF	accepted	species	Plasmopara mikaniae	Vienn.-Bourg.
+77NT4	6RJF	accepted	species	Plasmopara hellebori-purpurascentis	Săvul. & O. Săvul.
+4JMBM	6RJF	accepted	species	Plasmopara oenanthes	J.F. Tao & Y. Qin
+77NSN	6RJF	accepted	species	Plasmopara dahurici	Benua
+4JMBG	6RJF	accepted	species	Plasmopara muralis	Thines
+77NSV	6RJF	accepted	species	Plasmopara illinoensis	(Farl.) Davis
+6VNSM	6RJF	accepted	species	Plasmopara dauci	Săvul. & O. Săvul.
+4JMCG	6RJF	accepted	species	Plasmopara satureiae	F.L. Tai & C.T. Wei
+4JMCD	6RJF	accepted	species	Plasmopara sanguisorbae	C.J. Li, Z.Q. Yuan & Z.Y. Zhao
+4JMCZ	6RJF	accepted	species	Plasmopara vincetoxici	Ellis & Everh.
+6VNSK	6RJF	accepted	species	Plasmopara cryptotaeniae	J.F. Tao & Y. Qin
+4JM9W	6RJF	accepted	species	Plasmopara chinensis	Gorlenko
+4JM96	6RJF	accepted	species	Plasmopara ammi	Constant.
+4JMCM	6RJF	accepted	species	Plasmopara skvortzovii	Miura
+4JM9K	6RJF	accepted	species	Plasmopara baudysii	Skalický
+4JMCH	6RJF	accepted	species	Plasmopara saussureae	Novot.
+4JM9T	6RJF	accepted	species	Plasmopara centaureae-mollis	T. Majewski
+4JMBY	6RJF	accepted	species	Plasmopara phrymae	S. Ito & Hara
+4JM9D	6RJF	accepted	species	Plasmopara apii	Săvul. & O. Săvul.
+4JMCB	6RJF	accepted	species	Plasmopara ribicola	J. Schröt.
+6VNT5	6RJF	accepted	species	Plasmopara gnaphalii	Novot.
+4JM9Y	6RJF	accepted	species	Plasmopara cimicifugae	S. Ito & Tokun.
+6VNSS	6RJF	accepted	species	Plasmopara harae	S. Ito & Muray.
+6VNSQ	6RJF	accepted	species	Plasmopara euphrasiae	Voglmayr & Constant.
+4JM9V	6RJF	accepted	species	Plasmopara cercidis	C.G. Shaw
+4JMD2	6RJF	accepted	species	Plasmopara viticola	(Berk. & M.A. Curtis) Berl. & De Toni
+4JMCN	6RJF	accepted	species	Plasmopara smyrnii	Săvul. & M. Bechet
+6VNSV	6RJF	accepted	species	Plasmopara hepaticae	(Casp.) C.G. Shaw
+4JMCC	6RJF	accepted	species	Plasmopara sambucinae	Nelen
+4JMCY	6RJF	accepted	species	Plasmopara velutina	Görg & Thines
+4JMB2	6RJF	accepted	species	Plasmopara isopyri	Skalický
+4JMBH	6RJF	accepted	species	Plasmopara myosotidis	C.G. Shaw
+4JM9L	6RJF	accepted	species	Plasmopara borreriae	(Lagerh.) Constant.
+4JMC8	6RJF	accepted	species	Plasmopara pusilla	(de Bary) J. Schröt.
+4JMD5	6RJF	accepted	species	Plasmopara wilsonii	Voglmayr, Fatehi & Constant.
+4JM9Q	6RJF	accepted	species	Plasmopara carthami	Negru
+4JM9N	6RJF	accepted	species	Plasmopara calaminthae	S.H. Ou
+77NT3	6RJF	accepted	species	Plasmopara epilobii	J. Schröt.
+4JMBZ	6RJF	accepted	species	Plasmopara pileae	Gäum. ex Jacz.
+4JMCK	6RJF	accepted	species	Plasmopara sii	Gapon.
+4JMBJ	6RJF	accepted	species	Plasmopara nakanoi	S. Ito & Muray.
+4JMD6	6RJF	accepted	species	Plasmopara yunnanensis	J.F. Tao & Y. Qin
+4JM9B	6RJF	accepted	species	Plasmopara angustiterminalis	Novot.
+4JMBF	6RJF	accepted	species	Plasmopara miyakeana	S. Ito & Tokun.
+4JM9S	6RJF	accepted	species	Plasmopara cenolophii	Jermal.
+4JMBS	6RJF	accepted	species	Plasmopara pastinacae	Săvul. & O. Săvul.
+77NST	6RJF	accepted	species	Plasmopara gonolobi	(Lagerh.) Swingle
+6VNSP	6RJF	accepted	species	Plasmopara destructor	Görg & Thines
+4JM98	6RJF	accepted	species	Plasmopara anemones-nemorosae	Săvul. & O. Săvul.
+4JMC4	6RJF	accepted	species	Plasmopara plectranthi	L. Ling & M.C. Tai
+4JM93	6RJF	accepted	species	Plasmopara achyranthis	J.F. Tao & Y. Qin
+6VNT9	6RJF	accepted	species	Plasmopara pyrethri	Dudka & Burdjuk.
+4JMCS	6RJF	accepted	species	Plasmopara spilanthicola	Syd.
+4JM9Z	6RJF	accepted	species	Plasmopara cissi	Vienn.-Bourg.
+4JMC7	6RJF	accepted	species	Plasmopara praetermissa	Voglmayr, Fatehi & Constant.
+4JMB9	6RJF	accepted	species	Plasmopara majewskii	Constant. & Thines
+4JMBX	6RJF	accepted	species	Plasmopara peucedani	Nannf.
+4JMCL	6RJF	accepted	species	Plasmopara silai	Săvul. & O. Săvul.
+4JMC6	6RJF	accepted	species	Plasmopara portoricensis	(Lamkey) G.M. Waterh.
+4JMBV	6RJF	accepted	species	Plasmopara petasitis	S. Ito & Tokun.
+77NSM	6RJF	accepted	species	Plasmopara densa	(Rabenh.) J. Schröt.
+4JM9R	6RJF	accepted	species	Plasmopara caucalis	Săvul. & O. Săvul.
+4JMBQ	6RJF	accepted	species	Plasmopara palmii	L. Campb.
+77NSP	6RJF	accepted	species	Plasmopara domingensis	(Cif.) Y.J. Choi & H.D. Shin
+77NSX	6RJF	accepted	species	Plasmopara saniculae	Săvul. & O. Săvul.
+6VNSG	6RJF	accepted	species	Plasmopara archangelicae	Gapon.
+4JMBC	6RJF	accepted	species	Plasmopara mei-foeniculi	Săvul. & O. Săvul.
+6VNSL	6RJF	accepted	species	Plasmopara cruseae	C.G. Shaw & Safeeulla
+4JM9J	6RJF	accepted	species	Plasmopara asystasiae	Vienn.-Bourg.
+4JMD4	6RJF	accepted	species	Plasmopara wildemaniana	Henn.
+4JM8Z	6RJF	accepted	species	Plasmopara acalyphae	(G.W. Wilson) G.W. Wilson
+6VNSN	6RJF	accepted	species	Plasmopara curta	(Berk. & M.A. Curtis) Skalický
+4JMD3	6RJF	accepted	species	Plasmopara wartenweileri	Skalický
+4JMBL	6RJF	accepted	species	Plasmopara obducens	(J. Schröt.) J. Schröt.
+4JMCV	6RJF	accepted	species	Plasmopara triumfettae	A.D. Sharma & Munjal
+77NT2	6RJF	accepted	species	Plasmopara geranii-pratensis	Săvul. & O. Săvul.
+4JMBT	6RJF	accepted	species	Plasmopara paulowniae	C.C. Chen
+77NSJ	6RJF	accepted	species	Plasmopara constantinescui	Voglmayr & Thines
+6VNT3	6RJF	accepted	species	Plasmopara elsholtziae	J.F. Tao & Y. Qin
+4JMB5	6RJF	accepted	species	Plasmopara lactucae-radicis	Stangh. & Gilb.
+77NSH	6RJF	accepted	species	Plasmopara anethi	Jermal.
+6VNST	6RJF	accepted	species	Plasmopara geranii-silvatici	Săvul. & O. Săvul.
+4JMBW	6RJF	accepted	species	Plasmopara petroselini	Săvul. & O. Săvul.
+4JM9P	6RJF	accepted	species	Plasmopara carlottae	Savile
+77NT7	6RJF	accepted	species	Plasmopara invertifolia	L.L. Duarte & R.W. Barreto
+4JMB7	6RJF	accepted	species	Plasmopara latifolii	Savile
+4JMCJ	6RJF	accepted	species	Plasmopara selini	Wrońska
+4JMBR	6RJF	accepted	species	Plasmopara panacis	Bunkina ex Bondartsev & Bunkina
+77NT5	6RJF	accepted	species	Plasmopara halstedii	(Farl.) Berl. & De Toni
+4JMCR	6RJF	accepted	species	Plasmopara sphagneticolae	McTaggart & R.G. Shivas
+4JM94	6RJF	accepted	species	Plasmopara affinis	Novot.
+4JMCF	6RJF	accepted	species	Plasmopara satarensis	P.B. Chavan & U.V. Kulk.
+35PN9	44QL	accepted	species	Dicksonomyces sorghi	Thirum., P.N. Rao & M.A. Salam
+6L3V7	4QN2	accepted	species	Graminivora graminicola	(Naumov) Thines & Göker
+6V5B5	CBTBT	accepted	species	Peronospora galii-anglici	Uljan.
+775CC	CBTBT	accepted	species	Peronospora desmodii	Miyabe
+775B7	CBTBT	accepted	species	Peronospora leptalei	Kolosch.
+4F8LK	CBTBT	accepted	species	Peronospora turritidis	Gäum.
+4F8KK	CBTBT	accepted	species	Peronospora tauscheriae	Kalymb.
+4F8J4	CBTBT	accepted	species	Peronospora saxifragae	Bubák
+4F8CS	CBTBT	accepted	species	Peronospora iolotanica	Kolosch.
+4F8DY	CBTBT	accepted	species	Peronospora lilii	Stenina
+6V5CF	CBTBT	accepted	species	Peronospora eigii	Rayss
+4F8HZ	CBTBT	accepted	species	Peronospora saturejae-hortensis	Osipian
+4F8F7	CBTBT	accepted	species	Peronospora momordicae	(Sawada) Skalický
+76TB2	CBTBT	accepted	species	Peronospora fabae	Jacz. & Sergeeva
+4F8K6	CBTBT	accepted	species	Peronospora statices	Lobik
+4F8D7	CBTBT	accepted	species	Peronospora lagerheimii	Gäum.
+4F86G	CBTBT	accepted	species	Peronospora boehmeriae	G.Y. Yin & Z.S. Yang
+76TCH	CBTBT	accepted	species	Peronospora erigoni	Solheim & Gilb.
+4F8B9	CBTBT	accepted	species	Peronospora galii	Fuckel
+4F84T	CBTBT	accepted	species	Peronospora agrorum	Gäum.
+4F8F5	CBTBT	accepted	species	Peronospora mirabilis	Jacz.
+4F8HT	CBTBT	accepted	species	Peronospora sakamotoi	S. Ito & Tokun.
+4F884	CBTBT	accepted	species	Peronospora chlorae	de Bary
+4F85X	CBTBT	accepted	species	Peronospora arthurii	Farl.
+4F8KJ	CBTBT	accepted	species	Peronospora taurica	Jacz.
+4F8K2	CBTBT	accepted	species	Peronospora sparsa	Berk.
+4F864	CBTBT	accepted	species	Peronospora atlantica	Gäum.
+4F879	CBTBT	accepted	species	Peronospora carniolica	Gäum.
+6V5CD	CBTBT	accepted	species	Peronospora dorycnii	Uljan.
+4F892	CBTBT	accepted	species	Peronospora cyparissiae	de Bary
+4F89J	CBTBT	accepted	species	Peronospora dianthi	de Bary
+4F8LS	CBTBT	accepted	species	Peronospora valerianae	Trail
+4F8FP	CBTBT	accepted	species	Peronospora nonneae	Jacz. & Sergeeva
+6V5B7	CBTBT	accepted	species	Peronospora lanceolatae	Gapon.
+4F8HD	CBTBT	accepted	species	Peronospora rapistri	Jacz. & Sergeeva
+4F8MD	CBTBT	accepted	species	Peronospora whippleae	Ellis & Everh.
+4F8DF	CBTBT	accepted	species	Peronospora lathyri-palustris	Gäum.
+4F89K	CBTBT	accepted	species	Peronospora dicentrae	Syd.
+76TB9	CBTBT	accepted	species	Peronospora litwinowiae	Kalymb.
+4F8G5	CBTBT	accepted	species	Peronospora oxalidis	Verwoerd & Du Plessis
+6V5DW	CBTBT	accepted	species	Peronospora yamadana	Togashi
+775B4	CBTBT	accepted	species	Peronospora fontana	A. Gustavsson
+4F84S	CBTBT	accepted	species	Peronospora agrimoniae	Syd.
+4F88G	CBTBT	accepted	species	Peronospora constantineanui	Săvul. & Rayss
+4F84Y	CBTBT	accepted	species	Peronospora alliariae-wasabi	Gäum.
+4F88P	CBTBT	accepted	species	Peronospora corydalis	de Bary
+4F8GS	CBTBT	accepted	species	Peronospora pospelovii	Gapon.
+76TBB	CBTBT	accepted	species	Peronospora luffae	(Sawada) Skalický
+4F8H2	CBTBT	accepted	species	Peronospora pulmonariae	Gäum.
+4F89X	CBTBT	accepted	species	Peronospora dracocephali	C.J. Li & Z.Y. Zhao
+4F8JF	CBTBT	accepted	species	Peronospora sideritidis	Byzova
+4F8HX	CBTBT	accepted	species	Peronospora sanguisorbae	Gäum.
+4F8CZ	CBTBT	accepted	species	Peronospora jordanovii	Krousheva
+4F8GH	CBTBT	accepted	species	Peronospora phacae	Gäum.
+6V5B3	CBTBT	accepted	species	Peronospora farinosa	(Fr.) Fr.
+6V5B8	CBTBT	accepted	species	Peronospora linariae	Fuckel
+4F8JN	CBTBT	accepted	species	Peronospora sisymbrii-intermedii	Gäum.
+4F895	CBTBT	accepted	species	Peronospora cytisi	Rostr.
+6V5BJ	CBTBT	accepted	species	Peronospora melampyri-cristati	Săvul. & Rayss
+4F8DG	CBTBT	accepted	species	Peronospora lathyri-pisiformis	M.I. Nikol.
+775BZ	CBTBT	accepted	species	Peronospora centranthi	Massenot
+4F8FC	CBTBT	accepted	species	Peronospora myosotidis	de Bary
+4F8FZ	CBTBT	accepted	species	Peronospora ononidis	G.W. Wilson
+76TBC	CBTBT	accepted	species	Peronospora lycii	L. Ling & M.C. Tai
+4F85P	CBTBT	accepted	species	Peronospora arabidis-turritae	Gäum.
+4F88Z	CBTBT	accepted	species	Peronospora cucumeris	(Sawada) Skalický
+4F8KR	CBTBT	accepted	species	Peronospora teucrii	Gäum.
+4F85N	CBTBT	accepted	species	Peronospora arabidis-strictae	Jacz.
+775CM	CBTBT	accepted	species	Peronospora euphorbiae-glyptospermae	Gäum.
+4F8LG	CBTBT	accepted	species	Peronospora trigonellae	Gäum.
+4F8HM	CBTBT	accepted	species	Peronospora rubiae	Gäum.
+76TBZ	CBTBT	accepted	species	Peronospora carpoceratis	Byzova
+4F8KN	CBTBT	accepted	species	Peronospora teloxydis	Jacz. & P.A. Jacz.
+4F87L	CBTBT	accepted	species	Peronospora ceratocarpi	Kalymb.
+4F8MF	CBTBT	accepted	species	Peronospora ziziphorae	Byzova
+4F85F	CBTBT	accepted	species	Peronospora aparines	(de Bary) Gäum.
+4F8BD	CBTBT	accepted	species	Peronospora galii-trifidi	S. Ito & Tokun.
+4F8GC	CBTBT	accepted	species	Peronospora patriniae	Kalymb.
+4F8J2	CBTBT	accepted	species	Peronospora savulescui	Rayss
+4F863	CBTBT	accepted	species	Peronospora astragalina	Syd.
+4F85B	CBTBT	accepted	species	Peronospora amethysteae	Lebedeva
+4F87K	CBTBT	accepted	species	Peronospora cerastii-glandulosi	S. Ito & Tokun.
+76TBJ	CBTBT	accepted	species	Peronospora melandrii	Gäum.
+76TB6	CBTBT	accepted	species	Peronospora hymenolobi	Annal.
+4F869	CBTBT	accepted	species	Peronospora aubrietae	Mayor
+4F8GF	CBTBT	accepted	species	Peronospora pennsylvanica	Gäum.
+4F87C	CBTBT	accepted	species	Peronospora celsiae	Syd. & P. Syd.
+4F8C9	CBTBT	accepted	species	Peronospora hommae	S. Ito & Tokun.
+4F8CN	CBTBT	accepted	species	Peronospora illyrica	Gäum.
+4F8HV	CBTBT	accepted	species	Peronospora salviae-officinalis	Y.J. Choi, Thines & H.D. Shin
+4F8K3	CBTBT	accepted	species	Peronospora speculariae	Gäum.
+4F8DN	CBTBT	accepted	species	Peronospora leonuri	T.R. Liu & C.K. Pai
+4F87H	CBTBT	accepted	species	Peronospora cerastii-anomali	Săvul. & Rayss
+4F8JK	CBTBT	accepted	species	Peronospora simonianii	Osipian
+4F8CX	CBTBT	accepted	species	Peronospora jacksonii	C.G. Shaw
+4F8HB	CBTBT	accepted	species	Peronospora ranunculi-sardoi	Săvul. & Rayss
+4F857	CBTBT	accepted	species	Peronospora alyssi-incani	Gäum.
+4F88J	CBTBT	accepted	species	Peronospora corollae	Tranzschel
+4F8DC	CBTBT	accepted	species	Peronospora lathyri-hirsuti	Săvul. & Rayss
+4F8HS	CBTBT	accepted	species	Peronospora rumicis-rosei	Rayss
+4F87B	CBTBT	accepted	species	Peronospora casparyi	Jae S. Lee & Y.J. Choi
+4F8FF	CBTBT	accepted	species	Peronospora nasturtii-montani	Gäum.
+4F8G7	CBTBT	accepted	species	Peronospora pachyphragmatis-macrophylli	Savinceva
+4F885	CBTBT	accepted	species	Peronospora chorisporae	Gäum.
+4F8LZ	CBTBT	accepted	species	Peronospora vernalis	Gäum.
+4F8LL	CBTBT	accepted	species	Peronospora uljanishchevii	Tunkina
+4F854	CBTBT	accepted	species	Peronospora alsinearum	Casp.
+4F8FV	CBTBT	accepted	species	Peronospora obovata	Bonord.
+4F8GL	CBTBT	accepted	species	Peronospora pocutica	T. Majewski
+775CL	CBTBT	accepted	species	Peronospora esulae	Gäum.
+4F86V	CBTBT	accepted	species	Peronospora calotheca	de Bary
+4F8H7	CBTBT	accepted	species	Peronospora ranunculi	Gäum.
+6V5DS	CBTBT	accepted	species	Peronospora sherardiae	Fuckel
+4F889	CBTBT	accepted	species	Peronospora cilicica	Bremer & Gäum.
+4F8HK	CBTBT	accepted	species	Peronospora rossica	Gäum.
+4F874	CBTBT	accepted	species	Peronospora canscorina	Tilak & M.S. Patil
+76TB3	CBTBT	accepted	species	Peronospora favargeri	Mayor & Vienn.-Bourg.
+4F8KY	CBTBT	accepted	species	Peronospora torulariae	Domashova
+4F8M6	CBTBT	accepted	species	Peronospora viciae-venosae	Jacz. & P.A. Jacz.
+4F8C6	CBTBT	accepted	species	Peronospora hiemalis	Gäum.
+4F8KP	CBTBT	accepted	species	Peronospora tetragonolobi	Gäum.
+4F85C	CBTBT	accepted	species	Peronospora andicola	Speg.
+4F8FT	CBTBT	accepted	species	Peronospora oblatispora	Y.J. Choi, Constant. & H.D. Shin
+4F8K5	CBTBT	accepted	species	Peronospora stachydis	Syd.
+4F8DR	CBTBT	accepted	species	Peronospora lepidii-sativi	Gäum.
+4F8CH	CBTBT	accepted	species	Peronospora hypericifoliae	S. Sinha & S.B. Mathur
+4F8F6	CBTBT	accepted	species	Peronospora moenchiae	Sousa da Câmara & Oliveira
+4F84M	CBTBT	accepted	species	Peronospora actinostemmatis	(Sawada) Skalický
+4F8H6	CBTBT	accepted	species	Peronospora radii	de Bary
+4F8KZ	CBTBT	accepted	species	Peronospora tozziae	Gäum. & S. Blumer
+4F8M2	CBTBT	accepted	species	Peronospora veronicae-cymbalariae	Rayss
+4F8BZ	CBTBT	accepted	species	Peronospora heliophilae	E. Müll. & Poelt
+4F8HQ	CBTBT	accepted	species	Peronospora rugosa	Jacz. & P.A. Jacz.
+4F8H3	CBTBT	accepted	species	Peronospora pulveracea	Fuckel
+4F84X	CBTBT	accepted	species	Peronospora alkannae	Vienn.-Bourg.
+4F8CF	CBTBT	accepted	species	Peronospora hyoscyami	de Bary
+4F8F9	CBTBT	accepted	species	Peronospora moreani	Rayss
+4F8B6	CBTBT	accepted	species	Peronospora gaeumannii	Mundk.
+4F8JY	CBTBT	accepted	species	Peronospora sophiae-pinnatae	Gäum.
+4F86J	CBTBT	accepted	species	Peronospora boni-henrici	Gäum.
+6V5BZ	CBTBT	accepted	species	Peronospora calepinae	Gäum.
+4F89W	CBTBT	accepted	species	Peronospora drabae-majusculae	Lindtner
+6V5CL	CBTBT	accepted	species	Peronospora erythraeae	J.G. Kühn ex Gäum.
+4F8KM	CBTBT	accepted	species	Peronospora teesdaliae	Gäum.
+4F89P	CBTBT	accepted	species	Peronospora dipeltae	Jacz.
+775BH	CBTBT	accepted	species	Peronospora melampyri	(Bucholtz) Davis
+4F8BL	CBTBT	accepted	species	Peronospora glaucii	Lobik
+4F8FH	CBTBT	accepted	species	Peronospora nemophilae	C.G. Shaw
+4F89L	CBTBT	accepted	species	Peronospora digitalis	Gäum.
+4F8CL	CBTBT	accepted	species	Peronospora ibrahimovii	T.M. Achundov
+4F862	CBTBT	accepted	species	Peronospora astragali-purpurei	Mayor & Vienn.-Bourg.
+775B8	CBTBT	accepted	species	Peronospora lithospermi	Gäum.
+4F8BB	CBTBT	accepted	species	Peronospora galii-pedemontani	Săvul. & Rayss
+4F84R	CBTBT	accepted	species	Peronospora agrestis	Gäum.
+4F8LB	CBTBT	accepted	species	Peronospora trifolii-pilularis	Rayss
+775C9	CBTBT	accepted	species	Peronospora antirrhini	J. Schröt.
+4F8LW	CBTBT	accepted	species	Peronospora verbasci	Gäum.
+4F8G4	CBTBT	accepted	species	Peronospora orontii	J. Schröt. ex Syd.
+4F88Y	CBTBT	accepted	species	Peronospora cucubali	S. Ito & Tokun.
+4F89F	CBTBT	accepted	species	Peronospora destructor	(Berk.) Casp. ex Berk.
+4F85M	CBTBT	accepted	species	Peronospora arabidis-oxyphyllae	Gäum.
+4F8HF	CBTBT	accepted	species	Peronospora rocheliae	Kalymb.
+76TBD	CBTBT	accepted	species	Peronospora matthiolae	Gäum.
+775CB	CBTBT	accepted	species	Peronospora conringiae	Gäum.
+4F8C2	CBTBT	accepted	species	Peronospora hellebori-purpurascentis	Săvul. & Rayss
+4F8DZ	CBTBT	accepted	species	Peronospora limonii	Simonyan
+4F8BH	CBTBT	accepted	species	Peronospora gei	Syd.
+4F8DK	CBTBT	accepted	species	Peronospora lathyri-versicoloris	Săvul. & Rayss
+4F84P	CBTBT	accepted	species	Peronospora aethionematis	Simonyan
+4F8LX	CBTBT	accepted	species	Peronospora verbenae	U. Braun, Jage, Udo Richt. & H.J. Zimm.
+4F8BX	CBTBT	accepted	species	Peronospora hariotii	Gäum.
+6V5B4	CBTBT	accepted	species	Peronospora flava	Gäum.
+4F89Q	CBTBT	accepted	species	Peronospora diplachnis	Milovtz.
+4F852	CBTBT	accepted	species	Peronospora alpicola	Gäum.
+4F875	CBTBT	accepted	species	Peronospora capsici	J.F. Tao & T.J. Li
+4F85H	CBTBT	accepted	species	Peronospora aquatica	Gäum.
+4F8KS	CBTBT	accepted	species	Peronospora thlaspeos-alpestris	Gäum.
+4F8BV	CBTBT	accepted	species	Peronospora gypsophilae	Jacz.
+4F8GT	CBTBT	accepted	species	Peronospora potentillae	de Bary
+4F88D	CBTBT	accepted	species	Peronospora conglomerata	Fuckel
+4F8JX	CBTBT	accepted	species	Peronospora sonchi	Gapon.
+4F88S	CBTBT	accepted	species	Peronospora crispula	Fuckel
+6V5CC	CBTBT	accepted	species	Peronospora crucianellae	Maire
+4F8GX	CBTBT	accepted	species	Peronospora potentillae-sterilis	Gäum.
+4F8D2	CBTBT	accepted	species	Peronospora karelii	Bremer & Gäum.
+6V5BH	CBTBT	accepted	species	Peronospora medicaginis-tianschanicae	Gapon.
+4F86Y	CBTBT	accepted	species	Peronospora canadensis	Gäum.
+76TCK	CBTBT	accepted	species	Peronospora ervi	A. Gustavsson
+4F88L	CBTBT	accepted	species	Peronospora coronillicola	Sousa da Câmara & Oliveira
+76TDV	CBTBT	accepted	species	Peronospora valesiaca	Gäum.
+4F8DJ	CBTBT	accepted	species	Peronospora lathyri-verni	A. Gustavsson
+4F8L6	CBTBT	accepted	species	Peronospora trifolii-cherleri	Rayss
+6V5B2	CBTBT	accepted	species	Peronospora eurotiae	Kalymb.
+6V5BL	CBTBT	accepted	species	Peronospora menthae	X.Y. Cheng & H.C. Bai
+4F8FG	CBTBT	accepted	species	Peronospora nasturtii-palustris	S. Ito & Tokun.
+4F8KD	CBTBT	accepted	species	Peronospora syreniae-cuspidatae	Oescu & Rădul.
+4F8CY	CBTBT	accepted	species	Peronospora jagei	Thines & V. Kumm.
+4F8GV	CBTBT	accepted	species	Peronospora potentillae-anserinae	Gäum.
+4F872	CBTBT	accepted	species	Peronospora canescens	Benua
+4F86X	CBTBT	accepted	species	Peronospora campestris	Gäum.
+4F8CQ	CBTBT	accepted	species	Peronospora insubrica	Gäum.
+4F8M4	CBTBT	accepted	species	Peronospora viciae	(Berk.) Casp.
+4F8L3	CBTBT	accepted	species	Peronospora trichotoma	Massee
+4F8JC	CBTBT	accepted	species	Peronospora septentrionalis	Gäum.
+4F858	CBTBT	accepted	species	Peronospora alyssi-maritimi	Kochman
+4F8DW	CBTBT	accepted	species	Peronospora leptopyri	C.K. Pai
+6V5CJ	CBTBT	accepted	species	Peronospora eritrichi	S. Ito & Tokun.
+4F89Z	CBTBT	accepted	species	Peronospora echii	(Krieg.) Jacz.
+4F8JS	CBTBT	accepted	species	Peronospora sisymbrii-orientalis	Gäum.
+4F89Y	CBTBT	accepted	species	Peronospora ducometi	Siemaszko & Jank.
+775B3	CBTBT	accepted	species	Peronospora ficariae	Tul.
+6V5BY	CBTBT	accepted	species	Peronospora arnebiae	Golovin
+4F8KX	CBTBT	accepted	species	Peronospora tornensis	Gäum.
+4F8BT	CBTBT	accepted	species	Peronospora gregoriae	S. Blumer
+4F8DB	CBTBT	accepted	species	Peronospora lathyri-aphacae	Săvul. & Rayss
+4F8CD	CBTBT	accepted	species	Peronospora hylomeconis	S. Ito & Tokun.
+4F8LD	CBTBT	accepted	species	Peronospora trifolii-purpurei	Rayss
+4F8FW	CBTBT	accepted	species	Peronospora odessana	Voglmayr & Korytn.
+4F8KB	CBTBT	accepted	species	Peronospora symphyti	Gäum.
+4F88F	CBTBT	accepted	species	Peronospora consolidae	Lagerh. ex Gäum.
+76TB8	CBTBT	accepted	species	Peronospora linariae-genistifoliae	Săvul. & Rayss
+4F8GJ	CBTBT	accepted	species	Peronospora phlogina	Dietel & Holw.
+76TB5	CBTBT	accepted	species	Peronospora galii-veri	Gäum.
+4F8LY	CBTBT	accepted	species	Peronospora verna	Gäum.
+4F8GB	CBTBT	accepted	species	Peronospora parva	Gäum.
+4F88N	CBTBT	accepted	species	Peronospora cortusae	Gäum. & S. Blumer
+4F88W	CBTBT	accepted	species	Peronospora cryptosporae	Annal.
+4F8HY	CBTBT	accepted	species	Peronospora satarensis	S.D. Patil
+76TCJ	CBTBT	accepted	species	Peronospora erodii	Fuckel
+4F8J3	CBTBT	accepted	species	Peronospora saxatilis	Gäum.
+4F856	CBTBT	accepted	species	Peronospora alyssi-calycini	Gäum.
+4F88C	CBTBT	accepted	species	Peronospora conferta	(Unger) Unger
+775BG	CBTBT	accepted	species	Peronospora medicaginis-orbicularis	Rayss
+4F87G	CBTBT	accepted	species	Peronospora cephalariae-laevigatae	Săvul. & Rayss
+4F8CB	CBTBT	accepted	species	Peronospora hornungiae	A. Gustavsson
+4F8D8	CBTBT	accepted	species	Peronospora lallemantiae	Golovin & Kalymb.
+4F84N	CBTBT	accepted	species	Peronospora aestivalis	Syd.
+4F8B8	CBTBT	accepted	species	Peronospora galeopsidis	Lobik
+76TBG	CBTBT	accepted	species	Peronospora medicaginis-minimae	Gapon.
+76TBF	CBTBT	accepted	species	Peronospora mayorii	Gäum.
+76TBL	CBTBT	accepted	species	Peronospora mesembryanthemi	Verwoerd
+76TDQ	CBTBT	accepted	species	Peronospora potentillae-americanae	Gäum.
+4F8KF	CBTBT	accepted	species	Peronospora takahashii	S. Ito
+6V5BC	CBTBT	accepted	species	Peronospora lychnitis	Gäum.
+4F8BK	CBTBT	accepted	species	Peronospora gigantea	Gäum.
+6V5BD	CBTBT	accepted	species	Peronospora manshurica	(Naumov) Syd.
+4F8CJ	CBTBT	accepted	species	Peronospora ibarakii	S. Ito & Muray.
+4F8GP	CBTBT	accepted	species	Peronospora polygoni	Halst.
+4F85G	CBTBT	accepted	species	Peronospora apuli	Voglmayr
+775BX	CBTBT	accepted	species	Peronospora americana	Gäum.
+4F87F	CBTBT	accepted	species	Peronospora cephalariae	Vincens
+4F8C8	CBTBT	accepted	species	Peronospora holostei	Casp. ex de Bary
+4F87J	CBTBT	accepted	species	Peronospora cerastii-brachypetali	Săvul. & Rayss
+4F8KW	CBTBT	accepted	species	Peronospora tomentosa	Fuckel
+775BK	CBTBT	accepted	species	Peronospora menioci	Kolosch.
+775CH	CBTBT	accepted	species	Peronospora erinicola	Durrieu
+4F85S	CBTBT	accepted	species	Peronospora arenariae	(Berk.) Tul.
+4F888	CBTBT	accepted	species	Peronospora ciceris	D.K. Agarwal, Kulshr., Bhalla & A.K. Sarbhoy
+4F8LF	CBTBT	accepted	species	Peronospora trifoliorum	de Bary
+4F87N	CBTBT	accepted	species	Peronospora chamaesphaci	Kalymb.
+4F88Q	CBTBT	accepted	species	Peronospora corydalis-intermediae	Gäum.
+4F8GN	CBTBT	accepted	species	Peronospora polycarpi	Mayor & Vienn.-Bourg.
+76TCB	CBTBT	accepted	species	Peronospora clinopodii	Terui
+76TDR	CBTBT	accepted	species	Peronospora salicorniae	Enkina
+775BJ	CBTBT	accepted	species	Peronospora melandrii-noctiflori	Săvul. & Rayss
+775CF	CBTBT	accepted	species	Peronospora elsholtziae	T.R. Liu & C.K. Pai
+775DQ	CBTBT	accepted	species	Peronospora ranunculi-peduncularis	Roiv.
+4F8JZ	CBTBT	accepted	species	Peronospora sordida	Berk. & Broome
+4F8B3	CBTBT	accepted	species	Peronospora fujitae	S. Ito & Tokun.
+6V5BK	CBTBT	accepted	species	Peronospora meliloti	Syd.
+4F899	CBTBT	accepted	species	Peronospora debaryi	E.S. Salmon & Ware
+4F8BQ	CBTBT	accepted	species	Peronospora golovinii	Kalymb.
+4F8L7	CBTBT	accepted	species	Peronospora trifolii-clypeati	Rayss
+4F88H	CBTBT	accepted	species	Peronospora convolvuli	J.C. Lindq.
+4F8G2	CBTBT	accepted	species	Peronospora ornithopi	Gäum.
+4F8JW	CBTBT	accepted	species	Peronospora somniferi	Voglmayr
+4F88K	CBTBT	accepted	species	Peronospora coronillae	Gäum.
+4F8CG	CBTBT	accepted	species	Peronospora hypecoi	Jacz. & P.A. Jacz.
+4F87M	CBTBT	accepted	species	Peronospora cerinthes	Uljan.
+76TCD	CBTBT	accepted	species	Peronospora echinopsili	Tunkina
+4F8CK	CBTBT	accepted	species	Peronospora iberidis	Gäum.
+4F8HW	CBTBT	accepted	species	Peronospora salviae-plebeiae	Y.J. Choi, Thines & H.D. Shin
+4F8CW	CBTBT	accepted	species	Peronospora jaapiana	Magnus
+4F84K	CBTBT	accepted	species	Peronospora achlydis	S. Ito & Tokun.
+76TCM	CBTBT	accepted	species	Peronospora euphorbiae	Fuckel
+4F8CV	CBTBT	accepted	species	Peronospora iwatensis	S. Ito & Muray.
+4F8FY	CBTBT	accepted	species	Peronospora omphalodis	Gäum.
+775DP	CBTBT	accepted	species	Peronospora parietariae	Vanev & E.G. Dimitrova
+4F85Z	CBTBT	accepted	species	Peronospora astragali	Syd.
+4F8J7	CBTBT	accepted	species	Peronospora scleranthi	Rabenh. ex J. Schröt.
+4F8J8	CBTBT	accepted	species	Peronospora scutellariae	Gäum.
+4F86C	CBTBT	accepted	species	Peronospora belbahrii	Thines
+4F8D6	CBTBT	accepted	species	Peronospora kochiae-scopariae	Kochman & T. Majewski
+4F8G6	CBTBT	accepted	species	Peronospora oxytropis	Gäum.
+4F8FB	CBTBT	accepted	species	Peronospora myagri	Mayor
+76TBY	CBTBT	accepted	species	Peronospora axyridis	Benua
+4F89M	CBTBT	accepted	species	Peronospora dilachnis	Milovtz.
+4F8C7	CBTBT	accepted	species	Peronospora hiratsukae	S. Ito & Tokun.
+4F8DS	CBTBT	accepted	species	Peronospora lepidii-virginici	Gäum.
+4F8DH	CBTBT	accepted	species	Peronospora lathyri-rosei	Osipian
+4F8MC	CBTBT	accepted	species	Peronospora vvedenskyi	Golovin
+4F8HC	CBTBT	accepted	species	Peronospora ranunculi-steveni	Săvul. & Rayss
+6V5CB	CBTBT	accepted	species	Peronospora chenopodii-ambrosioidis	Golenia
+4F8H8	CBTBT	accepted	species	Peronospora ranunculi-carpatici	Săvul. & Rayss
+775DR	CBTBT	accepted	species	Peronospora senneniana	Gonz. Frag. & Sacc.
+775DT	CBTBT	accepted	species	Peronospora trifolii-minoris	Gäum.
+4F8DL	CBTBT	accepted	species	Peronospora lathyrina	Vienn.-Bourg.
+6V5DR	CBTBT	accepted	species	Peronospora rhaetica	Gäum.
+4F8BP	CBTBT	accepted	species	Peronospora goldbachiae	Jacz.
+6V5B6	CBTBT	accepted	species	Peronospora honckenyae	(Syd. & P. Syd.) Syd.
+4F88M	CBTBT	accepted	species	Peronospora coronopodis	Gäum.
+6V5CM	CBTBT	accepted	species	Peronospora euclidii	Săvul. & Rayss
+4F8LT	CBTBT	accepted	species	Peronospora valerianellae	Fuckel
+4F8LH	CBTBT	accepted	species	Peronospora trigonotidis	S. Ito & Tokun.
+4F8BM	CBTBT	accepted	species	Peronospora glechomae	Oescu & Rădul.
+4F8L8	CBTBT	accepted	species	Peronospora trifolii-formosi	Rayss
+4F87Q	CBTBT	accepted	species	Peronospora chartolomatis	Golovin & Kalymb.
+4F8BC	CBTBT	accepted	species	Peronospora galii-rubioidis	Săvul. & Rayss
+4F8DD	CBTBT	accepted	species	Peronospora lathyri-humilis	Benua
+4F855	CBTBT	accepted	species	Peronospora alta	Fuckel
+4F8C3	CBTBT	accepted	species	Peronospora helvetica	Gäum.
+4F8GG	CBTBT	accepted	species	Peronospora perillae	Miyabe
+4F89D	CBTBT	accepted	species	Peronospora desertorum	Jacz.
+775BF	CBTBT	accepted	species	Peronospora meconopsidis	Mayor
+4F8JH	CBTBT	accepted	species	Peronospora silvatica	Gäum.
+4F8F3	CBTBT	accepted	species	Peronospora minima	G.W. Wilson
+4F8D9	CBTBT	accepted	species	Peronospora lamii	A. Braun
+4F88T	CBTBT	accepted	species	Peronospora cristata	Tranzschel
+4F8G8	CBTBT	accepted	species	Peronospora palustris	Gäum.
+4F84Z	CBTBT	accepted	species	Peronospora alpestris	Gäum.
+KYT2T	CBTBT	accepted	species	Peronospora sisymbrii-officinalis	Gäum.
+4F84L	CBTBT	accepted	species	Peronospora aconiti	Y.N. Yu
+775BD	CBTBT	accepted	species	Peronospora maublancii	Săvul. & Rayss
+4F896	CBTBT	accepted	species	Peronospora danica	Gäum.
+4F87S	CBTBT	accepted	species	Peronospora chelidonii	Miyabe
+76TBK	CBTBT	accepted	species	Peronospora melissiti	Byzova & Dejeva
+4F8G3	CBTBT	accepted	species	Peronospora orobi	Gäum.
+4F897	CBTBT	accepted	species	Peronospora daturae	Hulea
+4F86M	CBTBT	accepted	species	Peronospora brachycomes	Enkina
+4F8GD	CBTBT	accepted	species	Peronospora paula	A. Gustavsson
+4F86T	CBTBT	accepted	species	Peronospora cakiles	Savile
+4F85K	CBTBT	accepted	species	Peronospora arabidis-glabrae	Gäum.
+4F8HG	CBTBT	accepted	species	Peronospora romanica	Săvul. & Rayss
+KZC9L	CBTBT	accepted	species	Peronospora sysymbrii-officinalis	Gäum.
+4F8KQ	CBTBT	accepted	species	Peronospora tetragonolobi-palestini	Rayss
+4F8DV	CBTBT	accepted	species	Peronospora leptoclada	Sacc.
+4F84Q	CBTBT	accepted	species	Peronospora affinis	Rossmann
+4F878	CBTBT	accepted	species	Peronospora cardariae-repentis	N.P. Golovina
+4F85L	CBTBT	accepted	species	Peronospora arabidis-hirsutae	Gäum.
+4F898	CBTBT	accepted	species	Peronospora davisii	C.G. Shaw
+4F8FX	CBTBT	accepted	species	Peronospora oerteliana	J.G. Kühn
+4F8JM	CBTBT	accepted	species	Peronospora sinensis	D.Z. Tang
+4F84W	CBTBT	accepted	species	Peronospora alchemillae	G.H. Otth
+4F8GQ	CBTBT	accepted	species	Peronospora polygoni-convolvuli	A. Gustavsson
+76TCL	CBTBT	accepted	species	Peronospora esperaussensis	Mayor
+4F8JJ	CBTBT	accepted	species	Peronospora silvestris	Gäum.
+4F88V	CBTBT	accepted	species	Peronospora crustosa	(Fr.) Fr.
+4F85R	CBTBT	accepted	species	Peronospora arborescens	(Berk.) de Bary
+4F84V	CBTBT	accepted	species	Peronospora akatsukae	S. Ito & Muray.
+4F85Y	CBTBT	accepted	species	Peronospora arvensis	Gäum.
+4F89S	CBTBT	accepted	species	Peronospora dipsaci	Tul.
+4F8KV	CBTBT	accepted	species	Peronospora thyrocarpi	L. Ling & M.C. Tai
+4F8GZ	CBTBT	accepted	species	Peronospora pseudostellariae	G.Y. Yin & Z.S. Yang
+4F8HN	CBTBT	accepted	species	Peronospora ruegeriae	Gäum.
+4F87P	CBTBT	accepted	species	Peronospora chamaesycis	G.W. Wilson
+4F8M9	CBTBT	accepted	species	Peronospora violae	de Bary
+4F86Q	CBTBT	accepted	species	Peronospora bulbocapni	Beck
+4F8KC	CBTBT	accepted	species	Peronospora syreniae	Enkina
+4F86F	CBTBT	accepted	species	Peronospora bocconiae	Syd.
+4F89R	CBTBT	accepted	species	Peronospora diplotaxidis	Gäum.
+6V5CG	CBTBT	accepted	species	Peronospora embergeri	Mayor & Vienn.-Bourg.
+4F89T	CBTBT	accepted	species	Peronospora diptychocarpi	Kalymb.
+4F8M8	CBTBT	accepted	species	Peronospora violacea	Berk.
+4F887	CBTBT	accepted	species	Peronospora chrysosplenii	Fuckel
+4F8K8	CBTBT	accepted	species	Peronospora streptolomatis	Golovin & Kalymb.
+4F8LR	CBTBT	accepted	species	Peronospora ussuriensis	Jacz.
+4F8CT	CBTBT	accepted	species	Peronospora iranica	Petr. & Esfand.
+4F85T	CBTBT	accepted	species	Peronospora argemones	Gäum.
+4F88R	CBTBT	accepted	species	Peronospora crambes	Jacz.
+76TB7	CBTBT	accepted	species	Peronospora lathyri-maritimi	Jermal.
+4F8GW	CBTBT	accepted	species	Peronospora potentillae-reptantis	Gäum.
+4F8M3	CBTBT	accepted	species	Peronospora vexans	Gäum.
+6V5BG	CBTBT	accepted	species	Peronospora media	Gäum.
+6V5CK	CBTBT	accepted	species	Peronospora erucastri	Gäum.
+4F8F2	CBTBT	accepted	species	Peronospora microulae	Y.R. Meng & G.Y. Yin
+4F8FD	CBTBT	accepted	species	Peronospora narbonensis	Gäum.
+4F8D3	CBTBT	accepted	species	Peronospora knautiae	Fuckel
+4F86R	CBTBT	accepted	species	Peronospora buniadis	Gäum.
+4F8H9	CBTBT	accepted	species	Peronospora ranunculi-oxyspermi	Jacz. & Sergeeva
+4F8D5	CBTBT	accepted	species	Peronospora kochiae-prostratae	Sandu & Iacob
+4F8M7	CBTBT	accepted	species	Peronospora viennotii	Mayor
+6V5DQ	CBTBT	accepted	species	Peronospora pedicularis	Palm
+4F8JV	CBTBT	accepted	species	Peronospora solenanthi	Byzova
+76TBH	CBTBT	accepted	species	Peronospora megasperma	Berl.
+775B5	CBTBT	accepted	species	Peronospora grisea	Unger
+4F8B7	CBTBT	accepted	species	Peronospora galegae	Săvul. & Rayss
+4HNQ9	CBSJF	accepted	species	Phytophthora attenuata	T. Jung, M. Horta Jung, Scanu & Bakonyi
+4HNV2	CBSJF	accepted	species	Phytophthora richardiae	Buisman
+4HNS6	CBSJF	accepted	species	Phytophthora gemini	Man in 't Veld, K. Rosend., H. Brouwer & De Cock
+77JFV	CBSJF	accepted	species	Phytophthora plurivora	T. Jung & T.I. Burgess
+4HNTM	CBSJF	accepted	species	Phytophthora mirabilis	Galindo & H.R. Hohl
+4HNRG	CBSJF	accepted	species	Phytophthora cyperi-bulbosi	Seethal. & K. Ramakr.
+4HNRH	CBSJF	accepted	species	Phytophthora dauci	Bertier, H. Brouwer & De Cock
+77JFP	CBSJF	accepted	species	Phytophthora fallax	K. Dobbie & M.A. Dick
+4HNSQ	CBSJF	accepted	species	Phytophthora intercalaris	Xiao Yang, Balci, Brazee, Loyd & C.X. Hong
+4HNVF	CBSJF	accepted	species	Phytophthora terminalis	Man in 't Veld & K. Rosend.
+4HNR6	CBSJF	accepted	species	Phytophthora citrophthora	(R.E. Sm. & E.H. Sm.) Leonian
+4HNRX	CBSJF	accepted	species	Phytophthora fluvialis	T. Jung & T.I. Burgess
+4HNQW	CBSJF	accepted	species	Phytophthora castaneae	Katsura & K. Uchida
+77JFT	CBSJF	accepted	species	Phytophthora palmivora	(E.J. Butler) E.J. Butler
+77JG7	CBSJF	accepted	species	Phytophthora pluvialis	Reeser, W. Sutton & E.M. Hansen
+77JFS	CBSJF	accepted	species	Phytophthora iranica	Ershad
+4HNRV	CBSJF	accepted	species	Phytophthora fischeriana	(Höhnk) Sparrow
+6VJF2	CBSJF	accepted	species	Phytophthora quercina	T. Jung
+4HNVN	CBSJF	accepted	species	Phytophthora tubulina	T. Jung, T. Cech, Scanu, Horta Jung & Bakonyi
+4HNSZ	CBSJF	accepted	species	Phytophthora kernoviae	Brasier, Beales & S.A. Kirk
+4HNVL	CBSJF	accepted	species	Phytophthora trifolii	E.M. Hansen & D.P. Maxwell
+4HNQL	CBSJF	accepted	species	Phytophthora botryosa	Chee
+4HNQG	CBSJF	accepted	species	Phytophthora bilorbang	Aghighi, G.E. Hardy, J.K. Scott & T.I. Burgess
+4HNT7	CBSJF	accepted	species	Phytophthora lilii	M.Z. Rahman, S. Uematsu, Motohashi, Kimish., H. Suga & Kageyama
+4HNTP	CBSJF	accepted	species	Phytophthora morindae	Abad & S.C. Nelson
+6VJF3	CBSJF	accepted	species	Phytophthora psychrophila	T. Jung & E.M. Hansen
+4HNSX	CBSJF	accepted	species	Phytophthora italica	Cacciola, Magnano & Belisario
+4HNQX	CBSJF	accepted	species	Phytophthora castanetorum	T. Jung, Horta Jung, Bakonyi & Scanu
+4HNTV	CBSJF	accepted	species	Phytophthora nemorosa	E.M. Hansen & Reeser
+4HNR3	CBSJF	accepted	species	Phytophthora cichorii	Bertier, H. Brouwer, De Cock & D.E.L. Cooke
+4HNTX	CBSJF	accepted	species	Phytophthora obscura	Grünwald & Werres
+77JF4	CBSJF	accepted	species	Phytophthora tentaculata	Kröber & Marwitz
+4HNT5	CBSJF	accepted	species	Phytophthora lateralis	Tucker & Milbrath
+4HNSG	CBSJF	accepted	species	Phytophthora himalsilva	Vettraino, Brasier & Vannini
+77JDZ	CBSJF	accepted	species	Phytophthora pseudotsugae	Hamm & E.M. Hansen
+4HNTB	CBSJF	accepted	species	Phytophthora macrochlamydospora	J.A.G. Irwin
+4HNS7	CBSJF	accepted	species	Phytophthora gibbosa	T. Jung, Stukely & T.I. Burgess
+4HNPS	CBSJF	accepted	species	Phytophthora acerina	Ginetti, T. Jung, D.E.L. Cooke & Moricca
+4HNPZ	CBSJF	accepted	species	Phytophthora amnicola	T.I. Burgess & T. Jung
+4HNTN	CBSJF	accepted	species	Phytophthora mississippiae	Xiao Yang, Copes & C.X. Hong
+4HNRN	CBSJF	accepted	species	Phytophthora erythroseptica	Pethybr.
+4HNQ2	CBSJF	accepted	species	Phytophthora andina	Adler & Flier
+4HNTQ	CBSJF	accepted	species	Phytophthora moyootj	T.I. Burgess
+77JG2	CBSJF	accepted	species	Phytophthora condilina	T.I. Burgess
+4HNQ6	CBSJF	accepted	species	Phytophthora arenaria	A.J. Rea, Stukely & T. Jung
+4HNQF	CBSJF	accepted	species	Phytophthora betacei	M.F. Mideros, L.E. Lagos & S. Restrepo
+77JG8	CBSJF	accepted	species	Phytophthora pini	Leonian
+4HNVV	CBSJF	accepted	species	Phytophthora vignae	Purss
+4HNS2	CBSJF	accepted	species	Phytophthora fragariae	Hickman
+4HNSV	CBSJF	accepted	species	Phytophthora irrigata	C.X. Hong & Gallegly
+4HNV5	CBSJF	accepted	species	Phytophthora rubi	(W.F. Wilcox & J.M. Duncan) Man in 't veld
+4HNSN	CBSJF	accepted	species	Phytophthora inflata	Caros. & Tucker
+4HNT6	CBSJF	accepted	species	Phytophthora leersiae	Sawada ex H.H. Ho & H.S. Chang
+4HNRQ	CBSJF	accepted	species	Phytophthora europaea	E.M. Hansen & T. Jung
+4HNRF	CBSJF	accepted	species	Phytophthora cyperi	(Ideta) S. Ito
+4HNST	CBSJF	accepted	species	Phytophthora ipomoeae	Flier & Grünwald
+6VJFS	CBSJF	accepted	species	Phytophthora gondwanensis	L.A. Shuttlew., K. Scarlett, R. Daniel & D.I. Guest
+4HNTG	CBSJF	accepted	species	Phytophthora mekongensis	Cacciola & Hoa
+6VJFX	CBSJF	accepted	species	Phytophthora porri	Foister
+4HNTL	CBSJF	accepted	species	Phytophthora mexicana	Hotson & Hartge
+4HNSW	CBSJF	accepted	species	Phytophthora irritabilis	Mantri & K.B. Deshp.
+6VJFW	CBSJF	accepted	species	Phytophthora parsiana	Mostowf., D.E.L. Cooke & Banihash.
+6VJDZ	CBSJF	accepted	species	Phytophthora pseudosyringae	T. Jung & Delatour
+4HNQV	CBSJF	accepted	species	Phytophthora caryae	N.J. Brazee, X. Yang & C.X. Hong
+4HNPY	CBSJF	accepted	species	Phytophthora alticola	Maseko, Cout. & M.J. Wingf.
+4HNVM	CBSJF	accepted	species	Phytophthora tropicalis	Aragaki & J.Y. Uchida
+6VJF5	CBSJF	accepted	species	Phytophthora ramorum	Werres, De Cock & Man in 't Veld
+4HNR4	CBSJF	accepted	species	Phytophthora cinnamomi	Rands
+4HNV9	CBSJF	accepted	species	Phytophthora sojae	Kaufm. & Gerd.
+4HNQJ	CBSJF	accepted	species	Phytophthora boehmeriae	Sawada
+4HNR5	CBSJF	accepted	species	Phytophthora citricola	Sawada
+4HNPW	CBSJF	accepted	species	Phytophthora alni	Brasier & S.A. Kirk
+4HNT8	CBSJF	accepted	species	Phytophthora litchii	(C.C. Chen ex W.H. Ko, H.S. Chang, H.J. Su, C.C. Chen & L.S. Leu) Voglmayr, Göker, Riethm. & Oberw.
+4HNV6	CBSJF	accepted	species	Phytophthora rubra	Mantri & K.B. Deshp.
+4HNR9	CBSJF	accepted	species	Phytophthora colocasiae	Racib.
+77JFW	CBSJF	accepted	species	Phytophthora phaseoli	Thaxt.
+4HNPT	CBSJF	accepted	species	Phytophthora agathidicida	B.S. Weir, Beever, Pennycook & Bellgard
+4HNQN	CBSJF	accepted	species	Phytophthora cactorum	(Lebert & Cohn) J. Schröt.
+6VJG6	CBSJF	accepted	species	Phytophthora ornamentata	Scanu, B. Linaldeddu & T. Jung
+4HNR8	CBSJF	accepted	species	Phytophthora cocois	B.S. Weir, Beever, Pennycook, Bellgard & J.Y. Uchida
+6VJFR	CBSJF	accepted	species	Phytophthora medicaginis	E.M. Hansen & D.P. Maxwell
+4HNTR	CBSJF	accepted	species	Phytophthora multivesiculata	Ilieva, Man in 't Veld, W. Veenb.-Rijks & R. Pieters
+6VJFQ	CBSJF	accepted	species	Phytophthora austrocedri	Gresl. & E.M. Hansen
+4HNTF	CBSJF	accepted	species	Phytophthora megasperma	Drechsler
+6VJFV	CBSJF	accepted	species	Phytophthora pinifolia	Alv. Durán, Gryzenh. & M.J. Wingf.
+4HNT9	CBSJF	accepted	species	Phytophthora litoralis	T. Jung, Stukely & T.I. Burgess
+4HNS8	CBSJF	accepted	species	Phytophthora gloveri	Z.G. Abad & Shew
+4HNRB	CBSJF	accepted	species	Phytophthora constricta	A.J. Rea, Stukely & T. Jung
+77JFN	CBSJF	accepted	species	Phytophthora aleatoria	P.M. Scott, R. McDougal & P.M. Taylor
+4HNSK	CBSJF	accepted	species	Phytophthora idaei	D.M. Kenn.
+4HNSF	CBSJF	accepted	species	Phytophthora himalayensis	Dastur
+4HNTW	CBSJF	accepted	species	Phytophthora nicotianae	Breda de Haan
+4HNSR	CBSJF	accepted	species	Phytophthora intricata	T. Jung, M. Horta Jung, Scanu & Bakonyi
+6VJG9	CBSJF	accepted	species	Phytophthora primulae	J.A. Toml.
+4HNSM	CBSJF	accepted	species	Phytophthora infestans	(Mont.) de Bary
+6VJG8	CBSJF	accepted	species	Phytophthora parvispora	Scanu & Denman
+4HNVB	CBSJF	accepted	species	Phytophthora stricta	Xiao Yang, Copes & C.X. Hong
+4HNQK	CBSJF	accepted	species	Phytophthora borealis	E.M. Hansen, W. Sutton & Reeser
+4HNRW	CBSJF	accepted	species	Phytophthora flexuosa	T. Jung, M. Horta Jung, Scanu & Bakonyi
+4HNVC	CBSJF	accepted	species	Phytophthora syringae	(Kleb.) Kleb.
+4HNQM	CBSJF	accepted	species	Phytophthora brassicae	De Cock & Man in 't Veld
+4HNV3	CBSJF	accepted	species	Phytophthora riparia	Reeser, W. Sutton & E.M. Hansen
+4HNQY	CBSJF	accepted	species	Phytophthora chesapeakensis	Man in 't Veld & K. Rosend.
+4HNTD	CBSJF	accepted	species	Phytophthora meadii	McRae
+6VJFZ	CBSJF	accepted	species	Phytophthora pseudolactucae	M.Z. Rahman, S. Uematsu, Kanto, Kusunoki, Y. Ishiguro, H. Suga & Kageyama
+77JG4	CBSJF	accepted	species	Phytophthora macilentosa	Xiao Yang, Copes & C.X. Hong
+4HNVY	CBSJF	accepted	species	Phytophthora × stagnum	Xiao Yang & C.X. Hong
+77JFX	CBSJF	accepted	species	Phytophthora prodigiosa	Cacciola & Tri
+4HNQS	CBSJF	accepted	species	Phytophthora capensis	Bezuid., Denman, A. McLeod & S.A. Kirk
+4HNS9	CBSJF	accepted	species	Phytophthora gonapodyides	(H.E. Petersen) Buisman
+4HNTJ	CBSJF	accepted	species	Phytophthora melonis	Katsura
+4HNQH	CBSJF	accepted	species	Phytophthora bishii	Abad, J.A. Abad & Louws
+4HNSH	CBSJF	accepted	species	Phytophthora humicola	W.H. Ko & Ann
+4HNSP	CBSJF	accepted	species	Phytophthora insolita	Ann & W.H. Ko
+4HNR7	CBSJF	accepted	species	Phytophthora clandestina	P.A. Taylor, Pascoe & F.C. Greenh.
+4HNSJ	CBSJF	accepted	species	Phytophthora hydrogena	Xiao Yang & C.X. Hong
+4HNVK	CBSJF	accepted	species	Phytophthora thermophila	T. Jung & Stukely
+4HNVS	CBSJF	accepted	species	Phytophthora verrucosa	Alcock & Foister
+4HNQR	CBSJF	accepted	species	Phytophthora cambivora	(Petri) Buisman
+77JFQ	CBSJF	accepted	species	Phytophthora captiosa	M.A. Dick & K. Dobbie
+4HNSC	CBSJF	accepted	species	Phytophthora hedraiandra	De Cock & Man in 't Veld
+4HNSB	CBSJF	accepted	species	Phytophthora gregata	T. Jung, Stukely & T.I. Burgess
+4HNTZ	CBSJF	accepted	species	Phytophthora oleae	Schena, Ruano-Rosa, Agosteo & Cacciola
+4HNV4	CBSJF	accepted	species	Phytophthora rosacearum	E.M. Hansen & W.F. Wilcox
+4HNQ7	CBSJF	accepted	species	Phytophthora asiatica	M.Z. Rahman, H. Mukobata & Kageyama
+4HNRY	CBSJF	accepted	species	Phytophthora foliorum	Donahoo & Lamour
+4HNT4	CBSJF	accepted	species	Phytophthora lacustris	Brasier, Cacciola, Nechw., T. Jung & Bakonyi
+4HNQ4	CBSJF	accepted	species	Phytophthora aquimorbida	C.X. Hong
+4HNRL	CBSJF	accepted	species	Phytophthora elongata	A. Rea, Stukely & T. Jung
+4HNR2	CBSJF	accepted	species	Phytophthora chrysanthemi	Naher, Hid. Watan., Chikuo & Kageyama
+4HNVT	CBSJF	accepted	species	Phytophthora versiformis	T. Paap & T.I. Burgess
+4HNVH	CBSJF	accepted	species	Phytophthora thalictri	G.W. Wilson & Davis
+4HNVP	CBSJF	accepted	species	Phytophthora tyrrhenica	Scanu, Cacciola, Seddaiu, Bakonyi & T. Jung
+4HNQ3	CBSJF	accepted	species	Phytophthora aquatilis	C.X. Hong
+4HNRT	CBSJF	accepted	species	Phytophthora fagopyri	S. Takim. ex S. Ito & Tokun.
+4HNS5	CBSJF	accepted	species	Phytophthora gallica	T. Jung & Nechw.
+4HNRZ	CBSJF	accepted	species	Phytophthora formosa	T. Jung, M. Horta Jung, Scanu & Bakonyi
+6VJG5	CBSJF	accepted	species	Phytophthora oryzo-bladis	J.S. Wang & J.Y. Lu ex H.H. Ho
+4HNRK	CBSJF	accepted	species	Phytophthora drechsleri	Tucker
+4HNQZ	CBSJF	accepted	species	Phytophthora chlamydospora	Brasier & E.M. Hansen
+4HNQ8	CBSJF	accepted	species	Phytophthora asparagi	Saude & Hausbeck
+4HNT3	CBSJF	accepted	species	Phytophthora lactucae	Bertier, H. Brouwer & De Cock
+4HNS4	CBSJF	accepted	species	Phytophthora frigida	Maseko, Cout. & M.J. Wingf.
+4HNS3	CBSJF	accepted	species	Phytophthora fragariaefolia	M.Z. Rahman, S. Uematsu, Toru Takeuchi, K. Shirai & Kageyama
+4HNT2	CBSJF	accepted	species	Phytophthora kwongonina	T.I. Burgess
+6VJFP	CBSJF	accepted	species	Phytophthora cryptogea	Pethybr. & Laff.
+4HNRD	CBSJF	accepted	species	Phytophthora crassamura	Scanu, Deidda & T. Jung
+4HNRP	CBSJF	accepted	species	Phytophthora estuarina	Marano, A.L. Jesus & Pires-Zottar.
+4HNTS	CBSJF	accepted	species	Phytophthora multivora	P.M. Scott & T. Jung
+4HNV8	CBSJF	accepted	species	Phytophthora siskiyouensis	Reeser & E.M. Hansen
+4HNSL	CBSJF	accepted	species	Phytophthora ilicis	Buddenh. & Roy A. Young
+77JF3	CBSJF	accepted	species	Phytophthora quercetorum	Balci & S. Balci
+6VJG3	CBSJF	accepted	species	Phytophthora nagaii	M.Z. Rahman, S. Uematsu, Toru Takeuchi, K. Shirai & Kageyama
+4HNV7	CBSJF	accepted	species	Phytophthora sansomeana	E.M. Hansen & Reeser
+4HNTY	CBSJF	accepted	species	Phytophthora occultans	Man in 't Veld & K. Rosend.
+6VJG4	CBSJF	accepted	species	Phytophthora hibernalis	Carne
+4HNVW	CBSJF	accepted	species	Phytophthora virginiana	Xiao Yang & C.X. Hong
+4HNSS	CBSJF	accepted	species	Phytophthora inundata	Brasier, Sánch. Hern. & S.A. Kirk
+77JG9	CBSJF	accepted	species	Phytophthora pseudocryptogea	Safaief., Mostowf., G.E. Hardy & T.I. Burgess
+4HNQT	CBSJF	accepted	species	Phytophthora capsici	Leonian
+4HNQP	CBSJF	accepted	species	Phytophthora cajani	K.S. Amin, Baldev & F.J. Williams
+4HNVX	CBSJF	accepted	species	Phytophthora vulcanica	T. Jung, Horta Jung, Scanu, Bakonyi & Cacciola
+77JFZ	CBSJF	accepted	species	Phytophthora pseudorosacearum	T.I. Burgess
+77JF5	CBSJF	accepted	species	Phytophthora rhizophorae	Pires-Zottar., A.L. Jesus & Marano
+4HNSY	CBSJF	accepted	species	Phytophthora japonica	G.M. Waterh.
+6VJFY	CBSJF	accepted	species	Phytophthora polonica	Belbahri, E. Moralejo, Calmin & Oszako
+77JF2	CBSJF	accepted	species	Phytophthora quininea	Crand.
+4HNQD	CBSJF	accepted	species	Phytophthora balyanboodja	T.I. Burgess
+6VJG7	CBSJF	accepted	species	Phytophthora pistaciae	Mirab.
+4HNTK	CBSJF	accepted	species	Phytophthora mengei	G.T. Browne, Gallegly & C.X. Hong
+4HNVQ	CBSJF	accepted	species	Phytophthora uliginosa	T. Jung & E.M. Hansen
+4HNRC	CBSJF	accepted	species	Phytophthora cooljarloo	T.I. Burgess
+68D75	C93JZ	accepted	species	Basidiophora delawarensis	E.C. Wallace, C. Salgado, N.F. Greg. & J.A. Crouch
+5WD6Y	C93JZ	accepted	species	Basidiophora montana	R.W. Barreto
+68D6Y	C93JZ	accepted	species	Basidiophora simplex	(Peck) Sökücü & Thines
+5WD6Z	C93JZ	accepted	species	Basidiophora entospora	Roze & Cornu
+N8YT	BW9XT	accepted	species	Bremia itoana	Y.J. Choi & H.D. Shin
+N8Y8	BW9XT	accepted	species	Bremia argentinensis	Speg.
+N8Z6	BW9XT	accepted	species	Bremia moehringiae	T.R. Liu & C.K. Pai
+N8ZP	BW9XT	accepted	species	Bremia tulasnei	(H. Hoffm.) Syd.
+N8Y9	BW9XT	accepted	species	Bremia betae	H.C. Bai & X.Y. Cheng
+N8ZQ	BW9XT	accepted	species	Bremia xanthii	Ubrizsy & Vörös
+N8YW	BW9XT	accepted	species	Bremia lapsanae	Syd.
+5WRH5	BW9XT	accepted	species	Bremia lactucae	Regel
+N8YH	BW9XT	accepted	species	Bremia cirsii	(Jacz. ex Uljan.) J.F. Tao & Y.N. Yu
+5X3H5	BW9XT	accepted	species	Bremia sawadae	Ji H. Park, Thines, H.B. Lee, H.D. Shin & Y.J. Choi
+N8Z4	BW9XT	accepted	species	Bremia microspora	Sawada
+N8ZJ	BW9XT	accepted	species	Bremia stellata	(Desm.) Kochman & T. Majewski
+5WRGT	BW9XT	accepted	species	Bremia cicerbitae	C.J. Li & Z.Q. Yuan
+N8ZD	BW9XT	accepted	species	Bremia polycephala	Ji H. Park, Thines, H.B. Lee, H.D. Shin & Y.J. Choi
+N8YP	BW9XT	accepted	species	Bremia geminata	(Unger) Kochman & T. Majewski
+N8ZG	BW9XT	accepted	species	Bremia sonchi	Sawada
+N8YV	BW9XT	accepted	species	Bremia lagoseridis	Y.N. Yu & J.F. Tao
+5X3GT	BW9XT	accepted	species	Bremia picridis	S. Ito & Tokun.
+N8ZB	BW9XT	accepted	species	Bremia picridis-hieracioidis	Savinceva
+N8YY	BW9XT	accepted	species	Bremia leibnitziae	J.F. Tao & Y. Qin
+482B8	65QP	accepted	species	Novotelnova scorzonerae	Voglmayr & Constant.
+4F78R	6LP6	accepted	species	Perofascia macaicola	Y.J. Choi, Thines, I.Y. Choi & H.D. Shin
+4F78Q	6LP6	accepted	species	Perofascia lepidii	(McAlpine) Constant.
+38RCV	C9P39	accepted	species	Ectrogella cyclotellae	(Scherff.) M.W. Dick
+38RCS	C9P39	accepted	species	Ectrogella bacillariacearum	Zopf
+38RD2	C9P39	accepted	species	Ectrogella lauderiae	(Gran) Scherff.
+38RD5	C9P39	accepted	species	Ectrogella monostoma	Scherff.
+6DY4M	C9P39	accepted	species	Ectrogella brachystoma	(Scherff.) M.W. Dick
+38RD6	C9P39	accepted	species	Ectrogella perforans	H.E. Petersen
+38RCY	C9P39	accepted	species	Ectrogella eurychasmoides	Feldmann & Feldm.-Maz.
+3RWHX	CB4M5	accepted	species	Lagenidium pyriforme	S.N. Dasgupta & R. John
+3RWGS	CB4M5	accepted	species	Lagenidium astrum	S.N. Dasgupta & R. John
+3RWH3	CB4M5	accepted	species	Lagenidium contortum	S.N. Dasgupta & R. John
+3RWJ5	CB4M5	accepted	species	Lagenidium tortum	S.N. Dasgupta & R. John
+3RWHC	CB4M5	accepted	species	Lagenidium entosphaericum	S.N. Dasgupta & R. John
+3RWH5	CB4M5	accepted	species	Lagenidium cylindriforme	S.N. Dasgupta & R. John
+3RWH2	CB4M5	accepted	species	Lagenidium coenocyticum	S.N. Dasgupta & R. John
+3RWHN	CB4M5	accepted	species	Lagenidium obovatum	S.N. Dasgupta & R. John
+3RWHD	CB4M5	accepted	species	Lagenidium giganteum	Couch ex Redhead
+3RWGY	CB4M5	accepted	species	Lagenidium clavatum	S.N. Dasgupta & R. John
+3RWH6	CB4M5	accepted	species	Lagenidium deciduum	Chi Y. Chen, Grooters, C.F.J. Spies, de Cock & Lévesque
+3RWGR	CB4M5	accepted	species	Lagenidium americanum	G.F. Atk.
+39CF4	62S5S	accepted	species	Elongisporangium anandrum	(Drechsler) Uzuhasi, Tojo & Kakish.
+39CF8	62S5S	accepted	species	Elongisporangium undulatum	(H.E. Petersen) Uzuhasi, Tojo & Kakish.
+39CF7	62S5S	accepted	species	Elongisporangium prolatum	(W.A. Campb. & F.F. Hendrix) Uzuhasi, Tojo & Kakish.
+39CF5	62S5S	accepted	species	Elongisporangium dimorphum	(F.F. Hendrix & W.A. Campb.) Uzuhasi, Tojo & Kakish.
+39CF6	62S5S	accepted	species	Elongisporangium helicandrum	(Drechsler) Uzuhasi, Tojo & Kakish.
+6KHM5	4NZD	accepted	species	Globisporangium pleroticum	(Takesi Itô) Uzuhashi, Tojo & Kakish.
+6KHLC	4NZD	accepted	species	Globisporangium rostratum	(E.J. Butler) Uzuhashi, Tojo & Kakish.
+6KHL3	4NZD	accepted	species	Globisporangium cylindrosporum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHLR	4NZD	accepted	species	Globisporangium oryzicola	Uzuhashi & Tojo
+6KHKV	4NZD	accepted	species	Globisporangium attrantheridium	(Allain-Boulé & Lévesque) Uzuhashi, Tojo & Kakish.
+6KHKC	4NZD	accepted	species	Globisporangium longisporangium	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHM2	4NZD	accepted	species	Globisporangium orthogonon	(Ahrens) Uzuhashi, Tojo & Kakish.
+6KHLH	4NZD	accepted	species	Globisporangium rhizosaccharum	(K.K. Singh, R. Mathew, Masih & B. Paul) Uzuhashi, Tojo & Kakish.
+6KHLD	4NZD	accepted	species	Globisporangium salinum	(Höhnk) Uzuhashi, Tojo & Kakish.
+6KHKP	4NZD	accepted	species	Globisporangium camurandrum	(Bala, de Cock & Lévesque) Uzuhashi
+6KHLB	4NZD	accepted	species	Globisporangium rostratifingens	(De Cock & Lévesque) Uzuhashi, Tojo & Kakish.
+6KHK8	4NZD	accepted	species	Globisporangium macrosporum	(Vaartaja & Plaäts-Nit.) Uzuhashi, Tojo & Kakish.
+6KHLX	4NZD	accepted	species	Globisporangium nunn	(Lifsh., Stangh. & R.E.D. Baker) Uzuhashi, Tojo & Kakish.
+6KHMV	4NZD	accepted	species	Globisporangium splendens	(Hans Braun) Uzuhashi, Tojo & Kakish.
+6KHKT	4NZD	accepted	species	Globisporangium acanthophoron	(Sideris) Uzuhashi, Tojo & Kakish.
+6KHLG	4NZD	accepted	species	Globisporangium regulare	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHLM	4NZD	accepted	species	Globisporangium polymastum	(Drechsler) Uzuhashi, Tojo & Kakish.
+6KHN9	4NZD	accepted	species	Globisporangium ultimum	(Trow) Uzuhashi, Tojo & Kakish.
+6KHKY	4NZD	accepted	species	Globisporangium spiculum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHL6	4NZD	accepted	species	Globisporangium apiculatum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHN8	4NZD	accepted	species	Globisporangium terrestre	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHM3	4NZD	accepted	species	Globisporangium paddicum	(Hirane) Uzuhashi, Tojo & Kakish.
+6KHKD	4NZD	accepted	species	Globisporangium irregulare	(Buisman) Uzuhashi, Tojo & Kakish.
+6KHM8	4NZD	accepted	species	Globisporangium nodosum	(B. Paul, D. Galland, T. Bhatn. & Dulieu) Uzuhashi, Tojo & Kakish.
+6KHLW	4NZD	accepted	species	Globisporangium nagaii	(S. Ito & Tokun.) Uzuhashi, Tojo & Kakish.
+6KHLV	4NZD	accepted	species	Globisporangium minor	(Ali-Shtayeh) Uzuhashi, Tojo & Kakish.
+6KHMW	4NZD	accepted	species	Globisporangium takayamanum	(Senda & Kageyama) Uzuhashi
+6KHM7	4NZD	accepted	species	Globisporangium multisporum	(Poitras) Uzuhashi, Tojo & Kakish.
+6KHJW	4NZD	accepted	species	Globisporangium lucens	(Ali-Shtayeh) Uzuhashi, Tojo & Kakish.
+6KHLF	4NZD	accepted	species	Globisporangium recalcitrans	(Belbahri & E. Moralejo) Uzuhashi, Tojo & Kakish.
+6KHMR	4NZD	accepted	species	Globisporangium violae	(Chesters & Hickman) Uzuhashi, Tojo & Kakish.
+6KHLL	4NZD	accepted	species	Globisporangium ramificatum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHM9	4NZD	accepted	species	Globisporangium okanoganense	(P.E. Lipps) Uzuhashi, Tojo & Kakish.
+6KHKL	4NZD	accepted	species	Globisporangium echinulatum	(V.D. Matthews) Uzuhashi, Tojo & Kakish.
+6KHKH	4NZD	accepted	species	Globisporangium heterothallicum	(W.A. Campb. & F.F. Hendrix) Uzuhashi, Tojo & Kakish.
+6KHL9	4NZD	accepted	species	Globisporangium solare	(De Cock, Melero-Vara, Y. Serrano & Julio Gómez) Uzuhashi, Tojo & Kakish.
+6KHLS	4NZD	accepted	species	Globisporangium paroecandrum	(Drechsler) Uzuhashi, Tojo & Kakish.
+6KHMY	4NZD	accepted	species	Globisporangium uncinulatum	(Plaäts-Nit. & I. Blok) Uzuhashi, Tojo & Kakish.
+6KHKX	4NZD	accepted	species	Globisporangium segnitium	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHL5	4NZD	accepted	species	Globisporangium acrogynum	(Y.N. Yu) Uzuhashi, Tojo & Kakish.
+6KHLK	4NZD	accepted	species	Globisporangium radiosum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHL2	4NZD	accepted	species	Globisporangium carolinianum	(V.D. Matthews) Uzuhashi, Tojo & Kakish.
+6KHLJ	4NZD	accepted	species	Globisporangium pulchrum	(Minden) Uzuhashi, Tojo & Kakish.
+6KHL8	4NZD	accepted	species	Globisporangium campanulatum	(R. Mathew, K.K. Singh & B. Paul) Uzuhashi, Tojo & Kakish.
+6KHL4	4NZD	accepted	species	Globisporangium debaryanum	(R. Hesse) Uzuhashi, Tojo & Kakish.
+6KHKW	4NZD	accepted	species	Globisporangium buismaniae	(Plaäts-Nit.) Uzuhashi, Tojo & Kakish.
+6KHK9	4NZD	accepted	species	Globisporangium marsipium	(Drechsler) Uzuhashi, Tojo & Kakish.
+6KHKS	4NZD	accepted	species	Globisporangium cystogenes	(De Cock & Lévesque) Uzuhashi, Tojo & Kakish.
+6KHKM	4NZD	accepted	species	Globisporangium erinaceum	(J.A. Robertson) Uzuhashi, Tojo & Kakish.
+6KHMX	4NZD	accepted	species	Globisporangium toruloides	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHJZ	4NZD	accepted	species	Globisporangium megalacanthum	(de Bary) Uzuhashi, Tojo & Kakish.
+6KHN7	4NZD	accepted	species	Globisporangium sylvaticum	(W.A. Campb. & F.F. Hendrix) Uzuhashi, Tojo & Kakish.
+6KHKZ	4NZD	accepted	species	Globisporangium spinosum	(Sawada) Uzuhashi, Tojo & Kakish.
+6KHKG	4NZD	accepted	species	Globisporangium kunmingense	(Y.N. Yu) Uzuhashi, Tojo & Kakish.
+6KHJX	4NZD	accepted	species	Globisporangium mamillatum	(Meurs) Uzuhashi, Tojo & Kakish.
+6KHKN	4NZD	accepted	species	Globisporangium glomeratum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHKB	4NZD	accepted	species	Globisporangium lacustre	Uzuhashi & Tojo
+6KHM4	4NZD	accepted	species	Globisporangium parvum	(Ali-Shtayeh) Uzuhashi, Tojo & Kakish.
+6KHKF	4NZD	accepted	species	Globisporangium iwayamae	(S. Ito) Uzuhashi, Tojo & Kakish.
+6KHJY	4NZD	accepted	species	Globisporangium mastophorum	(Drechsler) Uzuhashi, Tojo & Kakish.
+6KHKJ	4NZD	accepted	species	Globisporangium hypogynum	(Middleton) Uzuhashi, Tojo & Kakish.
+6KHL7	4NZD	accepted	species	Globisporangium bifurcatum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHLQ	4NZD	accepted	species	Globisporangium ornacarpum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHKK	4NZD	accepted	species	Globisporangium intermedium	(de Bary) Uzuhashi, Tojo & Kakish.
+6KHJ9	4NZD	accepted	species	Globisporangium abappressorium	(Paulitz & M. Mazzola) Uzuhashi, Tojo & Kakish.
+6KHKQ	4NZD	accepted	species	Globisporangium canariense	(B. Paul) Uzuhashi, Tojo & Kakish.
+6KHKR	4NZD	accepted	species	Globisporangium cryptoirregulare	(Garzón, Yánez & G.W. Moorman) Uzuhashi, Tojo & Kakish.
+6KHLT	4NZD	accepted	species	Globisporangium perplexum	(H. Kouyeas & Theoh.) Uzuhashi, Tojo & Kakish.
+6KHLN	4NZD	accepted	species	Globisporangium proliferatum	(B. Paul) Uzuhashi, Tojo & Kakish.
+6CQVQ	44CH	accepted	species	Diasporangium jonesianum	Höhnk
+4HSGZ	6QDZ	accepted	species	Pilasporangium apinafurcum	(Uzuhashi & Tojo) Uzuhashi, Tojo & Kakish.
+4HNWN	6Q4Y	accepted	species	Phytopythium chamaehyphon	(Sideris) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWL	6Q4Y	accepted	species	Phytopythium boreale	(R.L. Duan) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWK	6Q4Y	accepted	species	Phytopythium aichiense	Baten & Kageyama
+4HNX8	6Q4Y	accepted	species	Phytopythium vexans	(de Bary) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWW	6Q4Y	accepted	species	Phytopythium leanoi	R. Bennett & Thines
+4HNX7	6Q4Y	accepted	species	Phytopythium sindhum	A.M. Lodhi, Shahzad & Lévesque
+4HNWQ	6Q4Y	accepted	species	Phytopythium dogmae	R. Bennett & Thines
+4HNX4	6Q4Y	accepted	species	Phytopythium ostracodes	(Drechsler) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+77JF6	6Q4Y	accepted	species	Phytopythium iriomotense	Baten & Kageyama
+4HNWS	6Q4Y	accepted	species	Phytopythium helicoides	(Drechsler) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNX5	6Q4Y	accepted	species	Phytopythium palingenes	(Drechsler) Abad, de Cock, Bala, Robideau, Lohdi & Lévesque
+4HNWV	6Q4Y	accepted	species	Phytopythium kandeliae	(H.H. Ho, H.S. Chang & S.Y. Hsieh) Thines
+4HNWM	6Q4Y	accepted	species	Phytopythium carbonicum	(B. Paul) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWP	6Q4Y	accepted	species	Phytopythium citrinum	(B. Paul) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNX2	6Q4Y	accepted	species	Phytopythium montanum	(Nechw.) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWT	6Q4Y	accepted	species	Phytopythium indigoferae	(E.J. Butler) P.M. Kirk
+4HNWX	6Q4Y	accepted	species	Phytopythium litorale	(Nechw.) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNX6	6Q4Y	accepted	species	Phytopythium polytylum	(Drechsler) Abad, de Cock, Bala, Robideau, Lohdi & Lévesque
+4HNWZ	6Q4Y	accepted	species	Phytopythium mirpurense	A.M. Lodhi, De Cock, Lévesque & Shahzad
+4HNX3	6Q4Y	accepted	species	Phytopythium oedochilum	(Drechsler) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+4HNWY	6Q4Y	accepted	species	Phytopythium mercuriale	(Belbahri, B. Paul & Lefort) Abad, de Cock, Bala, Robideau, A.M. Lodhi & Lévesque
+FZHG	62D2M	accepted	species	Aquaperonospora taiwanensis	W.H. Ko
+79B65	643MB	accepted	species	Salilagenidium chthamalophilum	(T.W. Johnson) M.W. Dick ex Redhead & P.M. Kirk
+79B5T	643MB	accepted	species	Salilagenidium callinectes	(Couch ex Redhead) M.W. Dick ex Redhead & P.M. Kirk
+6XB5S	643MB	accepted	species	Salilagenidium thermophilum	(K. Nakam., Miho Nakam., Hatai & Zafran) M.W. Dick ex Redhead & P.M. Kirk
+4CXT7	6F56	accepted	species	Paralagenidium karlingii	Grooters, C.F.J. Spies, de Cock & Lévesque
+4QXZT	768P	accepted	species	Pythium polysporum	Sorokīn
+4QXWT	768P	accepted	species	Pythium folliculosum	B. Paul
+6WQ64	768P	accepted	species	Pythium angustatum	Sparrow
+4QXWJ	768P	accepted	species	Pythium epigynum	Höhnk
+78Q5X	768P	accepted	species	Pythium ornamentatum	B. Paul
+4QXV2	768P	accepted	species	Pythium breve	Y.Y. Long, J.G. Wei & L.D. Guo
+4QXWY	768P	accepted	species	Pythium grandisporangium	Fell & Master
+4QXW8	768P	accepted	species	Pythium dissimile	Vaartaja
+6X269	768P	accepted	species	Pythium minus	Ali-Shtayeh
+4QXYG	768P	accepted	species	Pythium myophilum	(Hatai & Lawhav.) C.F.J. Spies, A.W.A.M. de Cock & C.A. Lévesque
+4QY3L	768P	accepted	species	Pythium vitis	Serbinow
+4QXXF	768P	accepted	species	Pythium inflatum	V.D. Matthews
+4QXW3	768P	accepted	species	Pythium diameson	Sideris
+4QXWX	768P	accepted	species	Pythium graminicola	Subraman.
+6X268	768P	accepted	species	Pythium urmianum	Abrinbana, Badali & Abdollahz.
+4QY32	768P	accepted	species	Pythium tenue	Gobi
+6X264	768P	accepted	species	Pythium apleroticum	Tokun.
+4QXZP	768P	accepted	species	Pythium polycladon	Sideris
+78Q64	768P	accepted	species	Pythium aristosporum	Vanterp.
+4QXVH	768P	accepted	species	Pythium chondricola	De Cock
+78Q5T	768P	accepted	species	Pythium akanense	Tokun.
+4QY3J	768P	accepted	species	Pythium viniferum	B. Paul
+4QY35	768P	accepted	species	Pythium thalassium	D. Atkins
+4QXZ8	768P	accepted	species	Pythium pectinolyticum	B. Paul
+4QXYK	768P	accepted	species	Pythium nanningense	C.Y. Lai & G.Q. Yuan
+7925T	768P	accepted	species	Pythium amasculinum	Y.N. Yu
+4QXVK	768P	accepted	species	Pythium coimbatorense	G.S. Hall & J.K. Misra
+4QY3N	768P	accepted	species	Pythium wohlseniorum	J.E. Blair
+4QY3M	768P	accepted	species	Pythium volutum	Vanterp. & Truscott
+4QXWP	768P	accepted	species	Pythium falciforme	G.Q. Yuan & C.Y. Lai
+6WPTX	768P	accepted	species	Pythium hydnosporum	(Mont.) J. Schröt.
+4QY2J	768P	accepted	species	Pythium scleroteichum	Drechsler
+4QY3F	768P	accepted	species	Pythium utonaiense	Uzuhashi & G. Okada
+78PTS	768P	accepted	species	Pythium aquatile	Höhnk
+6WQ69	768P	accepted	species	Pythium lutarium	Ali-Shtayeh
+78PTV	768P	accepted	species	Pythium biforme	Uzuhashi & G. Okada
+4QXZ9	768P	accepted	species	Pythium perigynosum	Sparrow
+4QXW5	768P	accepted	species	Pythium dictyospermum	Racib.
+4QXX9	768P	accepted	species	Pythium horinouchiense	Hirane
+4QXYB	768P	accepted	species	Pythium monospermum	Pringsh.
+4QXWM	768P	accepted	species	Pythium euthyhyphon	Sideris
+4QY3G	768P	accepted	species	Pythium vanterpoolii	V. Kouyeas & H. Kouyeas
+4QXV4	768P	accepted	species	Pythium butleri	Subraman.
+4QXXN	768P	accepted	species	Pythium kashmirense	B. Paul
+4QXWL	768P	accepted	species	Pythium ershadii	Badali, Abrinbana & Abdollahz.
+4QXW2	768P	accepted	species	Pythium diacarpum	E.J. Butler
+4QXZK	768P	accepted	species	Pythium plurisporium	Abad, Shew, Grand & L.T. Lucas
+4QY2T	768P	accepted	species	Pythium stipitatum	G. Karaca & B. Paul
+4QXXM	768P	accepted	species	Pythium junctum	Uzuhashi & G. Okada
+4QXZC	768P	accepted	species	Pythium perniciosum	Serbinow
+4QY3S	768P	accepted	species	Pythium zingiberis	M. Takah.
+6X25V	768P	accepted	species	Pythium ascophallon	Sideris
+6X25X	768P	accepted	species	Pythium fragariae	M. Takah. & Kawase
+4QY2V	768P	accepted	species	Pythium sukuiense	W.H. Ko, Shin Y. Wang & Ann
+6X25W	768P	accepted	species	Pythium rhizo-oryzae	B. Paul
+4QXV9	768P	accepted	species	Pythium capillosum	B. Paul
+4QY33	768P	accepted	species	Pythium teratosporon	Sideris
+4QY2M	768P	accepted	species	Pythium senticosum	Senda & Kageyama
+4QXYR	768P	accepted	species	Pythium oligandrum	Drechsler
+7925V	768P	accepted	species	Pythium brachiatum	Uzuhashi & G. Okada
+4QXWN	768P	accepted	species	Pythium fabae	G.M. Cheney
+4QXWD	768P	accepted	species	Pythium echinogynum	Balgh., R. Jonathan, Gognies, Mliki & Belarbi
+4QXVL	768P	accepted	species	Pythium coloratum	Vaartaja
+4QXVN	768P	accepted	species	Pythium conidiophorum	Jokl
+78Q5S	768P	accepted	species	Pythium araiosporon	Sideris
+6X25T	768P	accepted	species	Pythium acanthicum	Drechsler
+4QXZS	768P	accepted	species	Pythium polypapillatum	Takesi Itô
+6WPTW	768P	accepted	species	Pythium sadebeckianum	Wittm.
+4QXWC	768P	accepted	species	Pythium echinocarpum	S. Ito & Tokun.
+4QXY2	768P	accepted	species	Pythium maritimum	Höhnk
+4QXVD	768P	accepted	species	Pythium caudatum	(G.L. Barron) M.W. Dick
+4QXWR	768P	accepted	species	Pythium flevoense	Plaäts-Nit.
+4QXZL	768P	accepted	species	Pythium podbielkowskii	(A. Batko) M.W. Dick
+6WQ5W	768P	accepted	species	Pythium subtile	Wahrlich
+4QY2Z	768P	accepted	species	Pythium tardicrescens	Vanterp.
+6X265	768P	accepted	species	Pythium afertile	Kanouse & T. Humphrey
+4QXVR	768P	accepted	species	Pythium cryptogynum	B. Paul
+4QY2N	768P	accepted	species	Pythium sinense	Y.N. Yu
+4QXZB	768P	accepted	species	Pythium periplocum	Drechsler
+4QXWF	768P	accepted	species	Pythium elongatum	V.D. Matthews
+4QXXR	768P	accepted	species	Pythium lobatum	S. Rajagop. & K. Ramakr.
+4QXXL	768P	accepted	species	Pythium jirovecii	Cejp
+4QXVZ	768P	accepted	species	Pythium destruens	Shipton
+4QXZR	768P	accepted	species	Pythium polymorphon	Sideris
+4QXXZ	768P	accepted	species	Pythium marinum	Sparrow
+78Q69	768P	accepted	species	Pythium periilum	Drechsler
+6WQ67	768P	accepted	species	Pythium barbulae	Ueta & Tojo
+4QXZV	768P	accepted	species	Pythium porphyrae	M. Takah. & M. Sasaki
+6WQ66	768P	accepted	species	Pythium cederbergense	Bahram., Botha & Lampr.
+4QY3Q	768P	accepted	species	Pythium yorkense	J.E. Blair
+6WQ5V	768P	accepted	species	Pythium baisense	Y.Y. Long, J.G. Wei & L.D. Guo
+4QXYS	768P	accepted	species	Pythium oopapillum	Bala & Lévesque
+4QY37	768P	accepted	species	Pythium torulosum	Coker & P. Patt.
+4QXW9	768P	accepted	species	Pythium dissotocum	Drechsler
+4QXX6	768P	accepted	species	Pythium helicum	Takesi Itô
+4QY2H	768P	accepted	species	Pythium schmitthenneri	M.L. Ellis, Broders & Dorrance
+4QXXY	768P	accepted	species	Pythium marchantiae	Nicolas
+4QXVY	768P	accepted	species	Pythium deliense	Meurs
+4QXVQ	768P	accepted	species	Pythium contiguanum	B. Paul
+4QY3R	768P	accepted	species	Pythium zeae	K.B. Deshp. & K.S. Deshp.
+4QXWZ	768P	accepted	species	Pythium guangxiense	Y.Y. Long & J.G. Wei
+4QY24	768P	accepted	species	Pythium pyrioosporum	Abdollahz., Badali & Abrinbana
+4QXWG	768P	accepted	species	Pythium emineosum	Bala, de Cock & Lévesque
+4QY2W	768P	accepted	species	Pythium sulcatum	R.G. Pratt & J.E. Mitch.
+4QXZH	768P	accepted	species	Pythium plerosporon	Sideris
+4QXYL	768P	accepted	species	Pythium nelumbii	M. Takah. & Ouchi
+4QXVW	768P	accepted	species	Pythium daphnidarum	H.E. Petersen
+4QXX2	768P	accepted	species	Pythium guiyangense	X.Q. Su
+7925S	768P	accepted	species	Pythium arrhenomanes	Drechsler
+4QY23	768P	accepted	species	Pythium pyrilobum	Vaartaja
+4QXZF	768P	accepted	species	Pythium phragmitis	Nechw.
+4QXZ5	768P	accepted	species	Pythium parasiticum	S. Rajagop. & K. Ramakr.
+78Q66	768P	accepted	species	Pythium drechsleri	S. Rajagop. & K. Ramakr.
+4QXX3	768P	accepted	species	Pythium haplomitri	Lil. Toal
+4QY39	768P	accepted	species	Pythium tuberculorum	(Vuill.) Lecht.-Trinka
+4QXW4	768P	accepted	species	Pythium diclinum	Tokun.
+78PTT	768P	accepted	species	Pythium agreste	Y.Y. Long, J.G. Wei & L.D. Guo
+78PTX	768P	accepted	species	Pythium muscae	P.A. Dang.
+4QXWQ	768P	accepted	species	Pythium flavoense	Plaäts-Nit.
+4QXXV	768P	accepted	species	Pythium lycopersici	G. Karaca, Teped. & B. Paul
+7925X	768P	accepted	species	Pythium phragmiticola	Nechw. & Lebecka
+6WQ68	768P	accepted	species	Pythium uladhum	D. Park
+4QXZ4	768P	accepted	species	Pythium papillatum	V.D. Matthews
+4QXYY	768P	accepted	species	Pythium pachycaule	Ali-Shtayeh
+4QXWS	768P	accepted	species	Pythium fluminum	D. Park
+4QXYF	768P	accepted	species	Pythium mycoparasiticum	Deacon, S.A.K. Laing & L.A. Berry
+4QY2G	768P	accepted	species	Pythium salpingophorum	Drechsler
+4QY3P	768P	accepted	species	Pythium wuhanense	Y.Y. Long, J.G. Wei & L.D. Guo
+6WQ65	768P	accepted	species	Pythium adhaerens	Sparrow
+4QXXB	768P	accepted	species	Pythium hypoandrum	Y.N. Yu & Y.L. Wang
+4QXYH	768P	accepted	species	Pythium myriotylum	Drechsler
+4QXYW	768P	accepted	species	Pythium oryzae	S. Ito & Tokun.
+6WPTS	768P	accepted	species	Pythium aphanidermatum	(Edson) Fitzp.
+6X267	768P	accepted	species	Pythium betae	M. Takah.
+4QXZM	768P	accepted	species	Pythium polare	Tojo, van West & Hoshino
+4QY38	768P	accepted	species	Pythium tracheiphilum	Matta
+4QXX7	768P	accepted	species	Pythium hemmianum	M. Takah.
+4QXVV	768P	accepted	species	Pythium dactyliferum	Drechsler
+4QY2L	768P	accepted	species	Pythium selbyi	M.L. Ellis, Broders & Dorrance
+4QXVP	768P	accepted	species	Pythium connatum	Y.N. Yu
+4QXXG	768P	accepted	species	Pythium insidiosum	De Cock, L. Mend., A.A. Padhye, Ajello & Kaufman
+4QXV5	768P	accepted	species	Pythium cactacearum	Preti
+4QXVF	768P	accepted	species	Pythium cedri	Jia J. Chen & X.B. Zheng
+6C9VD	3Z4V	accepted	species	Cystosiphon canterae	(Karling) M.W. Dick
+33Q5C	3Z4V	accepted	species	Cystosiphon dictyosporus	(Racib.) M.W. Dick
+33Q5B	3Z4V	accepted	species	Cystosiphon closterii	(De Wild.) M.W. Dick
+33Q5D	3Z4V	accepted	species	Cystosiphon pythioides	Roze & Cornu
+6BXVF	3Z4V	accepted	species	Cystosiphon reductus	(De Wild.) M.W. Dick
+57TSV	7YF5	accepted	species	Trachysphaera fructigena	Tabor & Bunting
+6S56C	CBFNS	accepted	species	Myzocytium rabenhorstii	(Zopf) M.W. Dick
+45HTZ	CBFNS	accepted	species	Myzocytium lethale	(Sorokīn) Cejp
+6RT6C	CBFNS	accepted	species	Myzocytium proliferum	(Schenk) J. Schröt.
+73T6C	CBFNS	accepted	species	Myzocytium rotiferum	S.N. Dasgupta & R. John
+73T6D	CBFNS	accepted	species	Myzocytium netrii	(C.E. Mill.) M.W. Dick
+6RT6D	CBFNS	accepted	species	Myzocytium megastomum	De Wild.
+6XCMS	7BVW	accepted	species	Salisapilia tartarea	(Nakagiri & S.Y. Newell) Hulvey, Nigrelli, Telle, Lamour & Thines
+79CN2	7BVW	accepted	species	Salisapilia mycoparasitica	(Fell & Master) R. Benn. & Thines
+79CMQ	7BVW	accepted	species	Salisapilia masteri	(Nakagiri & S.Y. Newell) R. Benn. & Thines
+6XCN2	7BVW	accepted	species	Salisapilia epistomium	(Fell & Master) R. Benn. & Thines
+79CMP	7BVW	accepted	species	Salisapilia sapeloensis	Hulvey, Nigrelli, Telle, Lamour & Thines
+6XCMP	7BVW	accepted	species	Salisapilia nakagirii	Hulvey, Nigrelli, Telle, Lamour & Thines
+6XCMN	7BVW	accepted	species	Salisapilia bahamensis	(Fell & Master) R. Benn. & Thines
+79CMN	7BVW	accepted	species	Salisapilia coffeyi	R. Benn. & Thines
+6XCMQ	7BVW	accepted	species	Salisapilia elongata	(H.H. Ho & H.S. Chang) R. Benn. & Thines
+4FD9N	CBV54	accepted	species	Petersenia panicicola	Thirum. & Lacy
+4FD9Q	CBV54	accepted	species	Petersenia pollagaster	(H.E. Petersen) Sparrow
+4FD9M	CBV54	accepted	species	Petersenia palmariae	Van der Meer & Pueschel
+4FD9L	CBV54	accepted	species	Petersenia lobata	(H.E. Petersen) Sparrow
+6VVS9	CBRRH	accepted	species	Pontisma antithamnionis	(Whittick & South) M.W. Dick
+77W49	CBRRH	accepted	species	Pontisma porphyrae	(Sekimoto, Yokoo, Y. Kawam. & D. Honda) Buaya & Thines
+6W83X	CBRRH	accepted	species	Pontisma inhabile	(H.E. Petersen) M.W. Dick
+77VRX	CBRRH	accepted	species	Pontisma magnusii	(Feldmann & Feldm.-Maz.) M.W. Dick
+77W3X	CBRRH	accepted	species	Pontisma palmariae	(Y. Badis & C.M.M. Gachon) Buaya & Thines
+77VS9	CBRRH	accepted	species	Pontisma muelleri	(Y. Badis & C.M.M. Gachon) Buaya & Thines
+787RX	CBRRH	accepted	species	Pontisma pyropiae	(G.H. Kim & T.A. Klochkova) Buaya & Thines
+6W7S9	CBRRH	accepted	species	Pontisma heterosiphoniae	(G.H. Kim & T.A. Klochkova) Buaya & Thines
+6VW3X	CBRRH	accepted	species	Pontisma bostrychiae	(S. Sekimoto, T.A. Klochkova, J.A. West, G.W. Beakes & D. Honda) Buaya & Thines
+6W849	CBRRH	accepted	species	Pontisma lagenidioides	H.E. Petersen
+6W7RX	CBRRH	accepted	species	Pontisma dangeardii	(Feldmann & Feldm.-Maz.) M.W. Dick
+466ZL	5YGH	accepted	species	Nematophthora gynophila	Kerry & D.H. Crump
+FBBG	62CVS	accepted	species	Aphanodictyon papillatum	Huneycutt ex M.W. Dick
+FBH4	62D7W	accepted	species	Aphanomycopsis desmidiella	Canter
+FBH7	62D7W	accepted	species	Aphanomycopsis punctata	Karling
+FBH6	62D7W	accepted	species	Aphanomycopsis peridiniella	Boltovskoy & Aramb.
+FBH8	62D7W	accepted	species	Aphanomycopsis saprophytica	Karling
+FBH2	62D7W	accepted	species	Aphanomycopsis bacillariacearum	Scherff.
+FBH9	62D7W	accepted	species	Aphanomycopsis sexualis	W.W. Martin
+FBH3	62D7W	accepted	species	Aphanomycopsis cryptica	Canter
+FBH5	62D7W	accepted	species	Aphanomycopsis entophyta	(Pringsh.) M.W. Dick
+3TQT4	CB8QL	accepted	species	Leptolegniella abnormis	Karling
+3TQT7	CB8QL	accepted	species	Leptolegniella exoospora	W.D. Kane
+3TQT5	CB8QL	accepted	species	Leptolegniella angularis	Karling
+3TQT9	CB8QL	accepted	species	Leptolegniella piligena	M. Ôkubo & Kobayasi
+3TQT8	CB8QL	accepted	species	Leptolegniella keratinophila	Huneycutt
+3TQT6	CB8QL	accepted	species	Leptolegniella exogena	Karling
+5X3J4	C94NT	accepted	species	Brevilegniella keratinophila	M.W. Dick
+37Z4F	48M4	accepted	species	Ducellieria chodatii	(F. Ducell.) Teiling
+FRD7	C8YPT	accepted	species	Apodachlyella completa	(Humphrey) Indoh
+3D3L7	4GQD	accepted	species	Eurychasmopsis multisecunda	Canter
+4K924	63NWB	accepted	species	Plerogone helodes	M.W. Dick
+3TRLQ	5D6T	accepted	species	Leptomitus ammoniatus	Kütz.
+3TRLW	5D6T	accepted	species	Leptomitus naphae	Kütz.
+3TRLR	5D6T	accepted	species	Leptomitus aureostannicus	Kütz.
+3TRM2	5D6T	accepted	species	Leptomitus tuberosus	Kütz.
+6PFTK	5D6T	accepted	species	Leptomitus lacteus	(Roth) C. Agardh
+3TRM5	5D6T	accepted	species	Leptomitus violaceus	Kütz.
+3TRLT	5D6T	accepted	species	Leptomitus elaeophilus	Kütz.
+3TRLX	5D6T	accepted	species	Leptomitus phosphoratus	Kütz.
+3TRM3	5D6T	accepted	species	Leptomitus urophilus	Mont.
+3TRM4	5D6T	accepted	species	Leptomitus valerianae	Kütz.
+3TRLZ	5D6T	accepted	species	Leptomitus saccharicola	Kütz.
+FRCZ	C8YPS	accepted	species	Apodachlya brachynema	(Hildebr.) Pringsh.
+FRD4	C8YPS	accepted	species	Apodachlya pirifera	Zopf
+FRD3	C8YPS	accepted	species	Apodachlya minima	Coker & J. Leitn.
+66RMQ	C8VPH	accepted	species	Anisolpidium rosenvingei	(H.E. Petersen) Karling
+673MQ	C8VPH	accepted	species	Anisolpidium sphacelarum	(Kny) Karling
+5V3N2	C8VPH	accepted	species	Anisolpidium olpidium	(H.E. Petersen) M.W. Dick
+673ML	C8VPH	accepted	species	Anisolpidium joklianum	M.W. Dick
+5V3ML	C8VPH	accepted	species	Anisolpidium ectocarpi	Karling
+5V3MQ	C8VPH	accepted	species	Anisolpidium minutum	(H.E. Petersen) M.W. Dick
+3RWJM	CB4MC	accepted	species	Lagenisma coscinodisci	Drebes
+35FYQ	62PFP	accepted	species	Diatomophthora gillii	(De Wild.) Buaya & Thines
+35FYP	62PFP	accepted	species	Diatomophthora drebesii	(Buaya & Thines) Buaya & Thines
+77QNL	63NW9	accepted	species	Pleocystidium lundiae	(Karling) M.W. Dick
+6W2NL	63NW9	accepted	species	Pleocystidium besseyi	(Sparrow & Ellison) M.W. Dick
+6VQNK	63NW9	accepted	species	Pleocystidium pygmaeoides	(Karling) M.W. Dick
+782NL	63NW9	accepted	species	Pleocystidium parasiticum	C. Fisch
+499BN	CBGJW	accepted	species	Olpidiopsis spinosa	Tokun.
+499BC	CBGJW	accepted	species	Olpidiopsis parthenogenetica	S. Inaba
+6SKJT	CBGJW	accepted	species	Olpidiopsis index	Cornu
+6SKK4	CBGJW	accepted	species	Olpidiopsis pyropiae	G.H. Kim & T.A. Klochkova
+6SKJ3	CBGJW	accepted	species	Olpidiopsis achlyae	McLarty
+74KK8	CBGJW	accepted	species	Olpidiopsis fusiformis	Cornu
+499BR	CBGJW	accepted	species	Olpidiopsis varians	Shanor
+6SKJY	CBGJW	accepted	species	Olpidiopsis cruciferarum	Dalla Torre
+499BH	CBGJW	accepted	species	Olpidiopsis saprolegniae	(A. Braun) Cornu
+6SKK6	CBGJW	accepted	species	Olpidiopsis heterosiphoniae	G.H. Kim & T.A. Klochkova
+499BM	CBGJW	accepted	species	Olpidiopsis sphaeritae	(P.A. Dang.) Karling
+499BF	CBGJW	accepted	species	Olpidiopsis pythii	(E.J. Butler) Karling
+499B7	CBGJW	accepted	species	Olpidiopsis muelleri	Y. Badis & C.M.M. Gachon
+499B9	CBGJW	accepted	species	Olpidiopsis palmariae	Y. Badis & C.M.M. Gachon
+499BG	CBGJW	accepted	species	Olpidiopsis ricciae	du Plessis
+6SKK5	CBGJW	accepted	species	Olpidiopsis indica	G.C. Srivast.
+6SKK9	CBGJW	accepted	species	Olpidiopsis decipiens	S.N. Dasgupta & R. John
+499BS	CBGJW	accepted	species	Olpidiopsis verrucosa	T.W. Johnson
+6SKJZ	CBGJW	accepted	species	Olpidiopsis brasiliensis	Sparrow
+74KJ2	CBGJW	accepted	species	Olpidiopsis aphanomycis	Cornu
+499BD	CBGJW	accepted	species	Olpidiopsis porphyrae	Sekimoto, Yokoo, Y. Kawam. & D. Honda
+74KK6	CBGJW	accepted	species	Olpidiopsis incrassata	Cornu
+QMHH	C95DJ	accepted	species	Canteriomyces stigeoclonii	(De Wild.) Sparrow
+33PPP	6324K	accepted	species	Cystochytrium radicale	Ivimey Cook
+3NS45	CB4YH	accepted	species	Hyphochytrium infestans	Zopf
+3NS46	CB4YH	accepted	species	Hyphochytrium oceanum	Karling
+3NS44	CB4YH	accepted	species	Hyphochytrium hydrodictyi	Valkanov
+3NS43	CB4YH	accepted	species	Hyphochytrium elongatum	(Karling) M.W. Dick
+3NS42	CB4YH	accepted	species	Hyphochytrium catenoides	Karling
+4RPP9	77H9	accepted	species	Reessia cladophorae	C. Fisch
+6WSJ6	77H9	accepted	species	Reessia lemnae	(C. Fisch) Karling
+4RPP8	77H9	accepted	species	Reessia amoeboidea	C. Fisch
+3SLXJ	CB8DJ	accepted	species	Latrostium comprimens	Zopf
+4SBWC	CBYSJ	accepted	species	Rhizidiomyces hirsutus	Karling
+4SBWB	CBYSJ	accepted	species	Rhizidiomyces hansonii	Karling
+79775	CBYSJ	accepted	species	Rhizidiomyces japonicus	Kobayasi & M. Ôkubo
+4SBWJ	CBYSJ	accepted	species	Rhizidiomyces stomatosus	(Sparrow) M.W. Dick
+4SBW9	CBYSJ	accepted	species	Rhizidiomyces bullatus	(Sparrow) Karling
+4SBW8	CBYSJ	accepted	species	Rhizidiomyces bulbosus	Karling
+4SBWH	CBYSJ	accepted	species	Rhizidiomyces spirogyrae	De Wild.
+4SBWG	CBYSJ	accepted	species	Rhizidiomyces saprophyticus	(Karling) Karling
+7976T	CBYSJ	accepted	species	Rhizidiomyces coronus	Karling
+4SBWD	CBYSJ	accepted	species	Rhizidiomyces ichneumon	Gobi
+4SBW7	CBYSJ	accepted	species	Rhizidiomyces apophysatus	Zopf
+4SBWF	CBYSJ	accepted	species	Rhizidiomyces parasiticus	Karling

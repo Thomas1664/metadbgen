@@ -1,10 +1,16 @@
-from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 import httpx
 import os
 from dotenv import load_dotenv
-import asyncio
 from bs4 import BeautifulSoup
 from pathlib import Path
+
+
+@dataclass
+class ESearchResult:
+    query_key: str
+    web_env: str
+    result_count: int
 
 class HttpClient:
     def __init__(self) -> None:
@@ -14,7 +20,7 @@ class HttpClient:
             'api_key': os.getenv('NCBI_API_KEY'),
             'email': os.getenv('NCBI_API_EMAIL'),
             'tool': os.getenv('NCBI_API_TOOL')
-        })
+        }, timeout=httpx.Timeout(30, read=30))
 
     async def esearch(self, query: str, db='nuccore'):
         response = await self._client.get(f'{self._base_url}esearch.fcgi', params={
@@ -28,35 +34,25 @@ class HttpClient:
         query_key: str = bs.find('QueryKey').string
         web_env: str = bs.find('WebEnv').string
         count: str = bs.find('Count').string
-        return (query_key, web_env, count)
-    
-    async def efetch(self, query_key: str, web_env: str, ret_start: str, out_file: str, db = 'nuccore'):
-        response = await self._client.get(f'{self._base_url}efetch.fcgi', params={
-            'db': db,
-            'query_key': query_key,
-            'WebEnv': web_env,
-            'retmode': 'text',
-            'rettype': 'gb',
-            'retmax': '500',
-            'retstart': ret_start
-        })
-        response.raise_for_status()
+        return ESearchResult(query_key, web_env, int(count))
 
-        path = Path(out_file)
-        out_file = f'{path.parent}/{path.stem}_{ret_start}{path.suffix}'
-        print(out_file)
-        with open(out_file, 'w') as file:
-            print(response.text, file=file)
-    
-    async def fetch_results(self, query_key: str, web_env: str, n_items: str, out_file, db = 'nuccore'):
-        retstart_values = list(range(0, int(n_items), 500))
-        #with ThreadPoolExecutor(max_workers=5) as executor:
-        for start in retstart_values:
-            #executor.map(lambda start: asyncio.run(self.efetch(query_key, web_env, start, out_file, db)), retstart_values)
-            await self.efetch(query_key, web_env, str(start), out_file, db)
+    async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
+        params = params={
+                'db': db,
+                'query_key': esearch_result.query_key,
+                'WebEnv': esearch_result.web_env,
+                'retmode': 'text',
+                'rettype': rettype
+            }
+        async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
+            response.raise_for_status()
+            path = Path(out_file)
+            out_file = f'{path.parent}/{path.stem}{path.suffix}'
+            with open(out_file, "wb") as f:
+                async for chunk in response.aiter_bytes():
+                    f.write(chunk)    
 
 async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()
     response = await client.esearch(query_str)
-
-    await client.fetch_results(*response, file_prefix)
+    await client.efetch_all(response, file_prefix)

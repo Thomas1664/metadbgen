@@ -1,16 +1,8 @@
 import pandas as pd
 from Bio import SeqIO
-from Bio.Seq import Seq
 
 def remove_if_contains_substr(df: pd.DataFrame, col: str, substr: str):
     return df[~df[col].str.contains(substr, case=False, regex=False)]
-
-def filter_short_cox2(df: pd.DataFrame):
-    def filter_fn(row: pd.Series):
-        start = int(str(row['cox2_start']).lstrip('<'))
-        end = int(str(row['cox2_end']).lstrip('>'))
-        return end - start < 200
-    return df[~df.apply(filter_fn, axis=1)]
 
 def sanitize_org_name(org_name: str) -> str:
     org_name_arr = org_name.split(' ')
@@ -44,10 +36,7 @@ def prefer_refseq(trimmed: pd.DataFrame):
 
 def filter_data(df: pd.DataFrame):
     # remove unverified sequences
-    filtered = df.drop(df[df['title'].str.lower().str.startswith('unverified')].index)
-    # remove sequences with unknown cox2 region
-    # TODO: Possible annotation errors?
-    filtered = filtered.dropna(subset=['cox2_start', 'cox2_end'])
+    filtered = df.drop(df[df['title'].str.lower().str.startswith('unverified')].index).copy()
     # remove sequences with unknown species (i.e. sp.)
     filtered = remove_if_contains_substr(filtered, 'organism_name', 'sp.')
     # remove sequences from uncultured samples
@@ -57,8 +46,11 @@ def filter_data(df: pd.DataFrame):
     # remove nom. inval. species
     filtered = remove_if_contains_substr(filtered, 'title', 'nom. inval.')
     filtered = remove_if_contains_substr(filtered, 'organism_name', 'nom. inval.')
+
+    removed = df.merge(filtered, how='outer', indicator=True).query('_merge == "left_only"').drop(columns='_merge')
+
     # Remove sequences that are too short
-    trimmed = filter_short_cox2(filtered.copy())
+    trimmed = filtered.copy()
     # sanitize organism name
     trimmed['organism_name_sanitized'] = trimmed['organism_name']
     trimmed['organism_name_sanitized'] = trimmed['organism_name_sanitized'].apply(sanitize_org_name)
@@ -67,27 +59,13 @@ def filter_data(df: pd.DataFrame):
     trimmed['tax_id_sanitized'] = trimmed.apply(lambda row: fix_tax_id(row, trimmed), axis=1)
 
     trimmed = prefer_refseq(trimmed)
-    return trimmed
-
-def _trim_seq(cox2_start: str, cox2_end: str, seq: str) -> str:
-    start = int(str(cox2_start).lstrip('<'))
-    end = int(str(cox2_end).lstrip('>'))
-    assert(start < end)
-    return seq[start:end]
-
-def trim(df: pd.DataFrame):
-    df['sequence'] = df.apply(lambda row: _trim_seq(row['cox2_start'], row['cox2_end'], row['sequence']), axis=1)
-    return df
+    return trimmed, removed
 
 def import_trim(in_meta: str, fasta: str, out_meta: str):
     df = pd.read_csv(in_meta, sep='\t')
     trim = import_fasta_no_tax(df, fasta)
     trim['sequence_length_trimmed'] = trim['sequence'].str.len()
     trim.to_csv(out_meta, sep='\t', index=False)
-
-def reverse_complement(df: pd.DataFrame):
-    df['sequence'] = df.apply(lambda row: str(Seq(row['sequence']).reverse_complement()) if row['cox2_strand'] == -1 else row['sequence'], axis=1)
-    return df
 
 def export_fasta_no_tax(df: pd.DataFrame, file: str):
     with open(file, 'w') as out:
@@ -124,18 +102,6 @@ def import_clust_results(path: str):
     clust_res.columns = ['type', 'cluster_id', 'query_length', 'similarity', 'strand', 0, 1, 'align_res', 'query_label', 'centroid_label']
     clust_res = clust_res[['type', 'cluster_id', 'query_length', 'similarity', 'strand', 'align_res', 'query_label']]
     return clust_res[(clust_res['type'] == 'S') | (clust_res['type'] == 'H')]
-
-def merge_taxonomy(meta_in: str, tax: str):
-    meta = pd.read_csv(meta_in, sep='\t')
-    tax_df = pd.read_csv(tax, sep='\t')
-    meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='left')
-    print(meta_and_tax[meta_and_tax['genus'].isna()])
-    #TODO: Fix missing taxonomy entries
-    meta_and_tax = meta_and_tax.dropna(subset=['genus', 'family'])
-    assert not meta_and_tax['genus'].isna().any()
-    if meta_and_tax['genus'].isna().any():
-        raise ValueError()
-    return meta_and_tax
 
 def make_qiime_db(meta_df: pd.DataFrame, fasta_path: str, tax_out_path: str):
     export_fasta_no_tax(meta_df, fasta_path)

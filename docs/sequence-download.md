@@ -4,9 +4,9 @@ File: [src/request.py]()
 
 ## HttpClient
 
-The class **HttpClient** handles all web requests to the [NCBI entrez API](https://www.ncbi.nlm.nih.gov/books/NBK25501/) using the asynchronous HTTP client from the `httpx` package.
+The class **HttpClient** handles all web requests to the [NCBI entrez API](https://www.ncbi.nlm.nih.gov/books/NBK25501/) using the asynchronous HTTP client from [`httpx`](https://www.python-httpx.org/).
 
-All requests to the entrez API require 3 URL parameters: `api_key`, `email`, and `tool`. The values of these parameters are determined by the environment variables `NCBI_API_KEY`, `NCBI_API_EMAIL`, and `NCBI_API_TOOL`, respectively. An API key is required and increases the rate limit of the entrez API from 3 to 10 requests per second. You can obtain an API key using your NCBI account. It is the responsibility of the user to ensure the rate limit is not exceeded. `NCBI_API_EMAIL` should be set to your personal email address since we currently have no function email address for this purpose. `NCBI_API_TOOL` should be set to `cox_auto_downloader`.
+All requests to the entrez API require 3 URL parameters: `api_key`, `email`, and `tool`. The values of these parameters are determined by the environment variables `NCBI_API_KEY`, `NCBI_API_EMAIL`, and `NCBI_API_TOOL`, respectively. An API key is required and increases the rate limit of the entrez API from 3 to 10 requests per second. You can obtain an API key using your NCBI account. It is the responsibility of the user to ensure the rate limit is not exceeded. `NCBI_API_EMAIL` should be set to your personal email address. `NCBI_API_TOOL` should be set to `cox_auto_downloader`.
 
 ### esearch
 
@@ -16,7 +16,7 @@ A successful `esearch` request returns a XML response containing a `QueryKey` an
 
 ### efetch
 
-`efetch` is used to retrieve the results from the history server using `query_key` and `WebEnv` which were returned by a previous `esearch` request. The results are obtained as GenBank records by setting the URL parameters `retmode` to `text` and `rettype` to `gb`. Results are obtained in packs of 500 records using `retmax`, starting from record `retstart`.
+`efetch` is used to retrieve the results from the history server using `query_key` and `WebEnv` which were returned by a previous `esearch` request. The results are obtained as GenBank records by setting the URL parameters `retmode` to `text` and `rettype` to `gb`.
 
 ## Fetching Cox2 sequences
 
