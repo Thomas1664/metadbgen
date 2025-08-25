@@ -37,6 +37,9 @@ def parse_source(features: list):
             return json.dumps(feature.qualifiers)
 
 def parse_record(record: SeqRecord):
+    # some accessions have no sequence
+    if not record.seq.defined:
+        return None
     return ParsedRecord(
         accession = record.id,
         creation_date = record.annotations.get("date", "N/A"),
@@ -53,4 +56,6 @@ def parse_genbank_file(gb_path: str, csv_writer):
     seqs = SeqIO.parse(gb_path, 'genbank')
     for seq in seqs:
         record = parse_record(seq)
+        if record is None:
+            continue
         dataclass_to_csv_row(csv_writer, record)
