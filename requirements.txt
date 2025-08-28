@@ -11,3 +11,4 @@ cutadapt
 matplotlib
 plotly
 seaborn
+logomaker

@@ -10,5 +10,6 @@ dependencies:
   - ipykernel
   - snakemake=7.32.4
   - snakemake-minimal=7.32.4
+  - conda-forge::mafft
   - pip:
       - -r requirements.txt
