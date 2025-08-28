@@ -133,7 +133,10 @@ def fill_taxonomic_blanks(row, backup, ranks):
                         higher_rank = row[ranks[j]]
                         break
                 if higher_rank is not None:
-                    row[rank] = f"{higher_rank} incertae sedis"
+                    if higher_rank != "incertae sedis":
+                        row[rank] = f"{higher_rank} incertae sedis"
+                    else:
+                        row[rank] = "incertae sedis"
                 else:
                     # fallback if nothing above is known
                     row[rank] = "incertae sedis"

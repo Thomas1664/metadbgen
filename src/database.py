@@ -103,11 +103,20 @@ def import_clust_results(path: str):
     clust_res = clust_res[['type', 'cluster_id', 'query_length', 'similarity', 'strand', 'align_res', 'query_label']]
     return clust_res[(clust_res['type'] == 'S') | (clust_res['type'] == 'H')]
 
-def make_qiime_db(meta_df: pd.DataFrame, fasta_path: str, tax_out_path: str):
-    export_fasta_no_tax(meta_df, fasta_path)
-    
+def make_qiime_db(meta_df: pd.DataFrame, tax_out_path: str):
     with open(tax_out_path, "w") as tax_out:
         for _, row in meta_df.iterrows():
             taxonomy = f'd__{row["domain"]};k__{row["kingdom"]};p__{row["phylum"]};c__{row["class"]};o__{row["order"]};f__{row["family"]};g__{row["genus"]};s__{row["organism_name_sanitized"]}'
             taxonomy = taxonomy.replace(" ", "+")
             print(f'{row["accession"]}\t{taxonomy}', file=tax_out)
+
+def export_sintax(msa_path: str, tax_path: str, out_db: str):
+    tax = pd.read_csv(tax_path, sep='\t', header=None)
+    tax[1] = tax[1].str.replace(';', ',')
+    tax[1] = tax[1].str.replace('__', ':') + ';'
+
+    records = SeqIO.parse(msa_path, 'fasta')
+    with open(out_db, 'w') as fasta:
+        for record in records:
+            print(f'>{record.id};tax={tax.loc[tax[0] == record.id][1].values[0]}', file=fasta)
+            print(str(record.seq).upper(), file=fasta)
