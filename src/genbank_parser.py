@@ -16,6 +16,7 @@ class ParsedRecord:
     organism_name: str
     tax_id: int
     metadata: str
+    pubmed: int
 
 
 # from https://techwasti.com/python-tutorial-writing-python-data-class-to-csv
@@ -36,6 +37,13 @@ def parse_source(features: list):
         if feature.type == "source":
             return json.dumps(feature.qualifiers)
 
+def parse_references(record: SeqRecord):
+    pubmed_id = None
+    for ref in record.annotations.get("references", []):
+        if ref.pubmed_id != '':
+            pubmed_id = ref.pubmed_id 
+    return pubmed_id
+
 def parse_record(record: SeqRecord):
     # some accessions have no sequence
     if not record.seq.defined:
@@ -49,7 +57,8 @@ def parse_record(record: SeqRecord):
         title = record.description,
         organism_name = record.annotations.get("organism", "N/A"),
         tax_id = parse_taxid(record.features),
-        metadata=parse_source(record.features)
+        metadata=parse_source(record.features),
+        pubmed=parse_references(record)
     )
 
 def parse_genbank_file(gb_path: str, csv_writer):

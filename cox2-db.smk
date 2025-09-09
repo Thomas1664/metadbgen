@@ -1,7 +1,8 @@
 import glob
 import os
 import asyncio
-from src import request, taxonomy, primer
+from src import metadata, request, taxonomy, primer
+import pandas as pd
 
 
 gb_prefix = config['gb_prefix']
@@ -31,9 +32,11 @@ rule all:
         f"{db_prefix}/{config['db_name']}-meta.csv",
         f"{db_prefix}/{config['db_name']}-qiime.fa",
         f"{db_prefix}/{config['db_name']}-qiime.tsv",
+        f"{db_prefix}/host-tax.csv",
         f"{db_prefix}/{config['db_name']}-sintax.fasta",
         f"{db_prefix}/primer-f.svg",
         f"{db_prefix}/primer-r.svg",
+        f"{db_prefix}/country-heat.html",
 
 
 rule download:
@@ -209,10 +212,11 @@ rule export_db:
     output:
         meta = f"{db_prefix}/{config['db_name']}-meta.csv",
         tax = f"{db_prefix}/{config['db_name']}-qiime.tsv",
-        tax_meta = f"{db_prefix}/taxonomy-filtered.tsv"
+        tax_meta = f"{db_prefix}/taxonomy-filtered.tsv",
+        host_tax = f"{db_prefix}/host-tax.csv",
     shell:
         """
-        python {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax}
+        python {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {output.host_tax}
         """
 
 rule export_sintax:
@@ -240,9 +244,13 @@ rule plot:
         fasta_r = f"{db_prefix}/primer-r.fasta",
         plot_f = f"{db_prefix}/primer-f.svg",
         plot_r = f"{db_prefix}/primer-r.svg",
+        geo_html = f"{db_prefix}/country-heat.html",
+        geo_svg = f"{db_prefix}/country-heat.svg",
     params:
         primer_f_len = len(config['primer_f']['seq']),
         primer_r_len = len(config['primer_r']['seq']),
     run:
         primer.logo_plot(input.info, input.meta, output.fasta_f, params.primer_f_len, output.plot_f, 'forward')
         primer.logo_plot(input.info, input.meta, output.fasta_r, params.primer_r_len, output.plot_r, 'reverse')
+        meta = pd.read_csv(input.meta, sep='\t')
+        metadata.plot_country_heatmap(meta, output.geo_html, output.geo_svg)

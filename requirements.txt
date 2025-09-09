@@ -9,6 +9,10 @@ lxml
 scikit-learn
 cutadapt
 matplotlib
-plotly
+# plotly 6.3 requires kaleido>=1.0.0 which in turn requires chrome
+# https://plotly.com/python/static-image-export/#chrome
+plotly==6.2
+kaleido==0.2.1
 seaborn
 logomaker
+pycountry

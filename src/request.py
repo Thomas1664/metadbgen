@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from pathlib import Path
+import asyncio
 
 
 @dataclass
@@ -11,6 +12,7 @@ class ESearchResult:
     query_key: str
     web_env: str
     result_count: int
+    text_response: str
 
 class HttpClient:
     def __init__(self) -> None:
@@ -30,11 +32,10 @@ class HttpClient:
         })
         response.raise_for_status()
         bs = BeautifulSoup(response.text, features="xml")
-        print(response.text)
         query_key: str = bs.find('QueryKey').string
         web_env: str = bs.find('WebEnv').string
         count: str = bs.find('Count').string
-        return ESearchResult(query_key, web_env, int(count))
+        return ESearchResult(query_key, web_env, int(count), response.text)
 
     async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
         params = params={
@@ -51,6 +52,29 @@ class HttpClient:
             with open(out_file, "wb") as f:
                 async for chunk in response.aiter_bytes():
                     f.write(chunk)    
+
+    # ids: list of ids obtained from esearch; make sure there are no None values
+    # out_file_pattern: format string that allows insertion of a integer representing each batch
+    async def efetch_by_id(self, db: str, ids: str | list[str], out_file_pattern: str, batch_size=100, ret_mode='xml') -> list[str]:
+        if type(ids) == str:
+            ids = [ids]
+        out_files = []
+        for i in range(0, len(ids), batch_size):
+            batch = ids[i:i+batch_size]
+            response = await self._client.get(f'{self._base_url}efetch.fcgi', params={
+                'db': db,
+                "id": ",".join(batch),
+                "retmode": ret_mode,
+                "rettype": "text"
+            })
+            response.raise_for_status()
+            out_file = out_file_pattern.format(i)
+            with open(out_file, 'w') as f:
+                f.write(response.text)
+                out_files.append(out_file)
+            # rate limit: 10 requests per second
+            await asyncio.sleep(0.1)
+        return out_files
 
 async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()

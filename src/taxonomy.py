@@ -3,7 +3,11 @@ from lxml import etree
 from dataclasses import dataclass
 import csv
 import pandas as pd
-from src import request
+from src import request, database
+import re
+import asyncio
+from bs4.element import Tag
+from bs4 import BeautifulSoup
 
 
 async def download_taxonomy(query: str, output_path: str):
@@ -32,18 +36,29 @@ def parse_taxon(taxon: ET.Element):
 
 def parse_lineage(lineage_elem: ET.Element):
     wanted_ranks = {"domain", "clade", "phylum", "order", "family", "class", "genus"}
-    # clade can appear multiple times
-    lineage = {rank: [] if rank == "clade" else None for rank in wanted_ranks}
-    # Extract Taxon entries
+    lower_ranks = {"phylum", "order", "family", "class", "genus"}
+    lineage = {rank: None for rank in wanted_ranks}
+
+    last_clade = None
     for taxon in lineage_elem.findall("Taxon"):
         rank = taxon.find("Rank").text
         name = taxon.find("ScientificName").text
-        if rank in wanted_ranks:
-            # clade can be multiple, so keep them in a list
-            if rank == "clade":
-                lineage[rank].append(name)
-            else:
-                lineage[rank] = name
+
+        if rank == "clade":
+            # Store it, but overwrite each time — only the last survives
+            last_clade = name
+
+        elif rank in wanted_ranks:
+            # If we hit phylum and still have a clade, store it
+            if rank in lower_ranks and last_clade:
+                lineage["clade"] = last_clade
+                last_clade = None
+            lineage[rank] = name
+
+    # Edge case: if no phylum but clade existed
+    if last_clade and lineage["clade"] is None:
+        lineage["clade"] = last_clade
+
     return lineage
 
 def parse_xml(file_path: str, csv_writer):
@@ -56,8 +71,19 @@ def parse_xml(file_path: str, csv_writer):
         # Extract species-level info
         tax_data = parse_taxon(taxon)
         lineage_elem = taxon.find('LineageEx')
+        if lineage_elem is None:
+            print(f'Warning: no lineage found for taxon {tax_data.name}, rank {tax_data.rank}, taxid {tax_data.taxid}')
+            continue
         lineage = parse_lineage(lineage_elem)
-        csv_writer.writerow([tax_data.taxid, tax_data.name, lineage['domain'], lineage['clade'][-1], lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
+        clade = lineage['clade']
+        if clade is not None and len(clade) > 0:
+            clade = clade[-1]
+        try:
+            if tax_data.rank != 'species' and lineage[tax_data.rank] is None:
+                lineage[tax_data.rank] = tax_data.name
+        except KeyError:
+            pass
+        csv_writer.writerow([tax_data.taxid, tax_data.name, lineage['domain'], clade, lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
 
 def parse_taxonomy(input_xml: str, output_csv: str):
     with open(output_csv, 'w', newline='') as csv_file:
@@ -166,3 +192,46 @@ def merge_taxonomy(meta_in: str, tax: str):
     tax_df = pd.read_csv(tax, sep='\t')
     meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='inner')
     return meta_and_tax
+
+
+def parse_species_name(hosts: pd.Series):
+    hosts = pd.Series(hosts.dropna().unique())
+    hosts = hosts.str.replace(r'\(.*\)', '', regex=True)
+    hosts = hosts.str.replace('  ', ' ')
+    hosts = hosts.apply(database.sanitize_org_name)
+    def to_genus(name: str) -> str:
+        parts = name.split(' ')[:2]
+        # remove non-alphabetical characters
+        parts = list(map(lambda x: re.sub(r'[^a-zA-Z]', '', x), parts))
+        if len(parts) == 2 and (parts[1] == 'sp' or parts[1] == 'spp'):
+            return parts[0]
+        return ' '.join(parts)
+    hosts = hosts.apply(to_genus)
+    return pd.Series(hosts.unique()).astype(str)
+
+async def get_taxid_by_name(hosts: pd.Series, client: request.HttpClient) -> dict[str, int]:
+    tax_ids = {}
+
+    for species in hosts:
+        await asyncio.sleep(0.1)
+        response = await client.esearch(species, 'taxonomy')
+        id = None
+        if response.result_count > 0:
+            bs = BeautifulSoup(response.text_response, features='xml')
+            id = int(bs.find('Id').string)
+        tax_ids[species] = id
+    return tax_ids
+
+
+async def from_organsim_names(data: pd.Series, out_xml_pattern: str, tax_file: str):
+    org_names = parse_species_name(data)
+    client = request.HttpClient()
+    tax_ids = await get_taxid_by_name(org_names, client)
+    tax_ids = [str(id) for id in tax_ids.values() if id is not None]
+    output_files = await client.efetch_by_id('taxonomy', tax_ids, out_xml_pattern)
+    # parse taxonomy and save to file
+    with open(tax_file, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['tax_id', 'species', 'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus'])
+        for xml_file in output_files:
+            parse_xml(xml_file, csv_writer)
