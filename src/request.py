@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import httpx
+from httpx_retries import RetryTransport, Retry
 import os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
@@ -18,11 +19,15 @@ class HttpClient:
     def __init__(self) -> None:
         load_dotenv()
         self._base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-        self._client = httpx.AsyncClient(params={
-            'api_key': os.getenv('NCBI_API_KEY'),
-            'email': os.getenv('NCBI_API_EMAIL'),
-            'tool': os.getenv('NCBI_API_TOOL')
-        }, timeout=httpx.Timeout(30, read=30))
+        self._client = httpx.AsyncClient(
+            params={
+                'api_key': os.getenv('NCBI_API_KEY'),
+                'email': os.getenv('NCBI_API_EMAIL'),
+                'tool': os.getenv('NCBI_API_TOOL')
+            },
+            timeout=httpx.Timeout(30, read=30),
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
+        )
 
     async def esearch(self, query: str, db='nuccore'):
         response = await self._client.get(f'{self._base_url}esearch.fcgi', params={

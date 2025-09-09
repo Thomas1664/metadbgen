@@ -5,8 +5,7 @@ import csv
 import pandas as pd
 from src import request, database
 import re
-import asyncio
-from bs4.element import Tag
+import time
 from bs4 import BeautifulSoup
 
 
@@ -213,7 +212,7 @@ async def get_taxid_by_name(hosts: pd.Series, client: request.HttpClient) -> dic
     tax_ids = {}
 
     for species in hosts:
-        await asyncio.sleep(0.1)
+        time.sleep(0.1)
         response = await client.esearch(species, 'taxonomy')
         id = None
         if response.result_count > 0:
