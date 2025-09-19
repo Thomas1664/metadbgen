@@ -1,12 +1,10 @@
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field, model_validator
 from src import request, database
-from httpx import AsyncClient
 import pandas as pd
 import csv
 import re
 import time
-import os
 import xmltodict
 
 
@@ -242,17 +240,13 @@ async def from_organsim_names(data: pd.Series, tax_file: str):
 
 
 async def get_sisters(parent: int, exclude_child: int) -> list[int]:
-    api_client = AsyncClient(headers={'api-key': os.environ.get('NCBI_API_KEY')})
-    parent_response = await api_client.post('https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/dataset_report', json={
+    api_client = request.NcbiApiClient()
+    parent_response = await api_client.post('taxonomy', 'dataset_report', json={
         "taxons": [
             str(parent)
         ]
     })
-    try:
-        parent_data = parent_response.json()['reports']
-    except KeyError as e:
-        print(parent_response.json())
-        raise e
+    parent_data = parent_response['reports']
     sisters = []
     if len(parent_data) > 0:
         sisters = parent_data[0]['taxonomy']['children']

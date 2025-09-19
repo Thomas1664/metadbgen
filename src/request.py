@@ -94,3 +94,20 @@ async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()
     response = await client.esearch(query_str)
     await client.efetch_all(response, file_prefix)
+
+class NcbiApiClient:
+    def __init__(self) -> None:
+        load_dotenv()
+        self._base_url = 'https://api.ncbi.nlm.nih.gov/datasets/v2'
+        self._client = httpx.AsyncClient(
+            headers={
+                'api-key': os.getenv('NCBI_API_KEY'),
+            },
+            timeout=httpx.Timeout(60, read=60),
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
+        )
+    
+    async def post(self, dataset: str, endpoint: str, json: dict):
+        response = await self._client.post(f'{self._base_url}/{dataset}/{endpoint}', json=json)
+        response.raise_for_status()
+        return response.json()
