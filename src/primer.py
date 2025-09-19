@@ -1,12 +1,22 @@
-import pandas as pd
+from collections import defaultdict
+from dataclasses import dataclass
+from urllib.parse import urlencode
+from httpx_retries import Retry, RetryTransport
+from pydantic import BaseModel, Field
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
-import subprocess
-import io
-import sys
+from bs4 import BeautifulSoup
+from src import request, taxonomy
 import matplotlib.pyplot as plt
 import logomaker as lm
 import numpy as np
+import pandas as pd
+import csv
+import httpx
+import io
+import re
+import subprocess
+import time
 
 
 def parse_cutadapt_info(info_file: str, out_path: str):
@@ -125,3 +135,175 @@ def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int,
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
     seqs = _align_primers(fasta_path)
     _draw_logo(seqs, logo_path, total_seqs)
+
+
+@dataclass
+class BlastJobInfo:
+    id: str
+    time: str
+
+class PrimerBlastResult(BaseModel):
+    accession: str
+    uid: int
+    product_size: int = Field(validation_alias='product_length')
+    forward_template_start: int = Field(validation_alias='template_1_start')
+    forward_template_end: int = Field(validation_alias='template_1_end')
+    forward_template_sequence: str = Field(validation_alias='template_1_seq')
+    reverse_template_start: int = Field(validation_alias='template_2_start')
+    reverse_template_end: int = Field(validation_alias='template_2_end')
+    reverse_template_sequence: str = Field(validation_alias='template_2_seq')
+
+
+class PrimerBlastJob():
+    def __init__(self, primer_f: str, primer_r: str, tax_ids: list[int], db='core_nt') -> None:
+        data = [
+            ('PRIMER_LEFT_INPUT', primer_f),
+            ('PRIMER_RIGHT_INPUT', primer_r),
+            ('PRIMER_SPECIFICITY_DATABASE', db),
+            ('SEARCH_SPECIFIC_PRIMER', 'on'),
+            ('NUM_TARGETS_WITH_PRIMERS', '10000'),
+            ('HITSIZE', '100000')
+        ]
+        for tax_id in tax_ids:
+            data.append(('ORGANISM', str(tax_id)))
+        
+        self._client = httpx.Client(
+            timeout=httpx.Timeout(30, read=30),
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
+        )
+        response = self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', content=urlencode(data))
+        response.raise_for_status()
+        self._job_info = self._parse_form_submission(response.text)
+        if self._job_info is None:
+            raise AttributeError()
+        print(f'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi?ctg_time={self._job_info.time}&job_key={self._job_info.id}')
+    
+    @staticmethod
+    def _parse_form_submission(html: str):
+        soup = BeautifulSoup(html, "html.parser")
+        time_input = soup.find("input", {"name": "ctg_time"})
+        job_key_input = soup.find("input", {"name": "job_key"})
+        if time_input is None or job_key_input is None:
+            # Error handling
+            error_html = soup.find('p', {'class': 'error'})
+            if error_html is not None:
+                error_msg: str = error_html.text
+                print(error_msg)
+                if error_msg.find('not present in selected database') != -1:
+                    return None
+            raise ValueError('Failed to parse response: Cannot extract job info!')
+        return BlastJobInfo(job_key_input["value"], time_input['value'])
+
+    def _poll_request(self):
+        response = self._client.get('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', params={
+            'ctg_time': self._job_info.time,
+            'job_key': self._job_info.id
+        })
+        response.raise_for_status()
+        return response
+    
+    @staticmethod
+    def _is_job_done(response: str):
+        return response.find('Detailed primer reports') != -1
+    
+    def _poll_for_results(self, delay: int):
+        response = self._poll_request()
+        while response.status_code == 200 and not self._is_job_done(response.text):
+            response = self._poll_request()
+            time.sleep(delay)
+        return response.text
+
+    def get_results(self, delay: int):
+        html = self._poll_for_results(delay)
+        return self._parse_results(html)
+
+    @staticmethod
+    def _parse_results(html: str):
+        def parse_line(line):
+            parts = line.split()
+            if len(parts) < 4:
+                return None
+            label = " ".join(parts[:-3])  # handle labels with spaces
+            return {
+                "label": label,
+                "start": int(parts[-3]),
+                "sequence": parts[-2],
+                "end": int(parts[-1]),
+            }
+        
+        bs = BeautifulSoup(html, "html.parser")
+        res_accessions = bs.find_all("a", {"target": "new_entrez"})
+
+        rows: list[PrimerBlastResult] = []
+
+        for accession in res_accessions:
+            hit_pre = accession.find_next('pre').text
+            product_length = re.search(r"product length = (\d+)", hit_pre).group(1)
+            lines = [parse_line(l) for l in hit_pre.splitlines() if l.strip() and "product length" not in l]
+            parsed = [l for l in lines if l]
+
+            # Handle duplicates
+            label_counter = defaultdict(int)
+            row = {"product_length": product_length}
+
+            for entry in parsed:
+                base_label = entry["label"].replace(" ", "_").lower()
+                label_counter[base_label] += 1
+                label = f"{base_label}_{label_counter[base_label]}"  # make unique
+                    
+                row[f"{label}_start"] = entry["start"]
+                row[f"{label}_seq"] = entry["sequence"]
+                row[f"{label}_end"] = entry["end"]
+            
+            # accession
+            row['accession'] = str(accession.text)
+            acc_link = accession.attrs['href']
+            match = re.search(r"id=(\d+)", acc_link)
+            row['uid'] = match.group(1)
+
+            parsed_row = PrimerBlastResult(**row)
+            rows.append(parsed_row)
+        return rows
+
+def export_primer_blast_results(rows: list[dict], file_name: str):
+    if len(rows) > 0:
+        with open(file_name, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+            writer.writeheader()
+            for row in rows:
+                writer.writerow(row)
+
+def run_primer_blast(primer_f: str, primer_r: str, organisms: list[int], db='core_nt'):
+    try:
+        job = PrimerBlastJob(primer_f, primer_r, organisms, db)
+    except AttributeError:
+        return
+    return job.get_results(15)
+
+async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str):
+    client = request.HttpClient()
+    tax_id = await taxonomy.get_taxid_by_name(target_organism, client)
+    tax_xml = await client.efetch_by_id('taxonomy', str(tax_id))
+    tax_info = taxonomy.parse_xml(tax_xml)[0]
+    # lineage is ordered from top to bottom, but we want to start from the bottom
+    lineage = list(reversed(tax_info.lineage))
+    taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
+    
+    field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
+    with open(out_file, 'w') as fp:
+        csv_writer = csv.DictWriter(fp, fieldnames=field_names)
+        csv_writer.writeheader()
+
+        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
+            sisters = await taxonomy.get_sisters(parent.tax_id, exclude_child.tax_id)
+            for sister in sisters:
+                results = run_primer_blast(primer_f, primer_r, [sister])
+                if results is not None:
+                    csv_writer.writerows(map(lambda x: x.model_dump(), results))
+
+async def get_outgroup_gb(input_path: str, output_path: str):
+    df = pd.read_csv(input_path)
+    uids = df['uid'].astype(int).astype(str)
+    client = request.HttpClient()
+    with open(output_path, 'w') as f:
+        await client.efetch_by_ids('nuccore', uids.to_list(), lambda x: f.write(x), ret_type='gb')
