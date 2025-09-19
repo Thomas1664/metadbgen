@@ -248,7 +248,11 @@ async def get_sisters(parent: int, exclude_child: int) -> list[int]:
             str(parent)
         ]
     })
-    parent_data = parent_response.json()['reports']
+    try:
+        parent_data = parent_response.json()['reports']
+    except KeyError as e:
+        print(parent_response.json())
+        raise e
     sisters = []
     if len(parent_data) > 0:
         sisters = parent_data[0]['taxonomy']['children']
