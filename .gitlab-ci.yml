@@ -9,6 +9,7 @@ tests:
   script:
     - snakemake -s cox2-db.smk -c 2 --configfile config.yml
   artifacts:
+    when: always
     paths:
       - data/cox2_th
 

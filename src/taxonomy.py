@@ -1,12 +1,43 @@
-import xml.etree.ElementTree as ET
-from lxml import etree
-from dataclasses import dataclass
-import csv
-import pandas as pd
+from bs4 import BeautifulSoup
+from pydantic import BaseModel, Field, model_validator
 from src import request, database
+from httpx import AsyncClient
+import pandas as pd
+import csv
 import re
 import time
-from bs4 import BeautifulSoup
+import os
+import xmltodict
+
+
+class Taxon(BaseModel):
+    tax_id: int = Field(alias='TaxId')
+    name: str = Field(alias='ScientificName')
+    rank: str = Field(alias='Rank')
+
+class TaxonData(BaseModel):
+    tax_id: int = Field(alias='TaxId')
+    name: str = Field(alias='ScientificName')
+    rank: str = Field(alias='Rank')
+    parent_tax_id: int = Field(alias='ParentTaxId')
+    lineage: list[Taxon] = Field(alias='taxa')
+
+    @model_validator(mode="before")
+    @classmethod
+    def flatten_lineage(cls, values):
+        if "LineageEx" in values:
+            lineage = values["LineageEx"]
+            if isinstance(lineage, dict) and "Taxon" in lineage:
+                values["taxa"] = lineage["Taxon"]
+        return values
+
+
+def parse_xml(xml_str: str):
+    parsed = xmltodict.parse(xml_str)
+    taxa = parsed['TaxaSet']['Taxon']
+    if isinstance(taxa, dict):
+        taxa = [taxa]
+    return [TaxonData(**taxon) for taxon in taxa]
 
 
 async def download_taxonomy(query: str, output_path: str):
@@ -20,75 +51,42 @@ def dataclass_to_csv_row(csv_writer, row):
 def dataclass_to_csv_header(csv_writer, header):
     csv_writer.writerow(header.__annotations__.keys())
 
-@dataclass
-class Taxon:
-    taxid: int
-    name: str
-    rank: str
 
-def parse_taxon(taxon: ET.Element):
-    """Extract TaxID, rank, scientific name, and human-readable rank from a <Taxon> element."""
-    taxid = int(taxon.find("TaxId").text)
-    name = str(taxon.find("ScientificName").text)
-    rank = str(taxon.find("Rank").text if taxon.find("Rank") is not None else "no rank")
-    return Taxon(taxid, name, rank)
-
-def parse_lineage(lineage_elem: ET.Element):
+def _parse_lineage(taxa: list[Taxon]):
     wanted_ranks = {"domain", "clade", "phylum", "order", "family", "class", "genus"}
     lower_ranks = {"phylum", "order", "family", "class", "genus"}
     lineage = {rank: None for rank in wanted_ranks}
-
     last_clade = None
-    for taxon in lineage_elem.findall("Taxon"):
-        rank = taxon.find("Rank").text
-        name = taxon.find("ScientificName").text
-
-        if rank == "clade":
+    for taxon in taxa:
+        if taxon.rank == "clade":
             # Store it, but overwrite each time — only the last survives
-            last_clade = name
-
-        elif rank in wanted_ranks:
+            last_clade = taxon.name
+        elif taxon.rank in wanted_ranks:
             # If we hit phylum and still have a clade, store it
-            if rank in lower_ranks and last_clade:
+            if taxon.rank in lower_ranks and last_clade:
                 lineage["clade"] = last_clade
                 last_clade = None
-            lineage[rank] = name
-
+            lineage[taxon.rank] = taxon.name
     # Edge case: if no phylum but clade existed
     if last_clade and lineage["clade"] is None:
         lineage["clade"] = last_clade
-
     return lineage
 
-def parse_xml(file_path: str, csv_writer):
-    """Parse XML file and extract taxonomical information."""
-    parser = etree.XMLParser(resolve_entities=False)
-    tree = etree.parse(file_path, parser)
-    root = tree.getroot()
-
-    for taxon in root.findall("Taxon"):
-        # Extract species-level info
-        tax_data = parse_taxon(taxon)
-        lineage_elem = taxon.find('LineageEx')
-        if lineage_elem is None:
-            print(f'Warning: no lineage found for taxon {tax_data.name}, rank {tax_data.rank}, taxid {tax_data.taxid}')
-            continue
-        lineage = parse_lineage(lineage_elem)
-        clade = lineage['clade']
-        if clade is not None and len(clade) > 0:
-            clade = clade[-1]
+def to_csv(taxa: list[TaxonData], csv_writer, header=False):
+    if header:
+        write_csv_header(csv_writer)
+    for taxon in taxa:
+        lineage = _parse_lineage(taxon.lineage)
         try:
-            if tax_data.rank != 'species' and lineage[tax_data.rank] is None:
-                lineage[tax_data.rank] = tax_data.name
+            if taxon.rank != 'species' and lineage[taxon.rank] is None:
+                lineage[taxon.rank] = taxon.name
         except KeyError:
             pass
-        csv_writer.writerow([tax_data.taxid, tax_data.name, lineage['domain'], clade, lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
+        csv_writer.writerow([taxon.tax_id, taxon.name, lineage['domain'], lineage['clade'], lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
 
-def parse_taxonomy(input_xml: str, output_csv: str):
-    with open(output_csv, 'w', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['tax_id', 'species', 'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus'])
-        parse_xml(input_xml, csv_writer)
+def write_csv_header(csv_writer):
+    """Writes the header row. WARNING: Pay attention to the format when writing data"""
+    csv_writer.writerow(['tax_id', 'species', 'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus'])
 
 def sanitize_org_name(org_name: str):
     org_name_arr = org_name.split(' ')
@@ -190,6 +188,7 @@ def merge_taxonomy(meta_in: str, tax: str):
     meta = pd.read_csv(meta_in, sep='\t')
     tax_df = pd.read_csv(tax, sep='\t')
     meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='inner')
+    meta_and_tax = meta_and_tax.rename(columns={'tax_id_x': 'tax_id'}).drop(columns=['tax_id_y'])
     return meta_and_tax
 
 
@@ -208,29 +207,51 @@ def parse_species_name(hosts: pd.Series):
     hosts = hosts.apply(to_genus)
     return pd.Series(hosts.unique()).astype(str)
 
-async def get_taxid_by_name(hosts: pd.Series, client: request.HttpClient) -> dict[str, int]:
-    tax_ids = {}
 
-    for species in hosts:
+async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None:
+    response = await client.esearch(name, 'taxonomy')
+    id = None
+    if response.result_count > 0:
+        bs = BeautifulSoup(response.text_response, features='xml')
+        id = int(bs.find('Id').string)
+    return id
+
+async def get_taxids_by_names(names: pd.Series, client: request.HttpClient) -> dict[str, int]:
+    tax_ids = {}
+    for species in names:
         time.sleep(0.1)
-        response = await client.esearch(species, 'taxonomy')
-        id = None
-        if response.result_count > 0:
-            bs = BeautifulSoup(response.text_response, features='xml')
-            id = int(bs.find('Id').string)
-        tax_ids[species] = id
+        tax_ids[species] = await get_taxid_by_name(species, client)
     return tax_ids
 
 
-async def from_organsim_names(data: pd.Series, out_xml_pattern: str, tax_file: str):
+async def fetch_by_tax_ids(tax_ids: list[str], client: request.HttpClient, out_file: str):
+    with open(out_file, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        write_csv_header(csv_writer)
+        def parse_output(output: str):
+            taxa = parse_xml(output)
+            to_csv(taxa, csv_writer)
+        await client.efetch_by_ids('taxonomy', tax_ids, parse_output)
+
+async def from_organsim_names(data: pd.Series, tax_file: str):
     org_names = parse_species_name(data)
     client = request.HttpClient()
-    tax_ids = await get_taxid_by_name(org_names, client)
+    tax_ids = await get_taxids_by_names(org_names, client)
     tax_ids = [str(id) for id in tax_ids.values() if id is not None]
-    output_files = await client.efetch_by_id('taxonomy', tax_ids, out_xml_pattern)
-    # parse taxonomy and save to file
-    with open(tax_file, 'w', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['tax_id', 'species', 'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus'])
-        for xml_file in output_files:
-            parse_xml(xml_file, csv_writer)
+    await fetch_by_tax_ids(tax_ids, client, tax_file)
+
+
+async def get_sisters(parent: int, exclude_child: int) -> list[int]:
+    api_client = AsyncClient(headers={'api-key': os.environ.get('NCBI_API_KEY')})
+    parent_response = await api_client.post('https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/dataset_report', json={
+        "taxons": [
+            str(parent)
+        ]
+    })
+    parent_data = parent_response.json()['reports']
+    sisters = []
+    if len(parent_data) > 0:
+        sisters = parent_data[0]['taxonomy']['children']
+        assert exclude_child in sisters
+        sisters.remove(exclude_child)
+    return sisters

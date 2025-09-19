@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 import httpx
 from httpx_retries import RetryTransport, Retry
@@ -25,7 +26,7 @@ class HttpClient:
                 'email': os.getenv('NCBI_API_EMAIL'),
                 'tool': os.getenv('NCBI_API_TOOL')
             },
-            timeout=httpx.Timeout(30, read=30),
+            timeout=httpx.Timeout(60, read=60),
             transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
         )
 
@@ -60,26 +61,34 @@ class HttpClient:
 
     # ids: list of ids obtained from esearch; make sure there are no None values
     # out_file_pattern: format string that allows insertion of a integer representing each batch
-    async def efetch_by_id(self, db: str, ids: str | list[str], out_file_pattern: str, batch_size=100, ret_mode='xml') -> list[str]:
-        if type(ids) == str:
-            ids = [ids]
-        out_files = []
+    async def efetch_by_ids(self, db: str, ids: list[str], callback: Callable, batch_size=100, ret_type='xml') -> list[str]:
+        outputs = []
         for i in range(0, len(ids), batch_size):
             batch = ids[i:i+batch_size]
             response = await self._client.get(f'{self._base_url}efetch.fcgi', params={
                 'db': db,
                 "id": ",".join(batch),
-                "retmode": ret_mode,
-                "rettype": "text"
+                "retmode": "text",
+                "rettype": ret_type,
             })
             response.raise_for_status()
-            out_file = out_file_pattern.format(i)
-            with open(out_file, 'w') as f:
-                f.write(response.text)
-                out_files.append(out_file)
+            outputs.append(callback(response.text))
             # rate limit: 10 requests per second
             await asyncio.sleep(0.1)
-        return out_files
+        return outputs
+    
+    async def efetch_by_id(self, db: str, id: str, ret_mode='xml') -> str:
+        response = await self._client.get(
+            f'{self._base_url}efetch.fcgi',
+            params={
+                'db': db,
+                "id": id,
+                "retmode": ret_mode,
+                "rettype": "text"
+            }
+        )
+        response.raise_for_status()
+        return response.text
 
 async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()
