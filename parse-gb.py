@@ -22,7 +22,7 @@ def unwrap_single_element(x):
     return x
 
 # Apply it across the whole DataFrame
-new_df = new_df.applymap(unwrap_single_element)
+new_df = new_df.map(unwrap_single_element)
 
 df = df.drop(columns='metadata').join(new_df)
 df.to_csv(out_file)
