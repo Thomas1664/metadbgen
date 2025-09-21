@@ -64,7 +64,6 @@ def filter_data(df: pd.DataFrame):
 def import_trim(in_meta: str, fasta: str, out_meta: str):
     df = pd.read_csv(in_meta, sep='\t')
     trim = import_fasta_no_tax(df, fasta)
-    trim['sequence_length_trimmed'] = trim['sequence'].str.len()
     trim.to_csv(out_meta, sep='\t', index=False)
 
 def export_fasta_no_tax(df: pd.DataFrame, file: str):
@@ -92,9 +91,10 @@ def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
         if group.shape[0] == 1:
             return group
         subgroup = group.groupby('tax_id', group_keys=False)
-        return subgroup.apply(lambda sub: sub.iloc[0])
+        return subgroup.head(1)
 
-    return df_sorted.copy().groupby('cluster_id', group_keys=False).apply(filter_func)
+    df_filtered = df_sorted.copy().groupby('cluster_id', group_keys=False).apply(filter_func)
+    return df_filtered.drop(columns=['type', 'query_length', 'similarity', 'align_res', 'query_label', 'strand'])
 
 
 def import_clust_results(path: str):
