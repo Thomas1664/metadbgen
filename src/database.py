@@ -106,6 +106,17 @@ def import_clust_results(path: str):
 def make_qiime_db(meta_df: pd.DataFrame, tax_out_path: str):
     with open(tax_out_path, "w") as tax_out:
         for _, row in meta_df.iterrows():
+            if pd.isna(row["family"]):
+                row["family"] = row["genus"]
+            if pd.isna(row["order"]):
+                row["order"] = row["family"]
+            if pd.isna(row["class"]):
+                row["class"] = row["order"]
+            if pd.isna(row["phylum"]):
+                row["phylum"] = row["class"]
+            if pd.isna(row["kingdom"]):
+                row["kingdom"] = row["phylum"]
+
             taxonomy = f'd__{row["domain"]};k__{row["kingdom"]};p__{row["phylum"]};c__{row["class"]};o__{row["order"]};f__{row["family"]};g__{row["genus"]};s__{row["organism_name_sanitized"]}'
             taxonomy = taxonomy.replace(" ", "+")
             print(f'{row["accession"]}\t{taxonomy}', file=tax_out)

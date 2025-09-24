@@ -51,23 +51,11 @@ def dataclass_to_csv_header(csv_writer, header):
 
 
 def _parse_lineage(taxa: list[Taxon]):
-    wanted_ranks = {"domain", "clade", "phylum", "order", "family", "class", "genus"}
-    lower_ranks = {"phylum", "order", "family", "class", "genus"}
+    wanted_ranks = {"domain", "kingdom", "phylum", "order", "family", "class", "genus"}
     lineage = {rank: None for rank in wanted_ranks}
-    last_clade = None
     for taxon in taxa:
-        if taxon.rank == "clade":
-            # Store it, but overwrite each time — only the last survives
-            last_clade = taxon.name
-        elif taxon.rank in wanted_ranks:
-            # If we hit phylum and still have a clade, store it
-            if taxon.rank in lower_ranks and last_clade:
-                lineage["clade"] = last_clade
-                last_clade = None
+        if taxon.rank in wanted_ranks:
             lineage[taxon.rank] = taxon.name
-    # Edge case: if no phylum but clade existed
-    if last_clade and lineage["clade"] is None:
-        lineage["clade"] = last_clade
     return lineage
 
 def to_csv(taxa: list[TaxonData], csv_writer, header=False):
@@ -80,7 +68,7 @@ def to_csv(taxa: list[TaxonData], csv_writer, header=False):
                 lineage[taxon.rank] = taxon.name
         except KeyError:
             pass
-        csv_writer.writerow([taxon.tax_id, taxon.name, lineage['domain'], lineage['clade'], lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
+        csv_writer.writerow([taxon.tax_id, taxon.name, lineage['domain'], lineage['kingdom'], lineage['phylum'], lineage['class'], lineage['order'], lineage['family'], lineage['genus']])
 
 def write_csv_header(csv_writer):
     """Writes the header row. WARNING: Pay attention to the format when writing data"""
