@@ -62,14 +62,14 @@ rule download_outgroups:
 
 rule taxonomy:
     params:
-        tax_query = config['tax_query'],
+        organism = config['organism'],
         backup = config['tax_backup'],
     output:
         tax_file = f"{db_prefix}/taxonomy_result.xml",
         out_tax = f"{db_prefix}/taxonomy.csv",
         backup = f"{db_prefix}/taxonomy-backup.csv",
     run:
-        asyncio.run(taxonomy.download_taxonomy(params.tax_query, output.tax_file))
+        asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
         with open(output.tax_file, 'r') as f:
             taxa = taxonomy.parse_xml(f.read())
         with open(output.out_tax, 'w', newline='') as csv_file:

@@ -38,8 +38,10 @@ def parse_xml(xml_str: str):
     return [TaxonData(**taxon) for taxon in taxa]
 
 
-async def download_taxonomy(query: str, output_path: str):
+async def download_taxonomy(organism: str, output_path: str):
     client = request.HttpClient()
+    # TODO: support multiple organisms?
+    query = f'({organism}[Subtree]) AND species[Rank]'
     response = await client.esearch(query, db='taxonomy')
     await client.efetch_all(response, out_file=output_path, db='taxonomy', rettype='xml')
 
