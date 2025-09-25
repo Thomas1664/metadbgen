@@ -9,7 +9,11 @@ import csv
 
 gb_prefix = config['gb_prefix']
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
-sources = [db_prefix, f'{db_prefix}/outgroups']
+
+sources = [db_prefix]
+if config['find_outgroups']:
+    sources.append(f'{db_prefix}/outgroups')
+
 print(expand("{src}/seq-meta.csv", src=sources))
 
 rule all:
