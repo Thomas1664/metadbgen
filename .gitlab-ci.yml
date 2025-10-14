@@ -5,7 +5,7 @@ tests:
   script:
     - conda env create -f environment.yml
     - source activate cox2-db
-    - snakemake -s cox2-db.smk -c 2 --configfile config.yml
+    - snakemake -s cox2-db.smk -c 2 --configfile config.yml --stats data/cox2_th/workflow-stats.json
   artifacts:
     when: always
     paths:

@@ -1,12 +1,17 @@
+from asyncio import Semaphore
+import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
+import random
 from urllib.parse import urlencode
 from httpx_retries import Retry, RetryTransport
 from pydantic import BaseModel, Field
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
-from src import request, taxonomy
+from src import request, taxonomy, database
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import logomaker as lm
 import numpy as np
@@ -17,6 +22,7 @@ import io
 import re
 import subprocess
 import time
+import threading
 
 
 def parse_cutadapt_info(info_file: str, out_path: str):
@@ -69,7 +75,7 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
             for record in alignment:
                 #TODO: check again for min_size?
                 ungapped_seq = str(record.seq).replace('-', '').upper()
-                fasta.write(f">{record.id}\n{ungapped_seq}\n")
+                database.write_seq(fasta, record.id, ungapped_seq)
         return
     
     for sequence in alignment:
@@ -95,7 +101,7 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
         for record in msa_trimmed:
             #TODO: check again for min_size?
             ungapped_seq = str(record.seq).replace('-', '').upper()
-            fasta.write(f">{record.id}\n{ungapped_seq}\n")
+            database.write_seq(fasta, record.id, ungapped_seq)
 
 
 def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_size: int, direction: str):
@@ -113,7 +119,7 @@ def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_
             # make reverse primer reverse complement because cutadapt returns sequence in direction of amplicon
             if direction == 'reverse':
                 seq = str(Seq(seq).reverse_complement())
-            out.write(f">{row['accession']}\n{seq}\n")
+            database.write_seq(out, row['accession'], seq)
     return meta.shape[0]
 
 def _align_primers(fasta: str):
@@ -124,7 +130,8 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
-    lm.Logo(counts_df, color_scheme='classic')
+    ax = plt.subplot()
+    lm.Logo(counts_df, color_scheme='classic', ax=ax)
     plt.xticks(range(1, np.max(lengths), 2))
     plt.xlabel("Base positions")
     plt.ylabel("Proportions")
@@ -153,10 +160,35 @@ class PrimerBlastResult(BaseModel):
     reverse_template_end: int = Field(validation_alias='template_2_end')
     reverse_template_sequence: str = Field(validation_alias='template_2_seq')
 
+headers = {
+  'accept': '*/*',
+  'accept-language': 'de,de-DE;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+  'cache-control': 'no-cache',
+  'origin': 'https://www.ncbi.nlm.nih.gov',
+  'pragma': 'no-cache',
+  'priority': 'u=1, i',
+  'referer': 'https://www.ncbi.nlm.nih.gov/',
+  'sec-ch-ua': '"Chromium";v="140", "Not=A?Brand";v="24", "Microsoft Edge";v="140"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'no-cors',
+  'sec-fetch-site': 'cross-site',
+  'sec-fetch-storage-access': 'active',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0'
+}
+
+
+def primer_blast_client():
+    return httpx.AsyncClient(
+        timeout=httpx.Timeout(30, read=30),
+        transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5)),
+        headers=headers
+    )
 
 class PrimerBlastJob():
-    def __init__(self, primer_f: str, primer_r: str, tax_ids: list[int], db='core_nt') -> None:
-        data = [
+    def __init__(self, client: httpx.AsyncClient, primer_f: str, primer_r: str, tax_ids: list[int], db='core_nt') -> None:
+        self._data = [
             ('PRIMER_LEFT_INPUT', primer_f),
             ('PRIMER_RIGHT_INPUT', primer_r),
             ('PRIMER_SPECIFICITY_DATABASE', db),
@@ -165,13 +197,11 @@ class PrimerBlastJob():
             ('HITSIZE', '100000')
         ]
         for tax_id in tax_ids:
-            data.append(('ORGANISM', str(tax_id)))
-        
-        self._client = httpx.Client(
-            timeout=httpx.Timeout(30, read=30),
-            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
-        )
-        response = self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', content=urlencode(data))
+            self._data.append(('ORGANISM', str(tax_id)))
+        self._client = client
+    
+    async def submit(self):
+        response = await self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', content=urlencode(self._data))
         response.raise_for_status()
         self._job_info = self._parse_form_submission(response.text)
         if self._job_info is None:
@@ -194,8 +224,8 @@ class PrimerBlastJob():
             raise ValueError('Failed to parse response: Cannot extract job info!')
         return BlastJobInfo(job_key_input["value"], time_input['value'])
 
-    def _poll_request(self):
-        response = self._client.get('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', params={
+    async def _poll_request(self):
+        response = await self._client.get('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', params={
             'ctg_time': self._job_info.time,
             'job_key': self._job_info.id
         })
@@ -206,15 +236,15 @@ class PrimerBlastJob():
     def _is_job_done(response: str):
         return response.find('Detailed primer reports') != -1
     
-    def _poll_for_results(self, delay: int):
-        response = self._poll_request()
+    async def _poll_for_results(self, delay: int):
+        response = await self._poll_request()
         while response.status_code == 200 and not self._is_job_done(response.text):
-            response = self._poll_request()
+            response = await self._poll_request()
             time.sleep(delay)
         return response.text
 
-    def get_results(self, delay: int):
-        html = self._poll_for_results(delay)
+    async def get_results(self, delay: int):
+        html = await self._poll_for_results(delay)
         return self._parse_results(html)
 
     @staticmethod
@@ -273,12 +303,13 @@ def export_primer_blast_results(rows: list[dict], file_name: str):
             for row in rows:
                 writer.writerow(row)
 
-def run_primer_blast(primer_f: str, primer_r: str, organisms: list[int], db='core_nt'):
+async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: str, organisms: list[int], db='core_nt'):
     try:
-        job = PrimerBlastJob(primer_f, primer_r, organisms, db)
+        job = PrimerBlastJob(client, primer_f, primer_r, organisms, db)
+        await job.submit()
     except AttributeError:
         return
-    return job.get_results(15)
+    return await job.get_results(15)
 
 async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str):
     client = request.HttpClient()
@@ -294,12 +325,52 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
         csv_writer = csv.DictWriter(fp, fieldnames=field_names)
         csv_writer.writeheader()
 
+        parent_taxids = [str(tax.tax_id) for tax in lineage]
+        parents = await taxonomy.by_taxids(parent_taxids)
+        sisters: list[int] = []
+
+        # get sister tax ids
         for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
-            sisters = await taxonomy.get_sisters(parent.tax_id, exclude_child.tax_id)
-            for sister in sisters:
-                results = run_primer_blast(primer_f, primer_r, [sister])
-                if results is not None:
-                    csv_writer.writerows(map(lambda x: x.model_dump(), results))
+            parent_data = next((item for item in parents if item['query'][0] == str(parent.tax_id)), None)
+            if parent_data is None:
+                raise ValueError(f'Missing results for query {parent.tax_id}')
+            sisters.extend(taxonomy.get_sisters(parent_data, exclude_child.tax_id))
+
+        # Allow max 10 concurrent jobs
+        rate_limit = Semaphore(10)
+        tasks = []
+        client = primer_blast_client()
+        results = []
+        failed_tax_ids = []
+        failed_tax_ids_lock = threading.Semaphore(1)
+        try:
+            async def rate_limited(item):
+                 async with rate_limit:
+                    try:
+                        return await run_primer_blast(client, primer_f, primer_r, [item])
+                    except (httpx.ConnectTimeout, httpx.RemoteProtocolError):
+                        with failed_tax_ids_lock:
+                            failed_tax_ids.append(item)
+
+            for i, sister in enumerate(sisters):
+                # Random jitter added to the base delay
+                jitter = random.uniform(-0.3, 0.3)   # +/- 300ms wiggle
+                delay = max(0, i * 1.0 + jitter)     # base 1s per job, jittered
+                # Staggered launch
+                await asyncio.sleep(delay - (i - 1) if i > 0 else delay)
+                task = asyncio.create_task(rate_limited(sister))
+                tasks.append(task)
+            results = await asyncio.gather(*tasks)
+            for item in failed_tax_ids:
+                results.append(await run_primer_blast(client, primer_f, primer_r, [item]))
+        except Exception as e:
+            for sister in results:
+                if sister is not None:
+                    csv_writer.writerows(map(lambda x: x.model_dump(), sister))
+            raise e
+        for sister in results:
+            if sister is not None:
+                csv_writer.writerows(map(lambda x: x.model_dump(), sister))
 
 async def get_outgroup_gb(input_path: str, output_path: str):
     df = pd.read_csv(input_path)

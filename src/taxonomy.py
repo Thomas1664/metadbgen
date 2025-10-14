@@ -53,12 +53,36 @@ def dataclass_to_csv_header(csv_writer, header):
 
 
 def _parse_lineage(taxa: list[Taxon]):
-    wanted_ranks = {"domain", "kingdom", "phylum", "order", "family", "class", "genus"}
+    wanted_ranks = {"domain", "clade", "kingdom", "phylum", "order", "family", "class", "genus"}
+    lower_ranks = {"phylum", "order", "family", "class", "genus"}
     lineage = {rank: None for rank in wanted_ranks}
+    last_clade = None
+    for taxon in taxa:
+        if taxon.rank == "clade":
+            # Store it, but overwrite each time — only the last survives
+            last_clade = taxon.name
+        elif taxon.rank in wanted_ranks:
+            # If we hit phylum and still have a clade, store it
+            if taxon.rank in lower_ranks and last_clade:
+                lineage["clade"] = last_clade
+                last_clade = None
+            lineage[taxon.rank] = taxon.name
+    # Edge case: if no phylum but clade existed
+    if last_clade and lineage["clade"] is None:
+        lineage["clade"] = last_clade
+    if lineage['kingdom'] is None and lineage['clade'] is not None:
+        lineage['kingdom'] = lineage['clade']
+        lineage.pop('clade')
+    return lineage
+"""
+def _parse_lineage(taxa: list[Taxon]):
+    wanted_ranks = {'domain', 'kingdom', 'phylum', 'order', 'family', 'class', 'genus'}
+    lineage = {rank: [] if rank == "clade" else None for rank in wanted_ranks}
     for taxon in taxa:
         if taxon.rank in wanted_ranks:
             lineage[taxon.rank] = taxon.name
     return lineage
+"""
 
 def to_csv(taxa: list[TaxonData], csv_writer, header=False):
     if header:
@@ -137,20 +161,7 @@ def fill_taxonomic_blanks(row, backup, ranks):
                 # Extract genus from species name (first word)
                 row[rank] = row['species'].split(' ')[0]
             else:
-                # Look for the closest known higher rank
-                higher_rank = None
-                for j in range(i-1, -1, -1):
-                    if pd.notna(row[ranks[j]]):
-                        higher_rank = row[ranks[j]]
-                        break
-                if higher_rank is not None:
-                    if higher_rank != "incertae sedis":
-                        row[rank] = f"{higher_rank} incertae sedis"
-                    else:
-                        row[rank] = "incertae sedis"
-                else:
-                    # fallback if nothing above is known
-                    row[rank] = "incertae sedis"
+                row[rank] = None
     return row
 
 
@@ -204,6 +215,13 @@ async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None
         id = int(bs.find('Id').string)
     return id
 
+async def by_taxids(tax_ids: list[str]):
+    client = request.NcbiApiClient()
+    response = await client.post('taxonomy', 'dataset_report', json={
+        "taxons": tax_ids
+    })
+    return response['reports']
+
 async def get_taxids_by_names(names: pd.Series, client: request.HttpClient) -> dict[str, int]:
     tax_ids = {}
     for species in names:
@@ -229,17 +247,10 @@ async def from_organsim_names(data: pd.Series, tax_file: str):
     await fetch_by_tax_ids(tax_ids, client, tax_file)
 
 
-async def get_sisters(parent: int, exclude_child: int) -> list[int]:
-    api_client = request.NcbiApiClient()
-    parent_response = await api_client.post('taxonomy', 'dataset_report', json={
-        "taxons": [
-            str(parent)
-        ]
-    })
-    parent_data = parent_response['reports']
+def get_sisters(parent_data: dict, exclude_child: int) -> list[int]:
     sisters = []
     if len(parent_data) > 0:
-        sisters = parent_data[0]['taxonomy']['children']
+        sisters = parent_data['taxonomy']['children']
         assert exclude_child in sisters
         sisters.remove(exclude_child)
     return sisters
