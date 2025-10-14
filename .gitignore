@@ -170,3 +170,4 @@ data/*.gb
 .snakemake
 data/download
 data/cox2_th
+.DS_Store
