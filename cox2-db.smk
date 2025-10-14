@@ -92,7 +92,7 @@ rule taxonomy:
         backup = f"{db_prefix}/taxonomy/backup.csv",
     run:
         asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
-        with open(output.tax_file, 'r') as f:
+        with open(output.tax_file, 'r', encoding='utf-8') as f:
             taxa = taxonomy.parse_xml(f.read())
         with open(output.out_tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
