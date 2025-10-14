@@ -18,7 +18,6 @@ primer_r:
   min_len: 20
 min_seq_len: 200
 max_seq_len: 450
-gap_open: 5
 find_outgroups: true
 organism: Oomycota
 gappiness_treshold: 0.1

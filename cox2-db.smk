@@ -255,12 +255,11 @@ rule trim_alignment:
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
         meta = "{src}/db-clust-msa.tsv",
     params:
-        gap_open = config['gap_open'],
         gap_treshold = config['gappiness_treshold'],
     threads: workflow.cores
     shell:
         """
-        mafft --op {params.gap_open} --thread {threads} {input.fasta} > {output.msa}
+        muscle -super5 {input.fasta} -nt  -threads {threads} -output {output.msa}
         python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {output.meta} {params.gap_treshold}
         """
 
@@ -305,11 +304,9 @@ rule export_sintax:
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
-    params:
-        gap_open = config['gap_open']
     shell:
         """
-        mafft --op {params.gap_open} --thread {threads} {input.fasta} > {output.msa}
+        muscle -super5 {input.fasta} -nt  -threads {threads} -output {output.msa}
         python {input.script} {output.msa} {input.tax} {output.db}
         """
 

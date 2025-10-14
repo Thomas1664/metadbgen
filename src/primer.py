@@ -122,9 +122,9 @@ def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_
             database.write_seq(out, row['accession'], seq)
     return meta.shape[0]
 
-def _align_primers(fasta: str):
-    result = subprocess.run(['mafft', '--auto', fasta], stdout=subprocess.PIPE, stderr=None, check=True, text=True)
-    return [str(record.seq).upper() for record in SeqIO.parse(io.StringIO(result.stdout), 'fasta')]
+def _align_primers(fasta: str, tmp_out_file: str):
+    subprocess.run(['muscle', '-super5', fasta, '-output', tmp_out_file, '-nt'], check=True, text=True)
+    return [str(record.seq).upper() for record in SeqIO.parse(tmp_out_file, 'fasta')]
 
 def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
     lengths = [len(seq) for seq in seqs]
@@ -140,7 +140,7 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
 
 def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
-    seqs = _align_primers(fasta_path)
+    seqs = _align_primers(fasta_path, f'{fasta_path}.tmp')
     _draw_logo(seqs, logo_path, total_seqs)
 
 
