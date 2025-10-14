@@ -1,8 +1,9 @@
 import glob
 import os
 import asyncio
-from src import metadata, request, taxonomy, primer
+from src import metadata, request, taxonomy, primer, database
 from Bio.Seq import Seq
+from Bio import SeqIO
 import pandas as pd
 import csv
 
@@ -14,37 +15,54 @@ sources = [db_prefix]
 if config['find_outgroups']:
     sources.append(f'{db_prefix}/outgroups')
 
-print(expand("{src}/seq-meta.csv", src=sources))
-
 rule all:
     input:
-        f"{db_prefix}/taxonomy-filtered.tsv",
-        f"{db_prefix}/taxonomy-backup.csv",
+        # Taxonomy
+        expand("{src}/taxonomy/parsed.csv", src=sources),
+        f"{db_prefix}/taxonomy/filtered.tsv",
+        f"{db_prefix}/taxonomy/backup.csv",
+
+        # Metadata
+        expand("{src}/metadata/country-heat.html", src=sources),
+        
+        # Dereplicate
+        expand("{src}/dereplicate/clust-msa.fa", src=sources),
+        expand("{src}/dereplicate/clust-results.tsv", src=sources),
+
+        # Quality Filter
+        expand("{src}/quality-filter/metadata.tsv", src=sources),
+        expand("{src}/quality-filter/sequences.fasta", src=sources),
+
+        # Outputs
+        expand(f"{{src}}/output/{config['db_name']}-meta.tsv",src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.fa",src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.tsv",src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-sintax.fasta", src=sources),
+
+        # Primer trimming
+        expand("{src}/primer-trim/removed-sequences.fasta", src=sources),
+        expand("{src}/primer-trim/removed-metadata.tsv", src=sources),
+
+        f"{db_prefix}/outgroups/primer-blast.csv",
         expand("{src}/seq-meta.csv", src=sources),
-        expand("{src}/seq-meta-filtered-removed.csv", src=sources),
+        expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
-        expand("{src}/seq-trimmed-removed.fasta", src=sources),
-        expand("{src}/seq-meta-trimmed-removed.csv", src=sources),
-        expand("{src}/clust-msa.fa", src=sources),
-        expand("{src}/clust-results.tsv", src=sources),
         expand("{src}/db-clust-msa.fasta", src=sources),
-        expand(f"{{src}}/{config['db_name']}-meta.tsv",src=sources),
-        expand(f"{{src}}/{config['db_name']}-qiime.fa",src=sources),
-        expand(f"{{src}}/{config['db_name']}-qiime.tsv",src=sources),
-        expand(f"{{src}}/{config['db_name']}-sintax.fasta", src=sources),
+        
         expand("{src}/primer-f.svg", src=sources),
         expand("{src}/primer-r.svg", src=sources),
-        expand("{src}/country-heat.html", src=sources),
 
 
 rule download:
     output:
         gb_file = f"{db_prefix}/{config['db_name']}.gb",
     params:
-        query = config['query_str']
+        keywords = config['keywords'],
+        organism = config['organism']
     run:
         os.makedirs(gb_prefix, exist_ok=True)
-        asyncio.run(request.fetch_sequences(params.query, output.gb_file))
+        query = database.build_search_query(params.keywords, params.organism)
+        asyncio.run(request.fetch_sequences(query, output.gb_file))
 
 rule primer_blast_outgroups:
     output:
@@ -70,8 +88,8 @@ rule taxonomy:
         backup = config['tax_backup'],
     output:
         tax_file = f"{db_prefix}/taxonomy_result.xml",
-        out_tax = f"{db_prefix}/taxonomy.csv",
-        backup = f"{db_prefix}/taxonomy-backup.csv",
+        out_tax = f"{db_prefix}/taxonomy/parsed.csv",
+        backup = f"{db_prefix}/taxonomy/backup.csv",
     run:
         asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
         with open(output.tax_file, 'r') as f:
@@ -98,8 +116,8 @@ rule clean_db:
         meta = rules.parse_metadata.output.meta_csv,
         script = "db-clean.py"
     output:
-        meta = "{src}/seq-meta-filtered.csv",
-        meta_removed = "{src}/seq-meta-filtered-removed.csv",
+        meta = "{src}/seq-meta-filtered.tsv",
+        meta_removed = "{src}/seq-meta-filtered-removed.tsv",
         fasta = "{src}/seq-filtered.fasta",
         fasta_removed = "{src}/seq-filtered-removed.fasta",
     shell:
@@ -113,7 +131,7 @@ if "outer_primer_f" in config or "outer_primer_r" in config:
         input:
             rules.clean_db.output.fasta
         output:
-            "{src}/nested.fasta"
+            "{src}/primer-trim/nested.fasta"
         params:
             flags_f = lambda wc: (
                 (f"-g '{config['outer_primer_f']['seq']};min_overlap={config['outer_primer_f']['min_len']}'" if config.get("outer_primer_f") else "")
@@ -128,17 +146,17 @@ if "outer_primer_f" in config or "outer_primer_r" in config:
 rule trim:
     input:
         fasta = lambda wildcards: (
-            "{src}/nested.fasta"
+            "{src}/primer-trim/nested.fasta"
             if "outer_primer_f" in config or "outer_primer_r" in config
             else rules.clean_db.output.fasta
         ),
         meta = rules.clean_db.output.meta,
         script = 'trim.py'
     output:
-        fasta = "{src}/seq-trimmed.fasta",
-        meta = "{src}/seq-meta-trimmed.csv",
-        info = "{src}/cutadapt-info.tsv",
-        info_out = "{src}/cutadapt-info-parsed.tsv",
+        fasta = "{src}/primer-trim/sequences.fasta",
+        meta = "{src}/primer-trim/metadata.tsv",
+        info = "{src}/primer-trim/cutadapt-info.tsv",
+        info_out = "{src}/primer-trim/cutadapt-info-parsed.tsv",
     params:
         primer_f_seq = config['primer_f']['seq'],
         primer_f_len = config['primer_f']['min_len'],
@@ -161,10 +179,10 @@ rule trim_removed:
         meta = rules.clean_db.output.meta_removed,
         script = 'trim.py',
     output:
-        fasta = "{src}/seq-trimmed-removed.fasta",
-        meta = "{src}/seq-meta-trimmed-removed.csv",
-        info = "{src}/removed-cutadapt-info.tsv",
-        info_out = "{src}/removed-cutadapt-info-parsed.tsv",
+        fasta = "{src}/primer-trim/removed-sequences.fasta",
+        meta = "{src}/primer-trim/removed-metadata.tsv",
+        info = "{src}/primer-trim/removed-cutadapt-info.tsv",
+        info_out = "{src}/primer-trim/removed-cutadapt-info-parsed.tsv",
     params:
         primer_f_seq = config['primer_f']['seq'],
         primer_f_len = config['primer_f']['min_len'],
@@ -180,40 +198,62 @@ rule trim_removed:
         python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}
         """
 
-rule dereplicate:
+rule cluster:
     input:
         fasta = rules.trim.output.fasta,
     output:
-        msa = "{src}/clust-msa.fa",
-        clust = "{src}/clust-results.tsv"
+        msa = "{src}/dereplicate/clust-msa.fa",
+        clust = "{src}/dereplicate/clust-results.tsv"
     shell:
         """
         vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
         """
 
-rule dereplicate_filter:
+rule dereplicate:
     input:
         meta = rules.trim.output.meta,
-        clust = rules.dereplicate.output.clust,
+        clust = rules.cluster.output.clust,
         script = 'dereplicate.py'
     output:
-        meta = "{src}/db-clust.csv",
-        fasta = "{src}/db-clust.fasta",
+        meta = "{src}/dereplicate/metadata.tsv",
+        fasta = "{src}/dereplicate/sequences.fasta",
     shell:
         """
         python {input.script} {input.meta} {input.clust} {output.meta} {output.fasta}
         """
 
+rule sequence_quality_filter:
+    input:
+        fasta = rules.dereplicate.output.fasta,
+        meta = rules.dereplicate.output.meta,
+    params:
+        max_ambiguous_bases = config['max_ambiguous_bases']
+    output:
+        meta = "{src}/quality-filter/metadata.tsv",
+        fasta = "{src}/quality-filter/sequences.fasta",
+    run:
+        composition = {}
+        records = list(SeqIO.parse(input.fasta, 'fasta'))
+        for record in records:
+            composition[record.id] = database.seq_base_composition(str(record.seq))
+        df = pd.DataFrame.from_dict(composition, orient='index')
+        df = df[df['other'] <= params.max_ambiguous_bases]
+        records = list(filter(lambda record: record.id in df.index.values, records))
+        meta = pd.read_csv(input.meta, sep='\t')
+        meta = meta[meta['accession'].isin(df.index)]
+        meta.to_csv(output.meta, sep='\t', index=False)
+        database.write_fasta(records, output.fasta)
+
 rule trim_alignment:
     input:
-        fasta = rules.dereplicate_filter.output.fasta,
-        meta = rules.dereplicate_filter.output.meta,
+        fasta = rules.sequence_quality_filter.output.fasta,
+        meta = rules.sequence_quality_filter.output.meta,
         cutadapt_info = rules.trim.output.info_out,
         script = "trim-alignment.py"
     output:
         msa = "{src}/db-clust-msa.fasta",
-        fasta = f"{{src}}/{config['db_name']}-qiime.fa",
-        meta = "{src}/db-clust-msa.csv",
+        fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
+        meta = "{src}/db-clust-msa.tsv",
     params:
         gap_open = config['gap_open'],
         gap_treshold = config['gappiness_treshold'],
@@ -226,9 +266,9 @@ rule trim_alignment:
 
 rule taxonomy_outgroup:
     input:
-        meta = f"{db_prefix}/outgroups/db-clust-msa.csv",
+        meta = f"{db_prefix}/outgroups/db-clust-msa.tsv",
     output:
-        tax = f"{db_prefix}/outgroups/taxonomy.csv",
+        tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
     run:
         meta_df = pd.read_csv(input.meta, sep='\t')
         tax_ids = meta_df['tax_id_sanitized'].astype(int).astype(str).tolist()
@@ -239,21 +279,22 @@ rule taxonomy_outgroup:
 rule export_db:
     input:
         meta = rules.trim_alignment.output.meta,
-        tax = "{src}/taxonomy.csv",
+        tax = "{src}/taxonomy/parsed.csv",
         backup = rules.taxonomy.output.backup,
         script = 'taxonomy-export.py'
     output:
-        meta = f"{{src}}/{config['db_name']}-meta.tsv",
-        tax = f"{{src}}/{config['db_name']}-qiime.tsv",
-        tax_meta = "{src}/taxonomy-filtered.tsv",
+        meta = f"{{src}}/output/{config['db_name']}-meta.tsv",
+        tax = f"{{src}}/output/{config['db_name']}-qiime.tsv",
+        tax_meta = "{src}/taxonomy/filtered.tsv",
     params:
         # It's not guaranteed this file will be always present
         # because it might be possible that none of the organisms in the database has a host.
         # Therefore, this file is not an output file.
-        host_tax = "{src}/host-tax.csv",
+        host_tax = "{src}/metadata/host-tax.csv",
     shell:
         """
-        python {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}
+        mkdir -p "{wildcards.src}/metadata"
+        python -m cProfile -s tottime {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}
         """
 
 rule export_sintax:
@@ -263,7 +304,7 @@ rule export_sintax:
         script = "export-sintax.py"
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
-        db = f"{{src}}/{config['db_name']}-sintax.fasta",
+        db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
     params:
         gap_open = config['gap_open']
     shell:
@@ -281,8 +322,8 @@ rule plot:
         fasta_r = "{src}/primer-r.fasta",
         plot_f = "{src}/primer-f.svg",
         plot_r = "{src}/primer-r.svg",
-        geo_html = "{src}/country-heat.html",
-        geo_svg = "{src}/country-heat.svg",
+        geo_html = "{src}/metadata/country-heat.html",
+        geo_svg = "{src}/metadata/country-heat.svg",
     params:
         primer_f_len = len(config['primer_f']['seq']),
         primer_r_len = len(config['primer_r']['seq']),

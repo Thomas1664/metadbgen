@@ -1,5 +1,5 @@
 import sys
-from src import primer, alignment
+from src import primer, alignment, database
 import pandas as pd
 from Bio import SeqIO
 
@@ -14,6 +14,4 @@ meta_df = pd.read_csv(meta, sep='\t')
 meta_df = meta_df[meta_df['accession'].isin(gap_df['accession'])]
 meta_df.to_csv(meta_out, sep='\t', index=False)
 records = [record for record in SeqIO.parse(fasta_out, 'fasta') if record.id in meta_df['accession'].values]
-with open(fasta_out, 'w') as fasta:
-    for record in records:
-        fasta.write(f">{record.id}\n{record.seq}\n")
+database.write_fasta(records, fasta_out)

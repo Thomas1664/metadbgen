@@ -2,7 +2,13 @@ base_dir: data
 sample_name: db_leftover
 db_name: cox2_th
 gb_prefix: data/download
-query_str: "(cox2 OR coxII) AND oomycota[organism]"
+keywords:
+  - cox2
+  - coxII
+  - co2
+  - coii
+  - cytochrome c oxidase subunit 2
+  - cytochrome c oxidase subunit ii
 tax_backup: data/taxonomy/NameUsage.tsv
 primer_f:
   seq: GGCAAATGGGTTTTCAAGATCC
@@ -16,3 +22,4 @@ gap_open: 5
 find_outgroups: true
 organism: Oomycota
 gappiness_treshold: 0.1
+max_ambiguous_bases: 4

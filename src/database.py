@@ -1,5 +1,15 @@
+from collections.abc import Iterable
+from io import TextIOWrapper
+import numpy as np
 import pandas as pd
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+
+
+def build_search_query(keywords: list[str], organism: str):
+    keywords = [f'"{keyword}"' for keyword in keywords]
+    joined_keywords = ' OR '.join(keywords)
+    return f'({joined_keywords}) AND "{organism}"[organism]'
 
 def remove_if_contains_substr(df: pd.DataFrame, col: str, substr: str):
     return df[~df[col].str.contains(substr, case=False, regex=False)]
@@ -66,11 +76,26 @@ def import_trim(in_meta: str, fasta: str, out_meta: str):
     trim = import_fasta_no_tax(df, fasta)
     trim.to_csv(out_meta, sep='\t', index=False)
 
-def export_fasta_no_tax(df: pd.DataFrame, file: str):
-    with open(file, 'w') as out:
-        for _, row in df.iterrows():
-            print(f">{row['accession']}", file=out)
-            print(row['sequence'], file=out)
+def write_seq(file: TextIOWrapper, accession: str, seq: SeqRecord | str):
+    file.write(f">{accession}\n{str(seq)}\n")
+
+def write_fasta(records: Iterable[SeqRecord] | pd.DataFrame, file: TextIOWrapper | str):
+    if issubclass(type(records), pd.DataFrame):
+        if isinstance(file, str):
+            with open(file, 'w') as f: # needs to be outside the loop
+                for _, row in records.iterrows():
+                    write_seq(f, row['accession'], row['sequence'])
+        else:
+            for _, row in records.iterrows():
+                write_seq(file, row['accession'], row['sequence'])
+    else:
+        if isinstance(file, str):
+            with open(file, 'w') as f:
+                for record in records:
+                    write_seq(f, record.id, record.seq)
+        else:
+            for record in records:
+                write_seq(file, record.id, record.seq)
 
 def import_fasta_no_tax(df: pd.DataFrame, file: str):
     rows = [{'accession': record.id, 'sequence': str(record.seq)} for record in SeqIO.parse(file, 'fasta')]
@@ -131,3 +156,16 @@ def export_sintax(msa_path: str, tax_path: str, out_db: str):
         for record in records:
             print(f'>{record.id};tax={tax.loc[tax[0] == record.id][1].values[0]}', file=fasta)
             print(str(record.seq).upper(), file=fasta)
+
+
+def seq_base_composition(seq: str):
+    seq = seq.upper()
+    seq_arr = np.frombuffer(seq.encode('ascii'), dtype='S1')
+    bases = np.array([b'A', b'T', b'G', b'C'])
+    # Vectorized comparison: create a 2D boolean matrix, then sum along axis 1
+    counts_arr = (seq_arr[:, None] == bases).sum(axis=0, dtype=np.int32)
+    #perc_arr = (counts_arr / seq_arr.size) * 100
+    counts = dict(zip(bases.astype(str), counts_arr))
+    counts['other'] = int(seq_arr.size - counts_arr.sum())
+    counts['seq_len'] = seq_arr.size
+    return counts

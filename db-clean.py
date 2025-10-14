@@ -16,5 +16,5 @@ if __name__ == "__main__":
     filtered, removed = database.filter_data(df)
     filtered.to_csv(args.out_metadata, sep='\t', index=False)
     removed.to_csv(args.out_metadata_removed, sep='\t', index=False)
-    database.export_fasta_no_tax(filtered, args.out_fasta)
-    database.export_fasta_no_tax(removed, args.out_fasta_removed)
+    database.write_fasta(filtered, args.out_fasta)
+    database.write_fasta(removed, args.out_fasta_removed)
