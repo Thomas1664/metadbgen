@@ -24,7 +24,7 @@ rule all:
 
         # Metadata
         expand("{src}/metadata/country-heat.html", src=sources),
-        
+
         # Dereplicate
         expand("{src}/dereplicate/clust-msa.fa", src=sources),
         expand("{src}/dereplicate/clust-results.tsv", src=sources),
@@ -48,7 +48,7 @@ rule all:
         expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
         expand("{src}/db-clust-msa.fasta", src=sources),
-        
+
         expand("{src}/primer-f.svg", src=sources),
         expand("{src}/primer-r.svg", src=sources),
 
@@ -139,8 +139,9 @@ if "outer_primer_f" in config or "outer_primer_r" in config:
             flags_r = lambda wc: (
                 (f"-a '{str(Seq(config['outer_primer_r']['seq']).reverse_complement())};min_overlap={config['outer_primer_r']['min_len']}'" if config.get("outer_primer_r") else "")
             )
-        shell:
-            "cutadapt {params.flags_f} {params.flags_r} -o {output} {input}"
+        run:
+            os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
+            shell("cutadapt {params.flags_f} {params.flags_r} -o {output} {input}")
 
 
 rule trim:
@@ -165,12 +166,11 @@ rule trim:
         min_seq_len = config['min_seq_len'],
         max_seq_len = config['max_seq_len'],
     threads: workflow.cores
-    shell:
-        """
-        cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}
-        awk -F'\t' '$2 != -1' {output.info} > tmp && mv tmp {output.info}
-        python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}
-        """
+    run:
+        os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        shell("python filter_cutadapt_info.py {output.info}")
+        shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
 rule trim_removed:
@@ -191,12 +191,10 @@ rule trim_removed:
         min_seq_len = config['min_seq_len'],
         max_seq_len = config['max_seq_len'],
     threads: workflow.cores
-    shell:
-        """
-        cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}
-        awk -F'\t' '$2 != -1' {output.info} > tmp && mv tmp {output.info}
-        python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}
-        """
+    run:
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        shell("python filter_cutadapt_info.py {output.info}")
+        shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 rule cluster:
     input:
@@ -257,11 +255,9 @@ rule trim_alignment:
     params:
         gap_treshold = config['gappiness_treshold'],
     threads: workflow.cores
-    shell:
-        """
-        muscle -super5 {input.fasta} -nt  -threads {threads} -output {output.msa}
-        python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {output.meta} {params.gap_treshold}
-        """
+    run:
+        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {output.meta} {params.gap_treshold}")
 
 rule taxonomy_outgroup:
     input:
@@ -290,11 +286,9 @@ rule export_db:
         # because it might be possible that none of the organisms in the database has a host.
         # Therefore, this file is not an output file.
         host_tax = "{src}/metadata/host-tax.csv",
-    shell:
-        """
-        mkdir -p "{wildcards.src}/metadata"
-        python -m cProfile -s tottime {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}
-        """
+    run:
+        os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
+        shell("python {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
 
 rule export_sintax:
     input:
@@ -304,11 +298,9 @@ rule export_sintax:
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
-    shell:
-        """
-        muscle -super5 {input.fasta} -nt  -threads {threads} -output {output.msa}
-        python {input.script} {output.msa} {input.tax} {output.db}
-        """
+    run:
+        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
+        shell("python {input.script} {output.msa} {input.tax} {output.db}")
 
 rule plot:
     input:

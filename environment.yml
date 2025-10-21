@@ -3,6 +3,7 @@ channels:
   - defaults
   - conda-forge
   - bioconda
+  - biowindows
 dependencies:
   - python=3.10
   - pip
@@ -10,6 +11,6 @@ dependencies:
   - ipykernel
   - snakemake=7.32.4
   - snakemake-minimal=7.32.4
-  - bioconda::muscle
+  - muscle
   - pip:
       - -r requirements.txt
