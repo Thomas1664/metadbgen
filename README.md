@@ -1,52 +1,46 @@
 # Metabarcoding Auto Updater
 
+## Installation
 
+This application uses a Conda environment for dependency management. Please [install Conda](https://docs.conda.io/projects/conda/en/stable/index.html) if you don't have it already on your device.
 
-## Getting started
+### Supported Platforms
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Linux, macOS, and Windows are supported on x64 architecture; macOS is also supported on ARM (aarch64).
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Creating a Conda Environment
 
-## Add your files
+We use a conda environment to install all required dependencies. In this section, you learn how to initialize your conda environment before using the workflow.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+After downloading the source code, open a terminal in the directory that contains the source code.
 
+> [!IMPORTANT]  
+> On **Windows**, please make sure to use a Conda terminal window. If the command `conda --help` succeeds, you are good to go.
+
+You can create a conda environment following the example below.
+Please replace `[ENV_NAME]` in the commands below with a meaningful name.
+
+```Console
+conda env create -n [ENV_NAME] --file environment.yml -y
+conda activate [ENV_NAME]
 ```
-cd existing_repo
-git remote add origin https://git.hhu.de/thhei107/metabarcoding-auto-updater.git
-git branch -M main
-git push -uf origin main
+
+> [!IMPORTANT]  
+> Make sure to run `conda activate [ENV_NAME]` each time before using the workflow.
+
+## Usage
+
+The workflow is implemented using the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/v7.32.3/). Snakemake takes care of efficiently running the steps of the workflow.
+
+Modify our example [config.yml](./config.yml) to configure the workflow for your barcoding locus and taxonomic group of interest.
+
+You can execute the workflow from within your conda environment using this command:
+
+```Console
+snakemake -s cox2-db.smk --configfile config.yml --cores 8
 ```
 
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.hhu.de/thhei107/metabarcoding-auto-updater/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+The flag `--cores` sets the maximum number of cores snakemake will use. Please see the [Snakemake documentation](https://snakemake.readthedocs.io/en/v7.32.3/executing/cli.html) for additional command line parameters.
 
 ## Suggestions for a good README
 
@@ -66,9 +60,6 @@ Depending on what you are making, it can be a good idea to include screenshots o
 
 ## Installation
 Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
 ## Support
 Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
