@@ -47,7 +47,7 @@ rule all:
         expand("{src}/seq-meta.csv", src=sources),
         expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
-        expand("{src}/db-clust-msa.fasta", src=sources),
+        expand("{src}/alignment/msa.fasta", src=sources),
 
         expand("{src}/primer-f.svg", src=sources),
         expand("{src}/primer-r.svg", src=sources),
@@ -249,19 +249,21 @@ rule trim_alignment:
         cutadapt_info = rules.trim.output.info_out,
         script = "trim-alignment.py"
     output:
-        msa = "{src}/db-clust-msa.fasta",
+        msa = "{src}/alignment/msa.fasta",
+        gap_scores = "{src}/alignment/msa-gap-scores.csv",
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
-        meta = "{src}/db-clust-msa.tsv",
+        meta = "{src}/alignment/metadata.tsv",
     params:
         gap_treshold = config['gappiness_treshold'],
     threads: workflow.cores
     run:
+        os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {output.meta} {params.gap_treshold}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_treshold}")
 
 rule taxonomy_outgroup:
     input:
-        meta = f"{db_prefix}/outgroups/db-clust-msa.tsv",
+        meta = f"{db_prefix}/outgroups/alignment/metadata.tsv",
     output:
         tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
     run:
