@@ -348,7 +348,7 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
                  async with rate_limit:
                     try:
                         return await run_primer_blast(client, primer_f, primer_r, [item])
-                    except (httpx.ConnectTimeout, httpx.RemoteProtocolError):
+                    except (httpx.ConnectTimeout, httpx.RemoteProtocolError, httpx.ReadError):
                         with failed_tax_ids_lock:
                             failed_tax_ids.append(item)
 
