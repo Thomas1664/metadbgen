@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-import numpy as np
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 import json
 
 
@@ -61,10 +61,12 @@ def parse_record(record: SeqRecord):
         pubmed=parse_references(record)
     )
 
-def parse_genbank_file(gb_path: str, csv_writer):
+def parse_genbank_file(gb_path: str, csv_writer, fasta_file):
     seqs = SeqIO.parse(gb_path, 'genbank')
     for seq in seqs:
         record = parse_record(seq)
         if record is None:
             continue
+        SeqIO.write(SeqRecord(id=record.accession, seq=Seq(record.sequence), description=''), fasta_file, 'fasta')
+        record.sequence = None
         dataclass_to_csv_row(csv_writer, record)

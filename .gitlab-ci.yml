@@ -1,15 +1,27 @@
 image: continuumio/miniconda3:latest
 
+variables:
+  SQLITE_DB: data/primer_blast_cache.sqlite
+  CACHE_KEY: "sqlite-$CI_COMMIT_REF_SLUG"
+
 tests:
   stage: test
   script:
     - conda env create -f environment.yml
     - source activate cox2-db
     - snakemake -s cox2-db.smk -c 2 --configfile config.yml --stats data/cox2_th/workflow-stats.json
+    - pytest e2e_test.py
   artifacts:
     when: always
     paths:
       - data/cox2_th
+    exclude:
+      - data/primer_blast_cache.sqlite
+  cache:
+    key: "$CACHE_KEY"
+    paths:
+      - $SQLITE_DB
+    policy: pull-push
 
 # You can override the included template(s) by including variable overrides
 # SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings

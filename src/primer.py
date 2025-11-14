@@ -3,13 +3,12 @@ import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
 import random
-from urllib.parse import urlencode
 from httpx_retries import Retry, RetryTransport
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
-from src import request, taxonomy, database
+from src import request, taxonomy, database, cache
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -18,11 +17,13 @@ import numpy as np
 import pandas as pd
 import csv
 import httpx
-import io
 import re
 import subprocess
-import time
 import threading
+import json
+
+
+cache = cache.AsyncSQLiteCache("data/primer_blast_cache.sqlite")
 
 
 def parse_cutadapt_info(info_file: str, out_path: str):
@@ -152,13 +153,13 @@ class BlastJobInfo:
 class PrimerBlastResult(BaseModel):
     accession: str
     uid: int
-    product_size: int = Field(validation_alias='product_length')
-    forward_template_start: int = Field(validation_alias='template_1_start')
-    forward_template_end: int = Field(validation_alias='template_1_end')
-    forward_template_sequence: str = Field(validation_alias='template_1_seq')
-    reverse_template_start: int = Field(validation_alias='template_2_start')
-    reverse_template_end: int = Field(validation_alias='template_2_end')
-    reverse_template_sequence: str = Field(validation_alias='template_2_seq')
+    product_size: int = Field(validation_alias=AliasChoices('product_length', 'product_size'))
+    forward_template_start: int = Field(validation_alias=AliasChoices('template_1_start', 'forward_template_start'))
+    forward_template_end: int = Field(validation_alias=AliasChoices('template_1_end', 'forward_template_end'))
+    forward_template_sequence: str = Field(validation_alias=AliasChoices('template_1_seq', 'forward_template_sequence'))
+    reverse_template_start: int = Field(validation_alias=AliasChoices('template_2_start', 'reverse_template_start'))
+    reverse_template_end: int = Field(validation_alias=AliasChoices('template_2_end', 'reverse_template_end'))
+    reverse_template_sequence: str = Field(validation_alias=AliasChoices('template_2_seq', 'reverse_template_sequence'))
 
 headers = {
   'accept': '*/*',
@@ -187,21 +188,94 @@ def primer_blast_client():
     )
 
 class PrimerBlastJob():
-    def __init__(self, client: httpx.AsyncClient, primer_f: str, primer_r: str, tax_ids: list[int], db='core_nt') -> None:
-        self._data = [
-            ('PRIMER_LEFT_INPUT', primer_f),
-            ('PRIMER_RIGHT_INPUT', primer_r),
-            ('PRIMER_SPECIFICITY_DATABASE', db),
-            ('SEARCH_SPECIFIC_PRIMER', 'on'),
-            ('NUM_TARGETS_WITH_PRIMERS', '10000'),
-            ('HITSIZE', '100000')
-        ]
-        for tax_id in tax_ids:
-            self._data.append(('ORGANISM', str(tax_id)))
+    def __init__(self, client: httpx.AsyncClient, primer_f: str, primer_r: str, tax_id: int, db='core_nt') -> None:
+        self._data = {
+            'PRIMER_LEFT_INPUT': primer_f,
+            'PRIMER_RIGHT_INPUT': primer_r,
+            'PRIMER_SPECIFICITY_DATABASE': db,
+            'SEARCH_SPECIFIC_PRIMER': 'on',
+            'NUM_TARGETS_WITH_PRIMERS': '10000',
+            'HITSIZE': '100000',
+            # These parameters allow for mor flexibility. Usually, Primer-BLAST is very strict about
+            # mismatches in the 3' region but our experience has shown that such sequences will be amplified anyways.
+            # This allows finding more unrelated outgroups with more mismatches in the primer region.
+            'TOTAL_PRIMER_SPECIFICITY_MISMATCH': '4', # 4th option in selection, actually 5!
+            'PRIMER_3END_SPECIFICITY_MISMATCH': '4', # 4th option in selection, actually 5!
+            'TOTAL_MISMATCH_IGNORE': '5',
+            'WORD_SIZE': '6',
+            'CON_ANEAL_OLIGO': '50.0',
+            'CON_DNTPS': '0.6',
+            'DIVA_CATIONS': '1.5',
+            'EVALUE': '30000',
+            'GC_CLAMP': '0',
+            'LOW_COMPLEXITY_FILTER': 'on',
+            'MAX_CANDIDATE_PRIMER': '500',
+            'MAX_INTRON_SIZE': '1000000',
+            'MAX_TARGET_PER_TEMPLATE': '100',
+            'MAX_TARGET_SIZE': '4000',
+            'MIN_INTRON_SIZE': '1000',
+            'MISMATCH_REGION_LENGTH': '5',
+            'MONO_CATIONS': '50.0',
+            'NUM_DIFFS': '7',
+            'NUM_OPTS_DIFFS': '2',
+            'NUM_TARGETS': '20',
+            'OVERLAP_3END': '4',
+            'OVERLAP_5END': '7',
+            'POLYX': '5',
+            'PRIMER_INTERNAL_OLIGO_MAX_GC': '80.0',
+            'PRIMER_INTERNAL_OLIGO_MAX_SIZE': '27',
+            'PRIMER_INTERNAL_OLIGO_MAX_TM': '63.0',
+            'PRIMER_INTERNAL_OLIGO_MIN_GC': '20.0',
+            'PRIMER_INTERNAL_OLIGO_MIN_SIZE': '18',
+            'PRIMER_INTERNAL_OLIGO_MIN_TM': '57.0',
+            'PRIMER_INTERNAL_OLIGO_OPT_GC_PERCENT': '50',
+            'PRIMER_INTERNAL_OLIGO_OPT_SIZE': '20',
+            'PRIMER_INTERNAL_OLIGO_OPT_TM': '60.0',
+            'PRIMER_MAX_DIFF_TM': '3',
+            'PRIMER_MAX_END_GC': '5',
+            'PRIMER_MAX_END_STABILITY': '9',
+            'PRIMER_MAX_GC': '80.0',
+            'PRIMER_MAX_HAIRPIN_TH': '24.0',
+            'PRIMER_MAX_SELF_ANY_TH': '45.0',
+            'PRIMER_MAX_SELF_END_TH': '35.0',
+            'PRIMER_MAX_SIZE': '25',
+            'PRIMER_MAX_TEMPLATE_MISPRIMING': '12.00',
+            'PRIMER_MAX_TEMPLATE_MISPRIMING_TH': '40.00',
+            'PRIMER_MAX_TM': '63.0',
+            'PRIMER_MIN_GC': '20.0',
+            'PRIMER_MIN_SIZE': '15',
+            'PRIMER_MIN_TM': '57.0',
+            'PRIMER_MISPRIMING_LIBRARY': 'AUTO',
+            'PRIMER_NUM_RETURN': '10',
+            'PRIMER_ON_SPLICE_SITE': '0',
+            'PRIMER_OPT_SIZE': '20',
+            'PRIMER_OPT_TM': '60.0',
+            'PRIMER_PAIR_MAX_COMPL_ANY': '8.00',
+            'PRIMER_PAIR_MAX_COMPL_ANY_TH': '45.0',
+            'PRIMER_PAIR_MAX_COMPL_END': '3.00',
+            'PRIMER_PAIR_MAX_COMPL_END_TH': '35.0',
+            'PRIMER_PAIR_MAX_TEMPLATE_MISPRIMING': '24.00',
+            'PRIMER_PAIR_MAX_TEMPLATE_MISPRIMING_TH': '70.00',
+            'PRIMER_PRODUCT_MAX': '1000',
+            'PRIMER_PRODUCT_MIN': '70',
+            'SALT_FORMULAR': '1',
+            'SEARCHMODE': '0',
+            'SELF_ANY': '8.00',
+            'SELF_END': '3.00',
+            'SHOW_SVIEWER': 'on',
+            'SPLICE_SITE_OVERLAP_3END': '4',
+            'SPLICE_SITE_OVERLAP_3END_MAX': '8',
+            'SPLICE_SITE_OVERLAP_5END': '7',
+            'TM_METHOD': '1',
+            'UNGAPPED_BLAST': 'on',
+            'USER_TYPE': '2',
+            'CMD': 'request',
+        }
+        self._data['ORGANISM'] = str(tax_id)
         self._client = client
     
     async def submit(self):
-        response = await self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', content=urlencode(self._data))
+        response = await self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', data=self._data)
         response.raise_for_status()
         self._job_info = self._parse_form_submission(response.text)
         if self._job_info is None:
@@ -240,7 +314,7 @@ class PrimerBlastJob():
         response = await self._poll_request()
         while response.status_code == 200 and not self._is_job_done(response.text):
             response = await self._poll_request()
-            time.sleep(delay)
+            await asyncio.sleep(delay)
         return response.text
 
     async def get_results(self, delay: int):
@@ -269,7 +343,7 @@ class PrimerBlastJob():
         for accession in res_accessions:
             hit_pre = accession.find_next('pre').text
             product_length = re.search(r"product length = (\d+)", hit_pre).group(1)
-            lines = [parse_line(l) for l in hit_pre.splitlines() if l.strip() and "product length" not in l]
+            lines = [parse_line(l) for l in hit_pre.splitlines() if l.strip() and "product length" not in l and "Features flanking this product" not in l and "bp at" not in l]
             parsed = [l for l in lines if l]
 
             # Handle duplicates
@@ -289,6 +363,8 @@ class PrimerBlastJob():
             row['accession'] = str(accession.text)
             acc_link = accession.attrs['href']
             match = re.search(r"id=(\d+)", acc_link)
+            if not match:
+                match = re.search(r"nucleotide/(\d+)\?", acc_link)
             row['uid'] = match.group(1)
 
             parsed_row = PrimerBlastResult(**row)
@@ -303,74 +379,115 @@ def export_primer_blast_results(rows: list[dict], file_name: str):
             for row in rows:
                 writer.writerow(row)
 
-async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: str, organisms: list[int], db='core_nt'):
+def blast_cache_key(_, primer_f, primer_r, organism, db="core_nt"):
+    return json.dumps((primer_f, primer_r, organism, db))
+
+@cache.decorator(key_func=blast_cache_key, model_cls=PrimerBlastResult)
+async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: str, organism: int, db='core_nt'):
     try:
-        job = PrimerBlastJob(client, primer_f, primer_r, organisms, db)
+        job = PrimerBlastJob(client, primer_f, primer_r, organism, db)
         await job.submit()
     except AttributeError:
         return
     return await job.get_results(15)
 
-async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str):
-    client = request.HttpClient()
-    tax_id = await taxonomy.get_taxid_by_name(target_organism, client)
-    tax_xml = await client.efetch_by_id('taxonomy', str(tax_id))
-    tax_info = taxonomy.parse_xml(tax_xml)[0]
-    # lineage is ordered from top to bottom, but we want to start from the bottom
-    lineage = list(reversed(tax_info.lineage))
-    taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
-    
-    field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
-    with open(out_file, 'w') as fp:
-        csv_writer = csv.DictWriter(fp, fieldnames=field_names)
-        csv_writer.writeheader()
+@dataclass
+class SisterTaxon:
+    tax_id: int
+    parent: taxonomy.Taxon
 
-        parent_taxids = [str(tax.tax_id) for tax in lineage]
-        parents = await taxonomy.by_taxids(parent_taxids)
-        sisters: list[int] = []
+async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, primer_r: str, csv_writer):
+    sister_tax_ids = pd.Series([sister.tax_id for sister in sisters])
+    if not sister_tax_ids.is_unique:
+        raise ValueError("Values in sisters are not unique.")
+    # Allow max 10 concurrent jobs
+    rate_limit = Semaphore(10)
+    tasks = []
+    client = primer_blast_client()
+    results: list[tuple[SisterTaxon, list[PrimerBlastResult]]] = []
+    failed_tax_ids = []
+    failed_tax_ids_lock = threading.Semaphore(1)
+    try:
+        async def rate_limited(item: SisterTaxon):
+             async with rate_limit:
+                await asyncio.sleep(random.uniform(5, 20))
+                try:
+                    return (item, await run_primer_blast(client, primer_f, primer_r, item.tax_id))
+                except (httpx.ConnectTimeout, httpx.RemoteProtocolError, httpx.ReadError):
+                    with failed_tax_ids_lock:
+                        failed_tax_ids.append(item)
 
-        # get sister tax ids
-        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
-            parent_data = next((item for item in parents if item['query'][0] == str(parent.tax_id)), None)
-            if parent_data is None:
-                raise ValueError(f'Missing results for query {parent.tax_id}')
-            sisters.extend(taxonomy.get_sisters(parent_data, exclude_child.tax_id))
-
-        # Allow max 10 concurrent jobs
-        rate_limit = Semaphore(10)
-        tasks = []
-        client = primer_blast_client()
-        results = []
-        failed_tax_ids = []
-        failed_tax_ids_lock = threading.Semaphore(1)
+        tasks = [asyncio.create_task(rate_limited(sister)) for sister in sisters]
         try:
-            async def rate_limited(item):
-                 async with rate_limit:
-                    try:
-                        return await run_primer_blast(client, primer_f, primer_r, [item])
-                    except (httpx.ConnectTimeout, httpx.RemoteProtocolError, httpx.ReadError):
-                        with failed_tax_ids_lock:
-                            failed_tax_ids.append(item)
-
-            for i, sister in enumerate(sisters):
-                # Random jitter added to the base delay
-                jitter = random.uniform(-0.3, 0.3)   # +/- 300ms wiggle
-                delay = max(0, i * 1.0 + jitter)     # base 1s per job, jittered
-                # Staggered launch
-                await asyncio.sleep(delay - (i - 1) if i > 0 else delay)
-                task = asyncio.create_task(rate_limited(sister))
-                tasks.append(task)
             results = await asyncio.gather(*tasks)
-            for item in failed_tax_ids:
-                results.append(await run_primer_blast(client, primer_f, primer_r, [item]))
-        except Exception as e:
-            for sister in results:
-                if sister is not None:
-                    csv_writer.writerows(map(lambda x: x.model_dump(), sister))
-            raise e
-        for sister in results:
+        finally:
+            for t in tasks:
+                t.cancel()
+        for item in failed_tax_ids:
+            results.append((item, await run_primer_blast(client, primer_f, primer_r, item.tax_id)))
+    except Exception as e:
+        for _, sister in results:
             if sister is not None:
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))
+        raise e
+    # Filter None values coming from failed attempts.
+    return [item for item in results if item is not None]
+
+
+async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str):
+    tax_info = await taxonomy.info_by_organism_name(target_organism)
+    # lineage is ordered from top to bottom, but we want to start from the bottom
+    lineage = list(reversed(tax_info.lineage))
+    lineage_dict = {taxon.tax_id: taxon for taxon in lineage}
+    taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
+
+    parent_taxids = [str(tax.tax_id) for tax in lineage]
+    parents = await taxonomy.by_taxids(parent_taxids)
+    sisters: list[SisterTaxon] = []
+
+    # get sister tax ids
+    for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
+        parent_data = next((item for item in parents if item['query'][0] == str(parent.tax_id)), None)
+        if parent_data is None:
+            raise ValueError(f'Missing results for query {parent.tax_id}')
+        current_sisters = taxonomy.get_sisters(parent_data, exclude_child.tax_id)
+        sisters.extend([SisterTaxon(sister, lineage_dict[parent.tax_id]) for sister in current_sisters])
+
+    # drop environmental samples (child of Eukaryota) and unclassified Eukaryotes
+    sisters = list(filter(lambda x: x.tax_id != 61964 and x.tax_id != 42452, sisters))
+    print(sisters)
+    with open(out_file, 'w') as fp:
+        field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
+        csv_writer = csv.DictWriter(fp, fieldnames=field_names)
+        csv_writer.writeheader()
+        results = await _off_targets_in_sisters(sisters, primer_f, primer_r, csv_writer)
+
+        try_below: list[SisterTaxon] = []
+        for item, sister in results:
+            if sister is not None and len(sister) != 0:
+                csv_writer.writerows(map(lambda x: x.model_dump(), sister))
+            else:
+                if item.parent.rank == 'domain':
+                    print(f'Nothing found in {item.tax_id}; trying one level below...')
+                    try_below.append(item)
+
+        children: list[SisterTaxon] = []
+        if len(try_below) == 0:
+            return # Nothing to do
+        for tax_data in await taxonomy.by_taxids([str(x.tax_id) for x in try_below]):
+            parent_data = next((item for item in try_below if str(item.tax_id) == tax_data['query'][0]), None)
+            if parent_data is None:
+                raise ValueError(f'Missing results for query {tax_data.tax_id}')
+            current_childs = tax_data['taxonomy']['children']
+            print(f"Taxid {tax_data['taxonomy']['tax_id']} has {len(current_childs)} kids")
+            for child in tax_data['taxonomy']['children']:
+                children.append(SisterTaxon(int(child), parent_data.parent))
+        
+        results = await _off_targets_in_sisters(children, primer_f, primer_r, csv_writer)
+        for item, sister in results:
+            if sister is not None and len(sister) != 0:
+                csv_writer.writerows(map(lambda x: x.model_dump(), sister))
+
 
 async def get_outgroup_gb(input_path: str, output_path: str):
     df = pd.read_csv(input_path)

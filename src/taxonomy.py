@@ -35,7 +35,12 @@ def parse_xml(xml_str: str):
     taxa = parsed['TaxaSet']['Taxon']
     if isinstance(taxa, dict):
         taxa = [taxa]
-    return [TaxonData(**taxon) for taxon in taxa]
+    try:
+        result = [TaxonData(**taxon) for taxon in taxa]
+    except ValidationError:
+        print(taxa)
+        raise
+    return result
 
 
 async def download_taxonomy(organism: str, output_path: str):
@@ -216,6 +221,8 @@ async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None
     return id
 
 async def by_taxids(tax_ids: list[str]):
+    if len(tax_ids) == 0:
+        raise AssertionError("No tax_ids were passed to by_taxids!")
     client = request.NcbiApiClient()
     response = await client.post('taxonomy', 'dataset_report', json={
         "taxons": tax_ids
@@ -246,6 +253,13 @@ async def from_organsim_names(data: pd.Series, tax_file: str):
     tax_ids = [str(id) for id in tax_ids.values() if id is not None]
     await fetch_by_tax_ids(tax_ids, client, tax_file)
 
+async def info_by_organism_name(organism_name: str):
+    client = request.HttpClient()
+    tax_id = await get_taxid_by_name(organism_name, client)
+    if tax_id is None:
+        raise ValueError(f'Taxon {tax_id} not found in NCBI taxonomny database')
+    tax_xml = await client.efetch_by_id('taxonomy', str(tax_id))
+    return parse_xml(tax_xml)[0]
 
 def get_sisters(parent_data: dict, exclude_child: int) -> list[int]:
     sisters = []

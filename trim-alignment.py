@@ -20,5 +20,5 @@ gap_df = alignment.filter_by_gappiness(gap_df, float(gap_treshold))
 meta_df = pd.read_csv(meta, sep='\t')
 meta_df = meta_df[meta_df['accession'].isin(gap_df['accession'])]
 meta_df.to_csv(f'{out_path}/metadata.tsv', sep='\t', index=False)
-records = [record for record in SeqIO.parse(fasta_out, 'fasta') if record.id in meta_df['accession'].values]
-database.write_fasta(records, fasta_out)
+records = list(SeqIO.parse(fasta_out, 'fasta'))
+database.write_fasta(records, fasta_out, meta_df['accession'])
