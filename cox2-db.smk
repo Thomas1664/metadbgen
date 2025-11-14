@@ -8,7 +8,6 @@ import pandas as pd
 import csv
 
 
-gb_prefix = config['gb_prefix']
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
 
 sources = [db_prefix]
@@ -17,6 +16,9 @@ if config['find_outgroups']:
 
 rule all:
     input:
+        # Input data
+        f"{db_prefix}/input-sequences.gb",
+        f"{db_prefix}/outgroups/input-sequences.gb",
         # Taxonomy
         expand("{src}/taxonomy/parsed.csv", src=sources),
         f"{db_prefix}/taxonomy/filtered.tsv",
@@ -56,12 +58,11 @@ rule all:
 
 rule download:
     output:
-        gb_file = f"{db_prefix}/{config['db_name']}.gb",
+        gb_file = f"{db_prefix}/input-sequences.gb",
     params:
         keywords = config['keywords'],
         organism = config['organism']
     run:
-        os.makedirs(gb_prefix, exist_ok=True)
         query = database.build_search_query(params.keywords, params.organism)
         asyncio.run(request.fetch_sequences(query, output.gb_file))
 
@@ -79,7 +80,7 @@ rule download_outgroups:
     input:
         in_file = rules.primer_blast_outgroups.output.out
     output:
-        gb_file = f"{db_prefix}/outgroups/{config['db_name']}.gb",
+        gb_file = f"{db_prefix}/outgroups/input-sequences.gb",
     run:
         asyncio.run(primer.get_outgroup_gb(input.in_file, output.gb_file))
 
@@ -102,7 +103,7 @@ rule taxonomy:
 
 rule parse_metadata:
     input:
-        gb_file = f"{{src}}/{config['db_name']}.gb",
+        gb_file = f"{{src}}/input-sequences.gb",
         script = "parse-gb.py"
     output:
         meta_csv = "{src}/seq-meta.csv",
