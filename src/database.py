@@ -71,41 +71,28 @@ def filter_data(df: pd.DataFrame):
     trimmed = prefer_refseq(trimmed)
     return trimmed, removed
 
-def import_trim(in_meta: str, fasta: str, out_meta: str):
-    df = pd.read_csv(in_meta, sep='\t')
-    trim = import_fasta_no_tax(df, fasta)
-    trim.to_csv(out_meta, sep='\t', index=False)
-
 def write_seq(file: TextIOWrapper, accession: str, seq: SeqRecord | str):
     file.write(f">{accession}\n{str(seq)}\n")
 
-def write_fasta(records: Iterable[SeqRecord] | pd.DataFrame, file: TextIOWrapper | str):
-    if issubclass(type(records), pd.DataFrame):
-        if isinstance(file, str):
-            with open(file, 'w') as f: # needs to be outside the loop
-                for _, row in records.iterrows():
-                    write_seq(f, row['accession'], row['sequence'])
-        else:
-            for _, row in records.iterrows():
-                write_seq(file, row['accession'], row['sequence'])
+def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | str, accessions: Iterable[str] | None=None):
+    if isinstance(records, str):
+        records = SeqIO.parse(records, 'fasta')
+    if isinstance(accessions, pd.Series):
+        accessions = accessions.values
+    if accessions is not None:
+        filter_fn = filter(lambda x: x.id in accessions, records)
     else:
-        if isinstance(file, str):
-            with open(file, 'w') as f:
-                for record in records:
-                    write_seq(f, record.id, record.seq)
-        else:
-            for record in records:
-                write_seq(file, record.id, record.seq)
-
-def import_fasta_no_tax(df: pd.DataFrame, file: str):
-    rows = [{'accession': record.id, 'sequence': str(record.seq)} for record in SeqIO.parse(file, 'fasta')]
-    seq = pd.DataFrame(rows)
-    df = df.drop(columns=['sequence'])
-    return df.merge(seq, how='inner', on='accession')
+        filter_fn = filter(lambda _: True, records)
+    if isinstance(out_file, str):
+        with open(out_file, 'w') as f:
+            for record in filter_fn:
+                write_seq(f, record.id, record.seq)
+    else:
+        for record in filter_fn:
+            write_seq(out_file, record.id, record.seq)
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label')
-    merged['trimed_seq_len'] = merged['sequence'].str.len()
     df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len'], ascending=[True, True, False])
 
     def filter_func(group: pd.DataFrame):

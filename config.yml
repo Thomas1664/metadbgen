@@ -20,5 +20,5 @@ min_seq_len: 200
 max_seq_len: 450
 find_outgroups: true
 organism: Oomycota
-gappiness_treshold: 0.1
+gappiness_treshold: 0.090
 max_ambiguous_bases: 4

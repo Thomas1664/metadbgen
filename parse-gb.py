@@ -4,12 +4,12 @@ from src import genbank_parser
 import pandas as pd
 import json
 
-gb_dir, out_file = sys.argv[1:]
+gb_dir, out_file, fasta_out = sys.argv[1:]
 
-with open(out_file, 'w', newline='') as csv_file:
+with open(out_file, 'w', newline='') as csv_file, open(fasta_out, 'w') as fasta_file:
     csv_writer = csv.writer(csv_file)
     genbank_parser.dataclass_to_csv_header(csv_writer, genbank_parser.ParsedRecord)
-    genbank_parser.parse_genbank_file(gb_dir, csv_writer)
+    genbank_parser.parse_genbank_file(gb_dir, csv_writer, fasta_file)
 
 df = pd.read_csv(out_file, index_col='accession')
 df['metadata'] = df['metadata'].apply(json.loads)

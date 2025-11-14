@@ -45,6 +45,7 @@ rule all:
 
         f"{db_prefix}/outgroups/primer-blast.csv",
         expand("{src}/seq-meta.csv", src=sources),
+        expand("{src}/sequences.fasta", src=sources),
         expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
         expand("{src}/alignment/msa.fasta", src=sources),
@@ -104,16 +105,18 @@ rule parse_metadata:
         gb_file = f"{{src}}/{config['db_name']}.gb",
         script = "parse-gb.py"
     output:
-        meta_csv = "{src}/seq-meta.csv"
+        meta_csv = "{src}/seq-meta.csv",
+        fasta = "{src}/sequences.fasta",
     shell:
         """
-        python {input.script} {input.gb_file} {output.meta_csv}
+        python {input.script} {input.gb_file} {output.meta_csv} {output.fasta}
         """
 
 
 rule clean_db:
     input:
         meta = rules.parse_metadata.output.meta_csv,
+        fasta = rules.parse_metadata.output.fasta,
         script = "db-clean.py"
     output:
         meta = "{src}/seq-meta-filtered.tsv",
@@ -122,7 +125,7 @@ rule clean_db:
         fasta_removed = "{src}/seq-filtered-removed.fasta",
     shell:
         """
-        python {input.script} --in-metadata {input.meta} --out-metadata {output.meta} --out-fasta {output.fasta} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.fasta_removed}
+        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --out-metadata {output.meta} --out-fasta {output.fasta} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.fasta_removed}
         """
 
 
@@ -152,7 +155,7 @@ rule trim:
             else rules.clean_db.output.fasta
         ),
         meta = rules.clean_db.output.meta,
-        script = 'trim.py'
+        script = "trim.py",
     output:
         fasta = "{src}/primer-trim/sequences.fasta",
         meta = "{src}/primer-trim/metadata.tsv",
@@ -165,7 +168,7 @@ rule trim:
         primer_r_len = config['primer_r']['min_len'],
         min_seq_len = config['min_seq_len'],
         max_seq_len = config['max_seq_len'],
-    threads: workflow.cores
+    threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
         shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
@@ -177,7 +180,7 @@ rule trim_removed:
     input:
         fasta = rules.clean_db.output.fasta_removed,
         meta = rules.clean_db.output.meta_removed,
-        script = 'trim.py',
+        script = "trim.py",
     output:
         fasta = "{src}/primer-trim/removed-sequences.fasta",
         meta = "{src}/primer-trim/removed-metadata.tsv",
@@ -210,6 +213,7 @@ rule cluster:
 rule dereplicate:
     input:
         meta = rules.trim.output.meta,
+        fasta = rules.trim.output.fasta,
         clust = rules.cluster.output.clust,
         script = 'dereplicate.py'
     output:
@@ -217,7 +221,7 @@ rule dereplicate:
         fasta = "{src}/dereplicate/sequences.fasta",
     shell:
         """
-        python {input.script} {input.meta} {input.clust} {output.meta} {output.fasta}
+        python {input.script} {input.meta} {input.fasta} {input.clust} {output.meta} {output.fasta}
         """
 
 rule sequence_quality_filter:
@@ -268,7 +272,7 @@ rule taxonomy_outgroup:
         tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
     run:
         meta_df = pd.read_csv(input.meta, sep='\t')
-        tax_ids = meta_df['tax_id_sanitized'].astype(int).astype(str).tolist()
+        tax_ids = meta_df['tax_id_sanitized'].astype(int).astype(str).drop_duplicates().tolist()
         client = request.HttpClient()
         asyncio.run(taxonomy.fetch_by_tax_ids(tax_ids, client, output.tax))
 
