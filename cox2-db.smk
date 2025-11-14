@@ -72,9 +72,11 @@ rule primer_blast_outgroups:
     params:
         primer_f = config['primer_f']['seq'],
         primer_r = config['primer_r']['seq'],
-        organism = config['organism']
+        organism = config['organism'],
+        use_cache = config['primer_blast']['enable_cache'],
+        cache_path = config['primer_blast']['cache_file'],
     run:
-        asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out))
+        asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path))
 
 rule download_outgroups:
     input:

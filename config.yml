@@ -65,6 +65,16 @@ max_seq_len: 450
 # subfolder.
 find_outgroups: true
 
+primer_blast:
+  # Weither to use a local cache when retrieving results from Primer BLAST.
+  # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
+  # The cache stores the Primer BLAST results locally so you only need to run
+  # Primer BLAST once. If you run the workflow again with the same settings, the
+  # Primer BLAST results are loaded from the cache instead of running Primer BLAST again.
+  enable_cache: true
+  # Path to the file where the cache is stored.
+  cache_file: "data/primer_blast_cache.sqlite"
+
 # Gappiness is a metric to quantify how many gaps one sequence introduces in all
 # other sequences of a multiple sequence alignment.
 # You can read more about gappiness in the original paper that proposes this metric:

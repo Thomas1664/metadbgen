@@ -6,6 +6,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Optional, Type
 from pydantic import BaseModel
+from contextvars import ContextVar
 
 
 class AsyncSQLiteCache:
@@ -64,7 +65,9 @@ class AsyncSQLiteCache:
             conn.execute("REPLACE INTO cache (key, value) VALUES (?, ?)", (key, json_val))
             conn.commit()
 
-    def decorator(self, key_func: Callable[..., str], model_cls: Optional[Type[BaseModel]] = None):
+cache_var: ContextVar[AsyncSQLiteCache | None] = ContextVar("cache", default=None)
+
+def decorator(key_func: Callable[..., str], model_cls: Optional[Type[BaseModel]] = None):
         """
         key_func(*args, **kwargs) -> str: stable cache key (string)
         model_cls: the element model class if the cached value is a list of models
@@ -72,8 +75,11 @@ class AsyncSQLiteCache:
         def wrapper(fn):
             @wraps(fn)
             async def async_wrapped(*args, **kwargs):
+                cache = cache_var.get()
+                if cache is None:
+                    return await fn(*args, **kwargs)
                 key = key_func(*args, **kwargs)
-                cached = self.get(key)
+                cached = cache.get(key)
                 if cached is not None:
                     if model_cls:
                         # cached is primitive alias-based JSON -> reconstruct back to model(s)
@@ -90,7 +96,7 @@ class AsyncSQLiteCache:
 
                 # Persist result in background thread so we don't block the event loop
                 loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, lambda: self.set(key, result))
+                await loop.run_in_executor(None, lambda: cache.set(key, result))
                 return result
 
             return async_wrapped

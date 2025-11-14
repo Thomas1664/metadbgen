@@ -23,9 +23,6 @@ import threading
 import json
 
 
-cache = cache.AsyncSQLiteCache("data/primer_blast_cache.sqlite")
-
-
 def parse_cutadapt_info(info_file: str, out_path: str):
     df = pd.read_csv(info_file, sep='\t', header=None)
     df = df.drop(columns=[8, 9, 10]) # Quality columns are empty
@@ -434,7 +431,10 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     return [item for item in results if item is not None]
 
 
-async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str):
+async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str):
+    if use_cache:
+        print(f'Using cache at {cache_path}')
+        cache.cache_var.set(cache.AsyncSQLiteCache(cache_path))
     tax_info = await taxonomy.info_by_organism_name(target_organism)
     # lineage is ordered from top to bottom, but we want to start from the bottom
     lineage = list(reversed(tax_info.lineage))
