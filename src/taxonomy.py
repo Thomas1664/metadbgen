@@ -57,28 +57,30 @@ def dataclass_to_csv_header(csv_writer, header):
     csv_writer.writerow(header.__annotations__.keys())
 
 
-def _parse_lineage(taxa: list[Taxon]):
-    wanted_ranks = {"domain", "clade", "kingdom", "phylum", "order", "family", "class", "genus"}
-    lower_ranks = {"phylum", "order", "family", "class", "genus"}
-    lineage = {rank: None for rank in wanted_ranks}
-    last_clade = None
-    for taxon in taxa:
-        if taxon.rank == "clade":
-            # Store it, but overwrite each time — only the last survives
-            last_clade = taxon.name
-        elif taxon.rank in wanted_ranks:
-            # If we hit phylum and still have a clade, store it
-            if taxon.rank in lower_ranks and last_clade:
-                lineage["clade"] = last_clade
-                last_clade = None
-            lineage[taxon.rank] = taxon.name
-    # Edge case: if no phylum but clade existed
-    if last_clade and lineage["clade"] is None:
-        lineage["clade"] = last_clade
-    if lineage['kingdom'] is None and lineage['clade'] is not None:
-        lineage['kingdom'] = lineage['clade']
-        lineage.pop('clade')
-    return lineage
+def _parse_lineage(taxa: list[Taxon]) -> dict[str, str | None]:
+    ranks: dict[str, int | None] = {
+        "domain": None,
+        "kingdom": None,
+        "phylum": None,
+        "class": None,
+        "order": None,
+        "family": None,
+        "genus": None,
+    }
+    for rank in ranks.keys():
+        ranks[rank] = next((i for i, x in enumerate(taxa) if x.rank == rank), None)
+
+    # Unique for protists: Protists don't have an official kingdom.
+    # Therefore, we use the lowest 'clade' rank between domain and phylum instead.
+    if ranks['kingdom'] is None:
+        domain_idx = ranks['domain']
+        phylum_idx = ranks['phylum']
+        if domain_idx is not None and phylum_idx is not None:
+            if phylum_idx - domain_idx > 1:
+                ranks['kingdom'] = phylum_idx - 1
+    return {rank: (taxa[idx].name if idx is not None else None) for rank, idx in ranks.items()}
+
+
 """
 def _parse_lineage(taxa: list[Taxon]):
     wanted_ranks = {'domain', 'kingdom', 'phylum', 'order', 'family', 'class', 'genus'}
