@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field, model_validator
 from src import request, database
@@ -70,6 +71,31 @@ def _parse_lineage(taxa: list[Taxon]) -> dict[str, str | None]:
     for rank in ranks.keys():
         ranks[rank] = next((i for i, x in enumerate(taxa) if x.rank == rank), None)
 
+    # Try find unofficial rank names by their suffix.
+    # Suffixes from https://en.wikipedia.org/wiki/Taxonomic_rank#Terminations_of_names
+    # See also https://www.iapt-taxon.org/nomen/pages/main/art_16.html
+    n_taxa = len(taxa)
+    reverse_taxa = reversed(taxa)
+    def find_by_suffix(taxa: Iterator[Taxon], rank: str, suffixes: list[str]):
+        if ranks[rank] is None:
+            idx = next(
+                (
+                    i
+                    for i, x in enumerate(taxa)
+                    if any(x.name.endswith(suf) for suf in suffixes)
+                ),
+                None
+            )
+            if idx is not None:
+                fwd_idx = n_taxa - idx - 1
+                # avoid re-using names
+                if fwd_idx not in ranks.values():
+                    ranks[rank] = fwd_idx
+    find_by_suffix(reverse_taxa, 'family', ['viridae', 'aceae', 'idae'])
+    find_by_suffix(reverse_taxa, 'order', ['ales', 'ida', 'iformes'])
+    find_by_suffix(reverse_taxa, 'class', ['viricetes', 'ia', 'opsida', 'phyceae', 'mycetes'])
+    find_by_suffix(reverse_taxa, 'phylum', ['ota', 'ophyta'])
+
     # Unique for protists: Protists don't have an official kingdom.
     # Therefore, we use the lowest 'clade' rank between domain and phylum instead.
     if ranks['kingdom'] is None:
@@ -78,6 +104,10 @@ def _parse_lineage(taxa: list[Taxon]) -> dict[str, str | None]:
         if domain_idx is not None and phylum_idx is not None:
             if phylum_idx - domain_idx > 1:
                 ranks['kingdom'] = phylum_idx - 1
+    # TODO: if class is also unknown, this won't help!
+    # Therefore, search lineage for phyla of all other species
+    # Valid names don't contain spaces!
+
     return {rank: (taxa[idx].name if idx is not None else None) for rank, idx in ranks.items()}
 
 
