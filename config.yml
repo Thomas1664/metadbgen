@@ -90,4 +90,3 @@ gappiness_treshold: 0.090
 # Sequences with excessive numbers of such bases will most likely result in a
 # lower taxonomic resolution of the resulting sequence database.
 max_ambiguous_bases: 4
-tax_backup: data/taxonomy/NameUsage.tsv

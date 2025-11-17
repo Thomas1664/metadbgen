@@ -4,7 +4,7 @@ import json
 import threading
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Type
 from pydantic import BaseModel
 from contextvars import ContextVar
 
@@ -54,7 +54,7 @@ class AsyncSQLiteCache:
         # Use separators to make stored JSON compact and ensure_ascii=False to keep unicode
         return json.dumps(prim, ensure_ascii=False, separators=(",", ":"))
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             row = conn.execute("SELECT value FROM cache WHERE key=?", (key,)).fetchone()
             return json.loads(row[0]) if row else None
@@ -67,7 +67,7 @@ class AsyncSQLiteCache:
 
 cache_var: ContextVar[AsyncSQLiteCache | None] = ContextVar("cache", default=None)
 
-def decorator(key_func: Callable[..., str], model_cls: Optional[Type[BaseModel]] = None):
+def decorator(key_func: Callable[..., str], model_cls: Type[BaseModel] | None = None):
         """
         key_func(*args, **kwargs) -> str: stable cache key (string)
         model_cls: the element model class if the cached value is a list of models

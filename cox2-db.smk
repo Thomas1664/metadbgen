@@ -22,7 +22,6 @@ rule all:
         # Taxonomy
         expand("{src}/taxonomy/parsed.csv", src=sources),
         f"{db_prefix}/taxonomy/filtered.tsv",
-        f"{db_prefix}/taxonomy/backup.csv",
 
         # Metadata
         expand("{src}/metadata/country-heat.html", src=sources),
@@ -89,11 +88,9 @@ rule download_outgroups:
 rule taxonomy:
     params:
         organism = config['organism'],
-        backup = config['tax_backup'],
     output:
         tax_file = f"{db_prefix}/taxonomy_result.xml",
         out_tax = f"{db_prefix}/taxonomy/parsed.csv",
-        backup = f"{db_prefix}/taxonomy/backup.csv",
     run:
         asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
         with open(output.tax_file, 'r', encoding='utf-8') as f:
@@ -101,7 +98,6 @@ rule taxonomy:
         with open(output.out_tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             taxonomy.to_csv(taxa, csv_writer, header=True)
-        taxonomy.parse_col_tree(params.backup, output.backup)
 
 rule parse_metadata:
     input:
@@ -284,7 +280,6 @@ rule export_db:
     input:
         meta = rules.trim_alignment.output.meta,
         tax = "{src}/taxonomy/parsed.csv",
-        backup = rules.taxonomy.output.backup,
         script = 'taxonomy-export.py'
     output:
         meta = f"{{src}}/output/{config['db_name']}-meta.tsv",
@@ -297,7 +292,7 @@ rule export_db:
         host_tax = "{src}/metadata/host-tax.csv",
     run:
         os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
-        shell("python {input.script} {input.meta} {input.tax} {input.backup} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
+        shell("python {input.script} {input.meta} {input.tax} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
 
 rule export_sintax:
     input:

@@ -209,14 +209,12 @@ def _check_taxonomy_complete(meta: pd.DataFrame, tax: pd.DataFrame):
         print(missing_tax)
     return missing_tax.empty
 
-def filter_taxonomy(meta_path: str, input_tax: str, backup_tax_path: str, output_tax: str):
+def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
     meta = pd.read_csv(meta_path, sep='\t')
     tax = pd.read_csv(input_tax)
     _check_taxonomy_complete(meta, tax)
     tax_filtered = tax[tax['tax_id'].isin(meta['tax_id_sanitized'])]
-    backup_tax = pd.read_csv(backup_tax_path)
-    tax_ranks = ['order', 'family', 'genus']
-    tax_filled = pd.DataFrame(tax_filtered.apply(lambda row: fill_taxonomic_blanks(row, backup_tax, tax_ranks), axis=1))
+    tax_filled = tax_filtered.copy()
     tax_filled = tax_filled[tax_filled['species'].apply(sanitize_org_name)]
     tax_filled.to_csv(output_tax, sep='\t', index=False)
 
