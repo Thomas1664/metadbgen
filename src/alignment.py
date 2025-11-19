@@ -1,30 +1,42 @@
 from Bio import AlignIO
+from Bio import Align
 import numpy as np
 import pandas as pd
 from Bio.Align import substitution_matrices
 
 
-def _compute_gappiness(alignment):
-    alignment_array = np.array([list(record.seq) for record in alignment])
-    num_sequences = alignment_array.shape[0]
-    alignment_length = alignment_array.shape[1]
-    gappiness_scores = []
-
-    for _, sequence in enumerate(alignment_array):
-        gpp = 0
-        for column_index in range(alignment_length):
-            column = alignment_array[:, column_index]
-            num_residues_in_column = np.sum(column != '-')
-            is_residue_in_this_sequence = sequence[column_index] != '-'
-            majority_have_gaps = num_residues_in_column < (num_sequences / 2)
-
-            if is_residue_in_this_sequence and majority_have_gaps:
-                penalty = num_sequences - num_residues_in_column
-                gpp += penalty
-
-        normalized_gpp = gpp / (alignment_length * num_sequences)
-        gappiness_scores.append(normalized_gpp)
-    return gappiness_scores
+def _compute_gappiness(alignment: Align.MultipleSeqAlignment) -> np.ndarray:
+    # construct numpy array
+    seq_strings = [str(record.seq) for record in alignment]
+    ali_mat = np.array([list(seq) for seq in seq_strings])
+    num_seqs, aln_len = ali_mat.shape
+    
+    # mask all gaps
+    residue_mask = (ali_mat != '-')
+    residues_per_column: np.ndarray = np.sum(residue_mask, axis=0)
+    
+    # only consider columns with more gaps than residues
+    more_gaps_than_residues_mask = residues_per_column < (num_seqs / 2)
+    residues_per_column = np.where(more_gaps_than_residues_mask, residues_per_column, 0)
+    
+    # expand residue counts per column for each sequence
+    # shape: num_seqs, aln_length
+    residues_per_column_mat = np.broadcast_to(residues_per_column, (num_seqs, aln_len))
+    # replace gaps with 0 using mask
+    residues_per_column_mat_filtered = np.where(residue_mask, residues_per_column_mat, 0)
+    
+    # source: https://stackoverflow.com/questions/34755244/apply-bincount-to-each-row-of-a-2d-numpy-array
+    N: int = num_seqs + 1 # +1 because we use base-1 ranges
+    # encode residues per row because bincount only works with 1D arrays
+    id = residues_per_column_mat_filtered + (N * np.arange(residues_per_column_mat_filtered.shape[0]))[:, None]
+    # count how often each bin shows up per row
+    # remove first column because there are no columns with 0 residues
+    residue_hist = np.bincount(id.ravel(), minlength=N * residues_per_column_mat_filtered.shape[0]).reshape(-1, N)[:,1:]
+    
+    n_vals = np.arange(1, num_seqs + 1)
+    weights = (num_seqs - n_vals)
+    gappiness: np.ndarray = (residue_hist * weights).sum(axis=1) / (aln_len * num_seqs)
+    return gappiness
 
 def _compute_gap_penalty(matrix: np.ndarray):
     scores = matrix.flatten()  # get all values
