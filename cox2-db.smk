@@ -88,11 +88,11 @@ rule download_outgroups:
 rule taxonomy:
     params:
         organism = config['organism'],
-    output:
         tax_file = f"{db_prefix}/taxonomy/results.xml",
+    output:
         out_tax = f"{db_prefix}/taxonomy/parsed.csv",
     run:
-        out_files = asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
+        out_files = asyncio.run(taxonomy.download_taxonomy(params.organism, params.tax_file))
         with open(output.out_tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             taxonomy.write_csv_header(csv_writer)
