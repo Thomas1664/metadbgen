@@ -44,20 +44,33 @@ class HttpClient:
         return ESearchResult(query_key, web_env, int(count), response.text)
 
     async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
-        params = params={
+        out_files: set[str] = set()
+        # Can only fetch 10K entries per request!
+        MAX_ENTRIES = 10000
+        for start in range(0, esearch_result.result_count, MAX_ENTRIES):
+            print(f'Downloading {start} of {esearch_result.result_count} records...')
+            params = {
                 'db': db,
                 'query_key': esearch_result.query_key,
                 'WebEnv': esearch_result.web_env,
                 'retmode': 'text',
-                'rettype': rettype
+                'rettype': rettype,
+                'retstart': start,
+                'retmax': MAX_ENTRIES
             }
-        async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
-            response.raise_for_status()
-            path = Path(out_file)
-            out_file = f'{path.parent}/{path.stem}{path.suffix}'
-            with open(out_file, "wb") as f:
-                async for chunk in response.aiter_bytes():
-                    f.write(chunk)    
+            async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
+                response.raise_for_status()
+                path = Path(out_file)
+                if rettype == 'xml':
+                    # Can't put multiple XML documents into one file!
+                    current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
+                else:
+                    current_out_file = f'{path.parent}/{path.stem}{path.suffix}'
+                with open(current_out_file, "wb") as f:
+                    async for chunk in response.aiter_bytes():
+                        f.write(chunk)
+                out_files.add(current_out_file)
+        return out_files
 
     # ids: list of ids obtained from esearch; make sure there are no None values
     # out_file_pattern: format string that allows insertion of a integer representing each batch

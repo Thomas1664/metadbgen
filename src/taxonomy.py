@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 from bs4 import BeautifulSoup
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 from src import request, database
 import pandas as pd
 import csv
@@ -49,7 +49,8 @@ async def download_taxonomy(organism: str, output_path: str):
     # TODO: support multiple organisms?
     query = f'({organism}[Subtree]) AND species[Rank]'
     response = await client.esearch(query, db='taxonomy')
-    await client.efetch_all(response, out_file=output_path, db='taxonomy', rettype='xml')
+    print(f'Found {response.result_count} species in taxon {organism}')
+    return await client.efetch_all(response, out_file=output_path, db='taxonomy', rettype='xml')
 
 # from https://techwasti.com/python-tutorial-writing-python-data-class-to-csv
 def dataclass_to_csv_row(csv_writer, row):

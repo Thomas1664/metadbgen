@@ -89,15 +89,17 @@ rule taxonomy:
     params:
         organism = config['organism'],
     output:
-        tax_file = f"{db_prefix}/taxonomy_result.xml",
+        tax_file = f"{db_prefix}/taxonomy/results.xml",
         out_tax = f"{db_prefix}/taxonomy/parsed.csv",
     run:
-        asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
-        with open(output.tax_file, 'r', encoding='utf-8') as f:
-            taxa = taxonomy.parse_xml(f.read())
+        out_files = asyncio.run(taxonomy.download_taxonomy(params.organism, output.tax_file))
         with open(output.out_tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            taxonomy.to_csv(taxa, csv_writer, header=True)
+            taxonomy.write_csv_header(csv_writer)
+            for file in out_files:
+                with open(file, 'r', encoding='utf-8') as f:
+                    taxa = taxonomy.parse_xml(f.read())
+                    taxonomy.to_csv(taxa, csv_writer, header=False)
 
 rule parse_metadata:
     input:
