@@ -124,9 +124,13 @@ rule clean_db:
         meta_removed = "{src}/seq-meta-filtered-removed.tsv",
         fasta = "{src}/seq-filtered.fasta",
         fasta_removed = "{src}/seq-filtered-removed.fasta",
+        accessions = "{src}/seq-filtered.txt",
+        accessions_removed = "{src}/seq-filtered-removed.txt",
     shell:
         """
-        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --out-metadata {output.meta} --out-fasta {output.fasta} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.fasta_removed}
+        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --out-metadata {output.meta} --out-fasta {output.accessions} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.accessions_removed}
+        seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
+        seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
         """
 
 

@@ -17,5 +17,5 @@ if __name__ == "__main__":
     filtered, removed = database.filter_data(df)
     filtered.to_csv(args.out_metadata, sep='\t', index=False)
     removed.to_csv(args.out_metadata_removed, sep='\t', index=False)
-    database.write_fasta(args.in_fasta, args.out_fasta, filtered['accession'])
-    database.write_fasta(args.in_fasta, args.out_fasta_removed, removed['accession'])
+    filtered['accession'].to_csv(args.out_fasta, header=False, index=False)
+    removed['accession'].to_csv(args.out_fasta_removed, header=False, index=False)
