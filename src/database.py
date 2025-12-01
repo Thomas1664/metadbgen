@@ -92,7 +92,7 @@ def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | st
             write_seq(out_file, record.id, record.seq)
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
-    merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label')
+    merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
     df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len'], ascending=[True, True, False])
 
     def filter_func(group: pd.DataFrame):
