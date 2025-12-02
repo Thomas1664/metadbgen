@@ -1,0 +1,91 @@
+# Output folder in which all your database files will be stored.
+# This may be an absolute path or a relative path.
+# The output files are then stored in a subfolder named after `db_name` (see below).
+# Must NOT include spaces or slashes!
+base_dir: data
+
+# File/ directory name of your database.
+# The files for the database are stored in a subdirectory inside the directory
+# you chose in `base_dir`.
+# `db_name` is also used to uniquely identify the final database files when using them
+# in your analysis pipelines.
+# Must NOT include spaces or slashes!
+db_name: rbcl
+
+# Scientific name of the taxonomic group of interest you want to investigate.
+# We highly recommend looking up the correct scientific name in the NCBI taxonomy database:
+# https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi
+organism: Spermatophyta
+
+# Keywords for your barcoding locus that will be used as a sequence search query.
+# We highly recommend specifying all variations/ synonyms of the complete gene name
+# including all variations of all known acronyms.
+# The search is performed case-insensitive, i.e. you don't have to include different capitalizations.
+# However, things like 1 vs. i, 2 vs. ii, etc. must be specified in both variations (see below)!
+keywords:
+  - rbcl
+  - ribulose-1,5-bisphosphate carboxylase/oxygenase large subunit
+
+# Primers
+# The primer sequences must only contain the uppercase bases A, T, G, C, and the letter N
+# for any degenerate sites.
+# min_len:
+#   The minimum length of the primers in bases.
+#   The minimum length specifies during primer trimming how large a partial hit for one primer
+#   needs to be in order to find also parts of the primer.
+#   We recommend using at least 2/3 of the actual primer length to avoid false positives.
+# combination of primers: https://doi.org/10.3732/apps.1600110
+primer_f:
+  # rbcl2, Palmieri et al. (2009) https://doi.org/10.3390/nu1020316
+  seq: TGGCAGCATTNCGAGTAACTC
+  min_len: 17
+primer_r:
+  # rbcLa-R, Kress and Erickson (2007) https://doi.org/10.1371/journal.pone.0000508
+  seq: CTTCTGCTACAAATAAGAATCGATCTC
+  min_len: 23
+
+# TODO: Nested PCR
+
+# Minimum sequence length after trimming; any sequences shorter than this value will be discarded.
+# We recommend to only include sequences that cover at least 2/3 of the desired
+# amplicon length, excluding the primers themselves.
+min_seq_len: 400
+
+# Maximum sequence length after trimming, excluding primers.
+# This is used to avoid any false-positive sequences that only contain one of the primers.
+# We recommend this value to be at most 50% larger than the desired amplicon length.
+max_seq_len: 750
+
+# Users can decide weither to also search for amplicons outside of the specified taxon
+# of interest using Primer-BLAST.
+# This allows detecting any possible host contaminations and avoids any wrong
+# taxonomic classification of sequences outside of the desired taxonomic group.
+# When enabled, the data for the outgroups can be found in the `{db_name}/outgroups``
+# subfolder.
+find_outgroups: true
+
+primer_blast:
+  # Weither to use a local cache when retrieving results from Primer BLAST.
+  # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
+  # The cache stores the Primer BLAST results locally so you only need to run
+  # Primer BLAST once. If you run the workflow again with the same settings, the
+  # Primer BLAST results are loaded from the cache instead of running Primer BLAST again.
+  enable_cache: true
+  # Path to the file where the cache is stored.
+  cache_file: "data/primer_blast_cache.sqlite"
+
+# Gappiness is a metric to quantify how many gaps one sequence introduces in all
+# other sequences of a multiple sequence alignment.
+# You can read more about gappiness in the original paper that proposes this metric:
+# https://doi.org/10.4137/EBO.S40583
+# The gappiness treshold is the maximum gappiness score above which a sequence will be removed.
+# We highly encourage you to adjust this value by taking a look at the alignment and the
+# gappiness report in the `{db_name}/` subdirectory.
+# Gappiness is a value between 0 and 1; the larger the value, the more gaps this sequence causes.
+gappiness_treshold: 0.090
+
+# Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
+# in a sequence after trimming.
+# Sequences with excessive numbers of such bases will most likely result in a
+# lower taxonomic resolution of the resulting sequence database.
+max_ambiguous_bases: 4
