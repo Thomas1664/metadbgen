@@ -38,10 +38,12 @@ class HttpClient:
         })
         response.raise_for_status()
         bs = BeautifulSoup(response.text, features="xml")
-        query_key: str = bs.find('QueryKey').string
-        web_env: str = bs.find('WebEnv').string
-        count: str = bs.find('Count').string
-        return ESearchResult(query_key, web_env, int(count), response.text)
+        maybe_query_key = bs.find('QueryKey')
+        maybe_web_env = bs.find('WebEnv')
+        maybe_count = bs.find('Count')
+        if maybe_query_key is None or maybe_web_env is None or maybe_count is None:
+            raise RuntimeError(f"Failed to parse esearch result:\n{response.text}")
+        return ESearchResult(maybe_query_key.string, maybe_web_env.string, int(maybe_count.string), response.text)
 
     async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
         out_files: set[str] = set()
