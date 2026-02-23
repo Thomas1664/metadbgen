@@ -19,10 +19,13 @@ class ESearchResult:
 class HttpClient:
     def __init__(self) -> None:
         load_dotenv()
+        api_key = os.getenv('NCBI_API_KEY')
+        if api_key is None:
+            raise RuntimeError("Missing NCBI API key!")
         self._base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
         self._client = httpx.AsyncClient(
             params={
-                'api_key': os.getenv('NCBI_API_KEY'),
+                'api_key': api_key,
                 'email': os.getenv('NCBI_API_EMAIL'),
                 'tool': os.getenv('NCBI_API_TOOL')
             },
@@ -113,10 +116,13 @@ async def fetch_sequences(query_str: str, file_prefix: str):
 class NcbiApiClient:
     def __init__(self) -> None:
         load_dotenv()
+        api_key = os.getenv('NCBI_API_KEY')
+        if api_key is None:
+            raise RuntimeError("Missing NCBI API key!")
         self._base_url = 'https://api.ncbi.nlm.nih.gov/datasets/v2'
         self._client = httpx.AsyncClient(
             headers={
-                'api-key': os.getenv('NCBI_API_KEY'),
+                'api-key': api_key,
             },
             timeout=httpx.Timeout(60, read=60),
             transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
