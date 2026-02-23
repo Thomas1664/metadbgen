@@ -48,10 +48,11 @@ class HttpClient:
             raise RuntimeError(f"Failed to parse esearch result:\n{response.text}")
         return ESearchResult(maybe_query_key.string, maybe_web_env.string, int(maybe_count.string), response.text)
 
-    async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
+    async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb'):
         out_files: set[str] = set()
         # Can only fetch 10K entries per request!
         MAX_ENTRIES = 10000
+        path = Path(out_file)
         for start in range(0, esearch_result.result_count, MAX_ENTRIES):
             print(f'Downloading {start} of {esearch_result.result_count} records...')
             params = {
@@ -65,16 +66,19 @@ class HttpClient:
             }
             async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
                 response.raise_for_status()
-                path = Path(out_file)
-                if rettype == 'xml':
-                    # Can't put multiple XML documents into one file!
-                    current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
-                else:
-                    current_out_file = f'{path.parent}/{path.stem}{path.suffix}'
+                current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
                 with open(current_out_file, "wb") as f:
                     async for chunk in response.aiter_bytes():
                         f.write(chunk)
                 out_files.add(current_out_file)
+        # Merge GenBank files back into one file.
+        # This is required because output file is tracked by snakemake.
+        if rettype == 'gb':
+            with open(out_file, 'w') as single_output:
+                for file in out_files:
+                    with open(file, 'r') as part_f:
+                        single_output.write(part_f.read())
+            return out_file
         return out_files
 
     # ids: list of ids obtained from esearch; make sure there are no None values
