@@ -97,3 +97,10 @@ tree:
   # Maximum number of iterations after which iqtree terminates tree optimization.
   # More iterations yield better trees but take longer.
   max_iterations: 150
+
+mislabel_detection:
+  k: 10
+  max_radius: 0.1
+  min_neighbors: 3
+  confidence_threshold: 0.7
+  rank_level: genus
