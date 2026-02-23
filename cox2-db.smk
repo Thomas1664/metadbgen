@@ -1,7 +1,7 @@
 import glob
 import os
 import asyncio
-from src import metadata, request, taxonomy, primer, database
+from src import metadata, request, taxonomy, primer, database, mislabel_detection
 from Bio.Seq import Seq
 from Bio import SeqIO
 import pandas as pd
@@ -34,10 +34,14 @@ rule all:
         expand("{src}/quality-filter/metadata.tsv", src=sources),
         expand("{src}/quality-filter/sequences.fasta", src=sources),
 
+        # Tree
+        expand(f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile", src=sources),
+        expand(f"{{src}}/tree/{config['db_name']}-tree-dist.csv", src=sources),
+
         # Outputs
-        expand(f"{{src}}/output/{config['db_name']}-meta.tsv",src=sources),
-        expand(f"{{src}}/output/{config['db_name']}-qiime.fa",src=sources),
-        expand(f"{{src}}/output/{config['db_name']}-qiime.tsv",src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-meta.tsv", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.fa", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.tsv", src=sources),
         expand(f"{{src}}/output/{config['db_name']}-sintax.fasta", src=sources),
 
         # Primer trimming
@@ -302,17 +306,30 @@ rule export_db:
         os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
         shell("python {input.script} {input.meta} {input.tax} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
 
+
+rule tree:
+    input: rules.trim_alignment.output.fasta,
+    params:
+        max_iterations = config['tree']['max_iterations']
+    output: 
+        msa = f"{{src}}/tree/{config['db_name']}-msa.fasta",
+        tree = f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile",
+        tree_dist = f"{{src}}/tree/{config['db_name']}-tree-dist.csv",
+    run: 
+        shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
+        shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
+        dist_df = mislabel_detection.tree_distances(output.tree)
+        dist_df.to_csv(output.tree_dist, header=True, index=True)
+
 rule export_sintax:
     input:
-        fasta = rules.trim_alignment.output.fasta,
+        msa = rules.tree.output.msa,
         tax = rules.export_db.output.tax,
         script = "export-sintax.py"
     output:
-        msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
     run:
-        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.tax} {output.db}")
+        shell("python {input.script} {input.msa} {input.tax} {output.db}")
 
 rule plot:
     input:
