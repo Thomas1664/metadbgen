@@ -176,7 +176,9 @@ rule trim:
     threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        # FIXME: propery calculate max buffer size based on maximum sequence length
+        # We might want to put safequards for maximum downloaded sequence length
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
@@ -200,7 +202,7 @@ rule trim_removed:
         max_seq_len = config['max_seq_len'],
     threads: workflow.cores
     run:
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
