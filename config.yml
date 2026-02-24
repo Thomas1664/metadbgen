@@ -59,7 +59,7 @@ min_seq_len: 200
 # We recommend this value to be at most 50% larger than the desired amplicon length.
 max_seq_len: 450
 
-# Users can decide weither to also search for amplicons outside of the specified taxon
+# Users can decide whether to also search for amplicons outside of the specified taxon
 # of interest using Primer-BLAST.
 # This allows detecting any possible host contaminations and avoids any wrong
 # taxonomic classification of sequences outside of the desired taxonomic group.
@@ -68,7 +68,7 @@ max_seq_len: 450
 find_outgroups: true
 
 primer_blast:
-  # Weither to use a local cache when retrieving results from Primer BLAST.
+  # Whether to use a local cache when retrieving results from Primer BLAST.
   # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
   # The cache stores the Primer BLAST results locally so you only need to run
   # Primer BLAST once. If you run the workflow again with the same settings, the
@@ -81,11 +81,11 @@ primer_blast:
 # other sequences of a multiple sequence alignment.
 # You can read more about gappiness in the original paper that proposes this metric:
 # https://doi.org/10.4137/EBO.S40583
-# The gappiness treshold is the maximum gappiness score above which a sequence will be removed.
+# The gappiness threshold is the maximum gappiness score above which a sequence will be removed.
 # We highly encourage you to adjust this value by taking a look at the alignment and the
 # gappiness report in the `{db_name}/` subdirectory.
 # Gappiness is a value between 0 and 1; the larger the value, the more gaps this sequence causes.
-gappiness_treshold: 0.090
+gappiness_threshold: 0.090
 
 # Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
 # in a sequence after trimming.

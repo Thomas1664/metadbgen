@@ -276,12 +276,12 @@ rule trim_alignment:
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
         meta = "{src}/alignment/metadata.tsv",
     params:
-        gap_treshold = config['gappiness_treshold'],
+        gap_threshold = config['gappiness_threshold'],
     threads: workflow.cores
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_treshold}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
 rule taxonomy_outgroup:
     input:
