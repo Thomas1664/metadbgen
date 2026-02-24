@@ -17,26 +17,21 @@ if config['find_outgroups']:
 
 rule all:
     input:
-        # Input data
-        f"{db_prefix}/input-sequences.gb",
-        f"{db_prefix}/outgroups/input-sequences.gb",
         # Taxonomy
-        expand("{src}/taxonomy/parsed.csv", src=sources),
         f"{db_prefix}/taxonomy/filtered.tsv",
 
-        # Metadata
+        # Metadata plots
+        expand("{src}/primer-f.fasta", src=sources),
+        expand("{src}/primer-r.fasta", src=sources),
+        expand("{src}/primer-f.svg", src=sources),
+        expand("{src}/primer-r.svg", src=sources),
         expand("{src}/metadata/country-heat.html", src=sources),
+        expand("{src}/metadata/country-heat.svg", src=sources),
 
         # Dereplicate
         expand("{src}/dereplicate/clust-msa.fa", src=sources),
-        expand("{src}/dereplicate/clust-results.tsv", src=sources),
-
-        # Quality Filter
-        expand("{src}/quality-filter/metadata.tsv", src=sources),
-        expand("{src}/quality-filter/sequences.fasta", src=sources),
 
         # Tree
-        expand(f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile", src=sources),
         expand(f"{{src}}/tree/{config['db_name']}-tree-dist.csv", src=sources),
 
         # Misslabel detection
@@ -55,16 +50,13 @@ rule all:
         # Primer trimming
         expand("{src}/primer-trim/removed-sequences.fasta", src=sources),
         expand("{src}/primer-trim/removed-metadata.tsv", src=sources),
+        expand("{src}/primer-trim/removed-cutadapt-info.tsv", src=sources),
+        expand("{src}/primer-trim/removed-cutadapt-info-parsed.tsv", src=sources),
 
-        f"{db_prefix}/outgroups/primer-blast.csv",
-        expand("{src}/seq-meta.csv", src=sources),
-        expand("{src}/sequences.fasta", src=sources),
         expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
+        expand("{src}/seq-filtered-removed.txt", src=sources),
         expand("{src}/alignment/msa.fasta", src=sources),
-
-        expand("{src}/primer-f.svg", src=sources),
-        expand("{src}/primer-r.svg", src=sources),
 
 
 rule download:
