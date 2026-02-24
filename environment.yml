@@ -13,5 +13,6 @@ dependencies:
   - snakemake-minimal=7.32.4
   - muscle
   - seqkit
+  - iqtree
   - pip:
       - -r requirements.txt

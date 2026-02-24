@@ -171,3 +171,4 @@ data/*.gb
 data/download
 data/cox2_th
 .DS_Store
+*.sqlite

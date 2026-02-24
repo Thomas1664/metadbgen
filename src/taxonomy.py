@@ -219,7 +219,7 @@ def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
     tax_filled = tax_filled[tax_filled['species'].apply(sanitize_org_name)]
     tax_filled.to_csv(output_tax, sep='\t', index=False)
 
-def merge_taxonomy(meta_in: str, tax: str):
+def merge_taxonomy(meta_in: str, tax: str) -> pd.DataFrame:
     meta = pd.read_csv(meta_in, sep='\t')
     tax_df = pd.read_csv(tax, sep='\t')
     meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='inner')
@@ -299,3 +299,8 @@ def get_sisters(parent_data: dict, exclude_child: int) -> list[int]:
         assert exclude_child in sisters
         sisters.remove(exclude_child)
     return sisters
+
+def load_tax_qiime(path: str) -> pd.DataFrame:
+    tax_df = pd.read_csv(path, sep='\t', header=None)
+    tax_df[['domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']] = tax_df[1].str.split(';', expand=True)
+    return tax_df.set_index(0)

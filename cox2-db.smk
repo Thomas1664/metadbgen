@@ -1,7 +1,7 @@
 import glob
 import os
 import asyncio
-from src import metadata, request, taxonomy, primer, database
+from src import metadata, request, taxonomy, primer, database, mislabel_detection
 from Bio.Seq import Seq
 from Bio import SeqIO
 import pandas as pd
@@ -34,10 +34,21 @@ rule all:
         expand("{src}/quality-filter/metadata.tsv", src=sources),
         expand("{src}/quality-filter/sequences.fasta", src=sources),
 
+        # Tree
+        expand(f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile", src=sources),
+        expand(f"{{src}}/tree/{config['db_name']}-tree-dist.csv", src=sources),
+
+        # Misslabel detection
+        expand(f"{{src}}/output/{config['db_name']}-meta-clean.tsv", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime-clean.tsv", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime-clean.fa", src=sources),
+        expand(f"{{src}}/mislabel-detection.csv", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-accessions.txt", src=sources),
+
         # Outputs
-        expand(f"{{src}}/output/{config['db_name']}-meta.tsv",src=sources),
-        expand(f"{{src}}/output/{config['db_name']}-qiime.fa",src=sources),
-        expand(f"{{src}}/output/{config['db_name']}-qiime.tsv",src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-meta.tsv", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.fa", src=sources),
+        expand(f"{{src}}/output/{config['db_name']}-qiime.tsv", src=sources),
         expand(f"{{src}}/output/{config['db_name']}-sintax.fasta", src=sources),
 
         # Primer trimming
@@ -176,7 +187,9 @@ rule trim:
     threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        # FIXME: propery calculate max buffer size based on maximum sequence length
+        # We might want to put safequards for maximum downloaded sequence length
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
@@ -200,7 +213,7 @@ rule trim_removed:
         max_seq_len = config['max_seq_len'],
     threads: workflow.cores
     run:
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} {input.fasta}")
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
@@ -263,12 +276,12 @@ rule trim_alignment:
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
         meta = "{src}/alignment/metadata.tsv",
     params:
-        gap_treshold = config['gappiness_treshold'],
+        gap_threshold = config['gappiness_threshold'],
     threads: workflow.cores
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_treshold}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
 rule taxonomy_outgroup:
     input:
@@ -300,10 +313,60 @@ rule export_db:
         os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
         shell("python {input.script} {input.meta} {input.tax} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
 
+
+rule tree:
+    input: rules.trim_alignment.output.fasta,
+    params:
+        max_iterations = config['tree']['max_iterations']
+    output: 
+        msa = f"{{src}}/tree/{config['db_name']}-msa.fasta",
+        tree = f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile",
+        tree_dist = f"{{src}}/tree/{config['db_name']}-tree-dist.csv",
+    run: 
+        shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
+        shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
+        dist_df = mislabel_detection.tree_distances(output.tree)
+        dist_df.to_csv(output.tree_dist, header=True, index=True)
+
+
+rule mislabel_detection:
+    input:
+        tree_dist = rules.tree.output.tree_dist,
+        tax = rules.export_db.output.tax,
+        meta = rules.export_db.output.meta,
+        fasta = rules.trim_alignment.output.fasta
+    params:
+        mislabel = config['mislabel_detection'],
+    output:
+        meta = f"{{src}}/output/{config['db_name']}-meta-clean.tsv",
+        tax = f"{{src}}/output/{config['db_name']}-qiime-clean.tsv",
+        fasta = f"{{src}}/output/{config['db_name']}-qiime-clean.fa",
+        mislabel = f"{{src}}/mislabel-detection.csv",
+        accessions = f"{{src}}/output/{config['db_name']}-accessions.txt",
+        removed = f"{{src}}/mislabeled-sequences.fasta",
+    run:
+        dist_df = pd.read_csv(input.tree_dist, index_col=0)
+        tax_df = taxonomy.load_tax_qiime(input.tax)
+        # ensure that tax_df and dist_df are in the same order.
+        tax_df = tax_df.loc[dist_df.index]
+        mislabel_df = mislabel_detection.validate_at_rank(tax_df, dist_df.values, **params.mislabel)
+        seq_ids_to_keep = mislabel_df[~mislabel_df['is_mislabeled'].values]['seq_id']
+        meta_df = pd.read_csv(input.meta, sep='\t')
+        meta_df = meta_df[meta_df['accession'].isin(seq_ids_to_keep)]
+        meta_df.to_csv(output.meta, sep='\t', index=False)
+        qiime_df = pd.read_csv(input.tax, sep='\t', header=None)
+        qiime_df = qiime_df[qiime_df[0].isin(seq_ids_to_keep)]
+        qiime_df.to_csv(output.tax, sep='\t', index=False, header=False)
+        seq_ids_to_keep.to_csv(output.accessions, header=False, index=False)
+        mislabel_df.to_csv(output.mislabel, index=False)
+        shell("seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}")
+        shell("seqkit grep -v -f {output.accessions} -o {output.removed} {input.fasta}")
+
+
 rule export_sintax:
     input:
-        fasta = rules.trim_alignment.output.fasta,
-        tax = rules.export_db.output.tax,
+        fasta = rules.mislabel_detection.output.fasta,
+        tax = rules.mislabel_detection.output.tax,
         script = "export-sintax.py"
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
@@ -314,7 +377,7 @@ rule export_sintax:
 
 rule plot:
     input:
-        meta = rules.export_db.output.meta,
+        meta = rules.mislabel_detection.output.meta,
         info = rules.trim.output.info_out,
     output:
         fasta_f = "{src}/primer-f.fasta",

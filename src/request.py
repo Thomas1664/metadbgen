@@ -19,15 +19,18 @@ class ESearchResult:
 class HttpClient:
     def __init__(self) -> None:
         load_dotenv()
+        api_key = os.getenv('NCBI_API_KEY')
+        if api_key is None:
+            raise RuntimeError("Missing NCBI API key!")
         self._base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
         self._client = httpx.AsyncClient(
             params={
-                'api_key': os.getenv('NCBI_API_KEY'),
+                'api_key': api_key,
                 'email': os.getenv('NCBI_API_EMAIL'),
                 'tool': os.getenv('NCBI_API_TOOL')
             },
             timeout=httpx.Timeout(60, read=60),
-            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 502, 503, 504]))
         )
 
     async def esearch(self, query: str, db='nuccore'):
@@ -45,10 +48,11 @@ class HttpClient:
             raise RuntimeError(f"Failed to parse esearch result:\n{response.text}")
         return ESearchResult(maybe_query_key.string, maybe_web_env.string, int(maybe_count.string), response.text)
 
-    async def efetch_all(self, esearch_result: ESearchResult, out_file: str, db='nuccore', rettype: str='gb'):
+    async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb'):
         out_files: set[str] = set()
         # Can only fetch 10K entries per request!
         MAX_ENTRIES = 10000
+        path = Path(out_file)
         for start in range(0, esearch_result.result_count, MAX_ENTRIES):
             print(f'Downloading {start} of {esearch_result.result_count} records...')
             params = {
@@ -62,16 +66,19 @@ class HttpClient:
             }
             async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
                 response.raise_for_status()
-                path = Path(out_file)
-                if rettype == 'xml':
-                    # Can't put multiple XML documents into one file!
-                    current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
-                else:
-                    current_out_file = f'{path.parent}/{path.stem}{path.suffix}'
+                current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
                 with open(current_out_file, "wb") as f:
                     async for chunk in response.aiter_bytes():
                         f.write(chunk)
                 out_files.add(current_out_file)
+        # Merge GenBank files back into one file.
+        # This is required because output file is tracked by snakemake.
+        if rettype == 'gb':
+            with open(out_file, 'w') as single_output:
+                for file in out_files:
+                    with open(file, 'r') as part_f:
+                        single_output.write(part_f.read())
+            return out_file
         return out_files
 
     # ids: list of ids obtained from esearch; make sure there are no None values
@@ -113,10 +120,13 @@ async def fetch_sequences(query_str: str, file_prefix: str):
 class NcbiApiClient:
     def __init__(self) -> None:
         load_dotenv()
+        api_key = os.getenv('NCBI_API_KEY')
+        if api_key is None:
+            raise RuntimeError("Missing NCBI API key!")
         self._base_url = 'https://api.ncbi.nlm.nih.gov/datasets/v2'
         self._client = httpx.AsyncClient(
             headers={
-                'api-key': os.getenv('NCBI_API_KEY'),
+                'api-key': api_key,
             },
             timeout=httpx.Timeout(60, read=60),
             transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5))

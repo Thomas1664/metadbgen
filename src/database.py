@@ -93,7 +93,7 @@ def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | st
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
-    df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len'], ascending=[True, True, False])
+    df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len', 'accession'], ascending=[True, True, False, True])
 
     def filter_func(group: pd.DataFrame):
         # only keep identical sequences if they are from different species

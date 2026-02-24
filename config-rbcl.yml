@@ -56,7 +56,7 @@ min_seq_len: 400
 # We recommend this value to be at most 50% larger than the desired amplicon length.
 max_seq_len: 750
 
-# Users can decide weither to also search for amplicons outside of the specified taxon
+# Users can decide whether to also search for amplicons outside of the specified taxon
 # of interest using Primer-BLAST.
 # This allows detecting any possible host contaminations and avoids any wrong
 # taxonomic classification of sequences outside of the desired taxonomic group.
@@ -65,27 +65,65 @@ max_seq_len: 750
 find_outgroups: true
 
 primer_blast:
-  # Weither to use a local cache when retrieving results from Primer BLAST.
+  # whether to use a local cache when retrieving results from Primer BLAST.
   # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
   # The cache stores the Primer BLAST results locally so you only need to run
   # Primer BLAST once. If you run the workflow again with the same settings, the
   # Primer BLAST results are loaded from the cache instead of running Primer BLAST again.
   enable_cache: true
   # Path to the file where the cache is stored.
-  cache_file: "data/primer_blast_cache.sqlite"
+  cache_file: "data/primer_blast_cache_rbcl.sqlite"
 
 # Gappiness is a metric to quantify how many gaps one sequence introduces in all
 # other sequences of a multiple sequence alignment.
 # You can read more about gappiness in the original paper that proposes this metric:
 # https://doi.org/10.4137/EBO.S40583
-# The gappiness treshold is the maximum gappiness score above which a sequence will be removed.
+# The gappiness threshold is the maximum gappiness score above which a sequence will be removed.
 # We highly encourage you to adjust this value by taking a look at the alignment and the
 # gappiness report in the `{db_name}/` subdirectory.
 # Gappiness is a value between 0 and 1; the larger the value, the more gaps this sequence causes.
-gappiness_treshold: 0.090
+gappiness_threshold: 0.090
 
 # Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
 # in a sequence after trimming.
 # Sequences with excessive numbers of such bases will most likely result in a
 # lower taxonomic resolution of the resulting sequence database.
 max_ambiguous_bases: 4
+
+
+tree:
+  # Maximum number of iterations after which iqtree terminates tree optimization.
+  # More iterations yield better trees but take longer.
+  max_iterations: 50
+
+# Detect sequences that are likely to have the wrong taxonomic label based on
+# a majority vote on the k nearest sequences within max_radius distance of the sequence under investigation.
+# Mislabeled sequences can greatly decrease taxonomic classification performance
+# for query sequences that are very similar to a mislabeled sequence in the resulting database.
+mislabel_detection:
+  # The maximum number of nearest neighbors to consider.
+  # If a sequence has more than k neighbors, only the k nearest neighbors will be considered.
+  # If there are less than k neighbors, all of them are considered.
+  # If there are less than `min_neighbors`, no evaluation takes place for this sequence.
+  k: 10
+  # Maximum distance within which to look for neighbors.
+  # Increasing this value results in more far away sequences to be considered.
+  # Generally, this value may be increased for higher taxonomic levels and decreased for lower levels.
+  max_radius: 0.1
+  # Minimum number of neighbors within `max_radius` needed to attempt classification.
+  # If a sequence has fewer neighbors in this radius, no classification will take place.
+  # In such cases, the columns `predicted_label` and `score` will be empty. 
+  min_neighbors: 5
+  # Minimal score to flag a sequence as wrongly labeled if the name at `rank_level` doesn't
+  # match the name of the neighboring sequences.
+  # This is a value between 0 and 1.
+  confidence_threshold: 0.7
+  # The rank level at which to search.
+  # In principle, this can be any of the following values:
+  # domain, kingdom, phylum, class, order, family, genus, or species.
+  # Setting a rank of e.g. family will automatically detect mislabels at higher ranks as well.
+  # The lower of a rank you pick, the better the taxonomy for your organism needs to be.
+  # Generally, we don't recommend using species because this can lead to numerous false-positives,
+  # especially for species with unclear species boundaries and cryptic species.
+  rank_level: genus
+

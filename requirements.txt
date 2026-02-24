@@ -22,3 +22,5 @@ pycountry
 httpx-retries
 pydantic
 xmltodict==0.15.1
+setuptools<81
+dendropy

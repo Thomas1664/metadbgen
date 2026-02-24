@@ -105,5 +105,5 @@ def calculate_gappiness(msa_path, substitution_matrix='NUC.4.4'):
     })
     return df.sort_values('gappiness_normalized', ascending=False)
 
-def filter_by_gappiness(df: pd.DataFrame, gappiness_treshold=0.1):
-    return df[df['gappiness'].lt(gappiness_treshold)]
+def filter_by_gappiness(df: pd.DataFrame, gappiness_threshold=0.1):
+    return df[df['gappiness'].lt(gappiness_threshold)]
