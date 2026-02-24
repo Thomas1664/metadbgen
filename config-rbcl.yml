@@ -72,7 +72,7 @@ primer_blast:
   # Primer BLAST results are loaded from the cache instead of running Primer BLAST again.
   enable_cache: true
   # Path to the file where the cache is stored.
-  cache_file: "data/primer_blast_cache.sqlite"
+  cache_file: "data/primer_blast_cache_rbcl.sqlite"
 
 # Gappiness is a metric to quantify how many gaps one sequence introduces in all
 # other sequences of a multiple sequence alignment.
@@ -89,3 +89,41 @@ gappiness_threshold: 0.090
 # Sequences with excessive numbers of such bases will most likely result in a
 # lower taxonomic resolution of the resulting sequence database.
 max_ambiguous_bases: 4
+
+
+tree:
+  # Maximum number of iterations after which iqtree terminates tree optimization.
+  # More iterations yield better trees but take longer.
+  max_iterations: 50
+
+# Detect sequences that are likely to have the wrong taxonomic label based on
+# a majority vote on the k nearest sequences within max_radius distance of the sequence under investigation.
+# Mislabeled sequences can greatly decrease taxonomic classification performance
+# for query sequences that are very similar to a mislabeled sequence in the resulting database.
+mislabel_detection:
+  # The maximum number of nearest neighbors to consider.
+  # If a sequence has more than k neighbors, only the k nearest neighbors will be considered.
+  # If there are less than k neighbors, all of them are considered.
+  # If there are less than `min_neighbors`, no evaluation takes place for this sequence.
+  k: 10
+  # Maximum distance within which to look for neighbors.
+  # Increasing this value results in more far away sequences to be considered.
+  # Generally, this value may be increased for higher taxonomic levels and decreased for lower levels.
+  max_radius: 0.1
+  # Minimum number of neighbors within `max_radius` needed to attempt classification.
+  # If a sequence has fewer neighbors in this radius, no classification will take place.
+  # In such cases, the columns `predicted_label` and `score` will be empty. 
+  min_neighbors: 5
+  # Minimal score to flag a sequence as wrongly labeled if the name at `rank_level` doesn't
+  # match the name of the neighboring sequences.
+  # This is a value between 0 and 1.
+  confidence_threshold: 0.7
+  # The rank level at which to search.
+  # In principle, this can be any of the following values:
+  # domain, kingdom, phylum, class, order, family, genus, or species.
+  # Setting a rank of e.g. family will automatically detect mislabels at higher ranks as well.
+  # The lower of a rank you pick, the better the taxonomy for your organism needs to be.
+  # Generally, we don't recommend using species because this can lead to numerous false-positives,
+  # especially for species with unclear species boundaries and cryptic species.
+  rank_level: genus
+
