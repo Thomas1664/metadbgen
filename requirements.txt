@@ -7,7 +7,7 @@ httpx
 beautifulsoup4
 lxml
 scikit-learn
-cutadapt
+cutadapt>=5.2,<6.0
 matplotlib
 # plotly 6.3 requires kaleido>=1.0.0 which in turn requires chrome
 # https://plotly.com/python/static-image-export/#chrome
@@ -22,5 +22,5 @@ pycountry
 httpx-retries
 pydantic
 xmltodict==0.15.1
-setuptools<81
 dendropy
+tenacity

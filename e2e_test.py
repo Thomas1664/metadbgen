@@ -1,12 +1,13 @@
 from typing import Any
 from src import validate
 import pandas as pd
-import snakemake
 import pytest
+import yaml
 
 @pytest.fixture
 def config() -> dict[str, Any]:
-    return snakemake.load_configfile('config.yml')
+    with open('config.yml') as config_f:
+        return yaml.safe_load(config_f)
 
 @pytest.fixture
 def base_paths(config: dict[str, Any]):
