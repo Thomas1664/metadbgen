@@ -6,6 +6,7 @@ from Bio.Seq import Seq
 from Bio import SeqIO
 import pandas as pd
 import csv
+from concurrent.futures import ThreadPoolExecutor
 
 
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
@@ -74,7 +75,9 @@ rule download:
         organism = config['organism']
     run:
         query = database.build_search_query(params.keywords, params.organism)
-        asyncio.run(request.fetch_sequences(query, output.gb_file))
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(request.fetch_sequences(query, output.gb_file)))
+            future.result()
 
 rule primer_blast_outgroups:
     output:
@@ -86,7 +89,9 @@ rule primer_blast_outgroups:
         use_cache = config['primer_blast']['enable_cache'],
         cache_path = config['primer_blast']['cache_file'],
     run:
-        asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path))
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path)))
+            future.result()
 
 rule download_outgroups:
     input:
@@ -94,7 +99,9 @@ rule download_outgroups:
     output:
         gb_file = f"{db_prefix}/outgroups/input-sequences.gb",
     run:
-        asyncio.run(primer.get_outgroup_gb(input.in_file, output.gb_file))
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(primer.get_outgroup_gb(input.in_file, output.gb_file)))
+            future.result()
 
 rule taxonomy:
     params:
@@ -103,7 +110,9 @@ rule taxonomy:
     output:
         out_tax = f"{db_prefix}/taxonomy/parsed.csv",
     run:
-        out_files = asyncio.run(taxonomy.download_taxonomy(params.organism, params.tax_file))
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(taxonomy.download_taxonomy(params.organism, params.tax_file)))
+            out_files = future.result()
         with open(output.out_tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             taxonomy.write_csv_header(csv_writer)
@@ -292,7 +301,9 @@ rule taxonomy_outgroup:
         meta_df = pd.read_csv(input.meta, sep='\t')
         tax_ids = meta_df['tax_id_sanitized'].astype(int).astype(str).drop_duplicates().tolist()
         client = request.HttpClient()
-        asyncio.run(taxonomy.fetch_by_tax_ids(tax_ids, client, output.tax))
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(taxonomy.fetch_by_tax_ids(tax_ids, client, output.tax)))
+            future.result()
 
 
 rule export_db:

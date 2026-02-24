@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from pathlib import Path
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 import asyncio
 
 
@@ -33,6 +34,12 @@ class HttpClient:
             transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 502, 503, 504]))
         )
 
+    @retry(
+        retry=retry_if_exception_type(RuntimeError),
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        reraise=True
+    )
     async def esearch(self, query: str, db='nuccore'):
         response = await self._client.get(f'{self._base_url}esearch.fcgi', params={
             'db': db,
