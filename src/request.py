@@ -31,7 +31,7 @@ class HttpClient:
                 'tool': os.getenv('NCBI_API_TOOL')
             },
             timeout=httpx.Timeout(60, read=60),
-            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 502, 503, 504]))
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 500, 501, 502, 503, 504]))
         )
 
     @retry(
