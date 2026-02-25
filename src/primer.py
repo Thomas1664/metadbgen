@@ -128,13 +128,14 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
-    ax = plt.subplot()
+    fig, ax = plt.subplots()
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
-    plt.xticks(range(1, np.max(lengths), 2))
-    plt.xlabel("Base positions")
-    plt.ylabel("Proportions")
-    plt.ylim((0, 1))
-    plt.savefig(logo_path, format='svg', bbox_inches='tight')
+    ax.set_xticks(range(1, np.max(lengths), 2))
+    ax.set_xlabel("Base positions")
+    ax.set_ylabel("Proportions")
+    ax.set_ylim((0, 1))
+    fig.savefig(logo_path, format='svg', bbox_inches='tight')
+    plt.close(fig)
 
 def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
