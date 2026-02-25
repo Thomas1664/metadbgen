@@ -61,7 +61,17 @@ class HttpClient:
         MAX_ENTRIES = 10000
         path = Path(out_file)
         for start in range(0, esearch_result.result_count, MAX_ENTRIES):
-            print(f'Downloading {start} of {esearch_result.result_count} records...')
+            current_out_file = Path(f'{path.parent}/{path.stem}_{start}{path.suffix}')
+            # Avoid downloading the same records again
+            if rettype == 'gb' and current_out_file.exists():
+                # check last modified date
+                last_modified = datetime.fromtimestamp(current_out_file.stat().st_mtime)
+                if (datetime.now() - last_modified).days < 7:
+                    with open(current_out_file, 'r') as f:
+                        record_count =  sum(1 for line in f if line.strip() == '//')
+                        if record_count == MAX_ENTRIES - 1:
+                            continue
+
             params = {
                 'db': db,
                 'query_key': esearch_result.query_key,
