@@ -8,7 +8,7 @@ msa, cutadapt_info, meta, fasta_out, out_path, gap_treshold = sys.argv[1:]
 
 primer.trim_msa(cutadapt_info, meta, msa, fasta_out)
 
-gap_df = alignment.calculate_gappiness(msa)
+gap_df = alignment.calculate_gappiness(msa).sort_values('gappiness_normalized', ascending=False)
 gap_df.to_csv(f'{out_path}/msa-gap-scores.csv', index=False)
 # Re-order sequences in alignment based on gappiness scores, desc
 msa_records = {record.id: str(record.seq) for record in SeqIO.parse(msa, 'fasta')}
