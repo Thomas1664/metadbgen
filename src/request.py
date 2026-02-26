@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 import httpx
 from httpx_retries import RetryTransport, Retry
 import os
@@ -83,7 +84,6 @@ class HttpClient:
             }
             async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
                 response.raise_for_status()
-                current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
                 with open(current_out_file, "wb") as f:
                     async for chunk in response.aiter_bytes():
                         f.write(chunk)
