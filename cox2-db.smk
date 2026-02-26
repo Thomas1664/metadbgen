@@ -204,6 +204,7 @@ rule trim_removed:
     output:
         fasta = "{src}/primer-trim/removed-sequences.fasta",
         meta = "{src}/primer-trim/removed-metadata.tsv",
+        info_tmp = "{src}/primer-trim/removed-cutadapt-info-tmp.tsv",
         info = "{src}/primer-trim/removed-cutadapt-info.tsv",
         info_out = "{src}/primer-trim/removed-cutadapt-info-parsed.tsv",
     params:
