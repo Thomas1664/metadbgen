@@ -56,6 +56,12 @@ class HttpClient:
             raise RuntimeError(f"Failed to parse esearch result:\n{response.text}")
         return ESearchResult(maybe_query_key.string, maybe_web_env.string, int(maybe_count.string), response.text)
 
+    @retry(
+        retry=retry_if_exception_type(httpx.RemoteProtocolError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=5, max=30),
+        reraise=True
+    )
     async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb'):
         out_files: set[str] = set()
         # Can only fetch 10K entries per request!
