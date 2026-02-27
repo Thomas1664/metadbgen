@@ -33,16 +33,18 @@ def fix_tax_id(row: pd.Series, trimmed: pd.DataFrame):
     return row['tax_id']
 
 def prefer_refseq(trimmed: pd.DataFrame):
-    species_groups = trimmed.groupby('organism_name_sanitized')
-    for _, species in species_groups:
-        # accessions of refseq sequences contain an underscore
-        # see https://www.ncbi.nlm.nih.gov/refseq/about/
-        refseq = species[species['accession'].str.contains('_')]
-        if not refseq.empty:
-            non_refseq = species[~species['accession'].str.contains('_')]
-            if not non_refseq.empty:
-                trimmed.drop(trimmed[trimmed['accession'].isin(non_refseq['accession'])].index, inplace=True)
-    return trimmed
+    # does this row’s group contain ANY refseq?
+    # accessions of refseq sequences contain an underscore
+    # see https://www.ncbi.nlm.nih.gov/refseq/about/
+    has_refseq = trimmed.groupby('organism_name_sanitized')['accession'] \
+                        .transform(lambda s: s.str.contains('_').any())
+    # is THIS row refseq?
+    is_refseq = trimmed['accession'].str.contains('_', regex=False)
+    # if group has refseq, keep only refseq rows
+    # if group has no refseq, keep all rows
+    mask = (~has_refseq) | (is_refseq)
+    return trimmed[mask].copy()
+
 
 def filter_data(df: pd.DataFrame):
     # remove unverified sequences

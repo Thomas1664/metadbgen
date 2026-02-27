@@ -90,16 +90,18 @@ def _compute_sequence_weights(alignment, matrix_name="NUC.4.4"):
 def calculate_gappiness(msa_path, substitution_matrix='NUC.4.4'):
     alignment = AlignIO.read(msa_path, 'fasta')
     gappiness = _compute_gappiness(alignment)
-    weights = _compute_sequence_weights(alignment, substitution_matrix)
+    # FIXME: Weights disabled because they're unused & take a really long time.
+    # also delete wight computation above.
+    #weights = _compute_sequence_weights(alignment, substitution_matrix)
 
     # Normalize
-    norm_weights = (weights - np.min(weights)) / (np.max(weights) - np.min(weights))
+    #norm_weights = (weights - np.min(weights)) / (np.max(weights) - np.min(weights))
     norm_gpp = (gappiness - np.min(gappiness)) / (np.max(gappiness) - np.min(gappiness))
 
     df = pd.DataFrame({
         'accession': [record.id for record in alignment],
-        'weight': weights,
-        'weight_normalized': norm_weights,
+        #'weight': weights,
+        #'weight_normalized': norm_weights,
         'gappiness': gappiness,
         'gappiness_normalized': norm_gpp
     })

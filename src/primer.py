@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 import random
 from httpx_retries import Retry, RetryTransport
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from pydantic import AliasChoices, BaseModel, Field
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
@@ -128,13 +129,14 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
-    ax = plt.subplot()
+    fig, ax = plt.subplots()
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
-    plt.xticks(range(1, np.max(lengths), 2))
-    plt.xlabel("Base positions")
-    plt.ylabel("Proportions")
-    plt.ylim((0, 1))
-    plt.savefig(logo_path, format='svg', bbox_inches='tight')
+    ax.set_xticks(range(1, np.max(lengths), 2))
+    ax.set_xlabel("Base positions")
+    ax.set_ylabel("Proportions")
+    ax.set_ylim((0, 1))
+    fig.savefig(logo_path, format='svg', bbox_inches='tight')
+    plt.close(fig)
 
 def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
@@ -379,6 +381,12 @@ def export_primer_blast_results(rows: list[dict], file_name: str):
 def blast_cache_key(_, primer_f, primer_r, organism, db="core_nt"):
     return json.dumps((primer_f, primer_r, organism, db))
 
+@retry(
+    retry=retry_if_exception_type((httpx.ConnectTimeout, httpx.RemoteProtocolError, httpx.ReadError)),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=5, max=40),
+    reraise=True
+)
 @cache.decorator(key_func=blast_cache_key, model_cls=PrimerBlastResult)
 async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: str, organism: int, db='core_nt'):
     try:
@@ -402,33 +410,18 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     tasks = []
     client = primer_blast_client()
     results: list[tuple[SisterTaxon, list[PrimerBlastResult]]] = []
-    failed_tax_ids = []
-    failed_tax_ids_lock = threading.Semaphore(1)
-    try:
-        async def rate_limited(item: SisterTaxon):
-             async with rate_limit:
-                await asyncio.sleep(random.uniform(5, 20))
-                try:
-                    return (item, await run_primer_blast(client, primer_f, primer_r, item.tax_id))
-                except (httpx.ConnectTimeout, httpx.RemoteProtocolError, httpx.ReadError):
-                    with failed_tax_ids_lock:
-                        failed_tax_ids.append(item)
+    async def rate_limited(item: SisterTaxon):
+        async with rate_limit:
+            await asyncio.sleep(random.uniform(5, 20))
+            return (item, await run_primer_blast(client, primer_f, primer_r, item.tax_id))
 
-        tasks = [asyncio.create_task(rate_limited(sister)) for sister in sisters]
-        try:
-            results = await asyncio.gather(*tasks)
-        finally:
-            for t in tasks:
-                t.cancel()
-        for item in failed_tax_ids:
-            results.append((item, await run_primer_blast(client, primer_f, primer_r, item.tax_id)))
-    except Exception as e:
-        for _, sister in results:
-            if sister is not None:
-                csv_writer.writerows(map(lambda x: x.model_dump(), sister))
-        raise e
-    # Filter None values coming from failed attempts.
-    return [item for item in results if item is not None]
+    tasks = [asyncio.create_task(rate_limited(sister)) for sister in sisters]
+    try:
+        results = await asyncio.gather(*tasks)
+    finally:
+        for t in tasks:
+            t.cancel()
+    return results
 
 
 async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str):

@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 import httpx
 from httpx_retries import RetryTransport, Retry
 import os
@@ -31,7 +32,7 @@ class HttpClient:
                 'tool': os.getenv('NCBI_API_TOOL')
             },
             timeout=httpx.Timeout(60, read=60),
-            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 502, 503, 504]))
+            transport=RetryTransport(retry=Retry(total=5, backoff_factor=0.5, status_forcelist=[400, 429, 500, 501, 502, 503, 504]))
         )
 
     @retry(
@@ -55,13 +56,29 @@ class HttpClient:
             raise RuntimeError(f"Failed to parse esearch result:\n{response.text}")
         return ESearchResult(maybe_query_key.string, maybe_web_env.string, int(maybe_count.string), response.text)
 
+    @retry(
+        retry=retry_if_exception_type(httpx.RemoteProtocolError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=5, max=30),
+        reraise=True
+    )
     async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb'):
         out_files: set[str] = set()
         # Can only fetch 10K entries per request!
         MAX_ENTRIES = 10000
         path = Path(out_file)
         for start in range(0, esearch_result.result_count, MAX_ENTRIES):
-            print(f'Downloading {start} of {esearch_result.result_count} records...')
+            current_out_file = Path(f'{path.parent}/{path.stem}_{start}{path.suffix}')
+            # Avoid downloading the same records again
+            if rettype == 'gb' and current_out_file.exists():
+                # check last modified date
+                last_modified = datetime.fromtimestamp(current_out_file.stat().st_mtime)
+                if (datetime.now() - last_modified).days < 7:
+                    with open(current_out_file, 'r') as f:
+                        record_count =  sum(1 for line in f if line.strip() == '//')
+                        if record_count == MAX_ENTRIES - 1:
+                            continue
+
             params = {
                 'db': db,
                 'query_key': esearch_result.query_key,
@@ -73,7 +90,6 @@ class HttpClient:
             }
             async with self._client.stream("GET", f'{self._base_url}efetch.fcgi', params=params) as response:
                 response.raise_for_status()
-                current_out_file = f'{path.parent}/{path.stem}_{start}{path.suffix}'
                 with open(current_out_file, "wb") as f:
                     async for chunk in response.aiter_bytes():
                         f.write(chunk)
