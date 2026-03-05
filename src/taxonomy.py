@@ -223,7 +223,6 @@ def merge_taxonomy(meta_in: str, tax: str) -> pd.DataFrame:
     meta = pd.read_csv(meta_in, sep='\t')
     tax_df = pd.read_csv(tax, sep='\t')
     meta_and_tax = meta.merge(tax_df, left_on='tax_id', right_on='tax_id', how='inner')
-    meta_and_tax = meta_and_tax.rename(columns={'tax_id_x': 'tax_id'}).drop(columns=['tax_id_y'])
     return meta_and_tax
 
 
