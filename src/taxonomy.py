@@ -204,7 +204,7 @@ def fill_taxonomic_blanks(row, backup, ranks):
 
 
 def _check_taxonomy_complete(meta: pd.DataFrame, tax: pd.DataFrame):
-    missing_tax = meta[~meta['tax_id_sanitized'].isin(tax['tax_id'])]
+    missing_tax = meta[~meta['tax_id'].isin(tax['tax_id'])]
     if not missing_tax.empty:
         print('Warning: No taxonomy information found for the following accessions:')
         print(missing_tax)
@@ -214,7 +214,7 @@ def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
     meta = pd.read_csv(meta_path, sep='\t')
     tax = pd.read_csv(input_tax)
     _check_taxonomy_complete(meta, tax)
-    tax_filtered = tax[tax['tax_id'].isin(meta['tax_id_sanitized'])]
+    tax_filtered = tax[tax['tax_id'].isin(meta['tax_id'])]
     tax_filled = tax_filtered.copy()
     tax_filled = tax_filled[tax_filled['species'].apply(sanitize_org_name)]
     tax_filled.to_csv(output_tax, sep='\t', index=False)
@@ -222,7 +222,7 @@ def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
 def merge_taxonomy(meta_in: str, tax: str) -> pd.DataFrame:
     meta = pd.read_csv(meta_in, sep='\t')
     tax_df = pd.read_csv(tax, sep='\t')
-    meta_and_tax = meta.merge(tax_df, right_on='tax_id', left_on='tax_id_sanitized', how='inner')
+    meta_and_tax = meta.merge(tax_df, left_on='tax_id', right_on='tax_id', how='inner')
     meta_and_tax = meta_and_tax.rename(columns={'tax_id_x': 'tax_id'}).drop(columns=['tax_id_y'])
     return meta_and_tax
 

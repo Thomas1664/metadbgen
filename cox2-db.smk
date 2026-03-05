@@ -293,7 +293,7 @@ rule taxonomy_outgroup:
         tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
     run:
         meta_df = pd.read_csv(input.meta, sep='\t')
-        tax_ids = meta_df['tax_id_sanitized'].astype(int).astype(str).drop_duplicates().tolist()
+        tax_ids = meta_df['tax_id'].astype(int).astype(str).drop_duplicates().tolist()
         client = request.HttpClient()
         with ThreadPoolExecutor() as pool:
             future = pool.submit(lambda: asyncio.run(taxonomy.fetch_by_tax_ids(tax_ids, client, output.tax)))
