@@ -16,7 +16,7 @@ def remove_if_contains_substr(df: pd.DataFrame, col: str, substr: str):
 
 def sanitize_org_name(org_name: str) -> str:
     org_name_arr = org_name.split(' ')
-    to_remove = ['x', 'var.', 'var', 'aff.', 'aff', 'cf.', 'cf']
+    to_remove = ['x', 'var.', 'var', 'aff.', 'aff', 'cf.', 'cf', 'taxon']
     for s in to_remove:
         try:
             org_name_arr.remove(s)
@@ -66,9 +66,15 @@ def filter_data(df: pd.DataFrame):
     # sanitize organism name
     trimmed['organism_name_sanitized'] = trimmed['organism_name']
     trimmed['organism_name_sanitized'] = trimmed['organism_name_sanitized'].apply(sanitize_org_name)
-    # sanitize tax_id
-    trimmed['tax_id_sanitized'] = trimmed['tax_id']
-    trimmed['tax_id_sanitized'] = trimmed.apply(lambda row: fix_tax_id(row, trimmed), axis=1)
+    trimmed.index = trimmed['accession']
+    is_on_mask = trimmed['organism_name'] != trimmed['organism_name_sanitized']
+    non_on_seqs = trimmed[~is_on_mask]
+    non_on_species = non_on_seqs['organism_name'].unique()
+    # ON species that don't have a non-ON species name
+    # e.g. Globisporangium aff. irregulare while there is no Globisporangium irregulare
+    on_native_mask = is_on_mask & ~trimmed['organism_name_sanitized'].isin(non_on_species)
+    on_native = trimmed[on_native_mask]
+    trimmed = trimmed.filter([*non_on_seqs.index, *on_native.index], axis='index')
 
     trimmed = prefer_refseq(trimmed)
     return trimmed, removed
@@ -82,16 +88,16 @@ def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | st
     if isinstance(accessions, pd.Series):
         accessions = accessions.values
     if accessions is not None:
-        filter_fn = filter(lambda x: x.id in accessions, records)
+        filter_fn = filter(lambda x: x.id in accessions, records) # type: ignore
     else:
         filter_fn = filter(lambda _: True, records)
     if isinstance(out_file, str):
         with open(out_file, 'w') as f:
             for record in filter_fn:
-                write_seq(f, record.id, record.seq)
+                write_seq(f, record.id, record.seq) # type: ignore
     else:
         for record in filter_fn:
-            write_seq(out_file, record.id, record.seq)
+            write_seq(out_file, record.id, record.seq) # type: ignore
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
@@ -131,7 +137,7 @@ def make_qiime_db(meta_df: pd.DataFrame, tax_out_path: str):
             if pd.isna(row["kingdom"]):
                 row["kingdom"] = row["phylum"]
 
-            taxonomy = f'd__{row["domain"]};k__{row["kingdom"]};p__{row["phylum"]};c__{row["class"]};o__{row["order"]};f__{row["family"]};g__{row["genus"]};s__{row["organism_name_sanitized"]}'
+            taxonomy = f'd__{row["domain"]};k__{row["kingdom"]};p__{row["phylum"]};c__{row["class"]};o__{row["order"]};f__{row["family"]};g__{row["genus"]};s__{row["species"]}'
             taxonomy = taxonomy.replace(" ", "+")
             print(f'{row["accession"]}\t{taxonomy}', file=tax_out)
 
