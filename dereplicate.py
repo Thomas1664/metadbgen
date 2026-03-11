@@ -1,6 +1,7 @@
 import pandas as pd
 from src import database
 import sys
+import subprocess
 
 
 in_meta, in_fasta, clust, out_meta, out_fasta = sys.argv[1:]
