@@ -322,7 +322,9 @@ class PrimerBlastJob():
 
     @staticmethod
     def _parse_results(html: str):
-        def parse_line(line):
+        def parse_line(line: str):
+            if line.startswith('Features associated with this product'):
+                return None
             parts = line.split()
             if len(parts) < 4:
                 return None
