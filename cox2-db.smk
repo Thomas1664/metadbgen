@@ -60,6 +60,7 @@ rule all:
 
 
 rule download:
+    retries: 5
     output:
         gb_file = f"{db_prefix}/input-sequences.gb",
     params:
@@ -72,6 +73,7 @@ rule download:
             future.result()
 
 rule primer_blast_outgroups:
+    retries: 5
     output:
         out = f"{db_prefix}/outgroups/primer-blast.csv",
     params:
