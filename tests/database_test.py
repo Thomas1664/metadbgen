@@ -12,3 +12,74 @@ def test_prefer_refseq():
 def test_sanitize_org_name():
     assert database.sanitize_org_name('Phytophthora taxon juncus') == 'Phytophthora juncus'
     
+
+def _make_clust_results(rows):
+    """rows: list of (type, cluster_id, query_length, similarity, strand, align_res, query_label)"""
+    return pd.DataFrame(rows, columns=['type', 'cluster_id', 'query_length', 'similarity', 'strand', 'align_res', 'query_label'])
+
+def _make_metadata(rows):
+    """rows: list of (accession, tax_id, trimed_seq_len)"""
+    return pd.DataFrame(rows, columns=['accession', 'tax_id', 'trimed_seq_len'])
+
+def test_dereplicate_keeps_longest_sequence():
+    # Two sequences same cluster + tax_id: ACC1 (len=500) and ACC2 (len=300) → ACC1 kept
+    metadata = _make_metadata([
+        ('ACC1', 1, 500),
+        ('ACC2', 1, 300),
+    ])
+    clust = _make_clust_results([
+        ('H', 'C1', 500, 1.0, '+', '8I', 'ACC1'),
+        ('H', 'C1', 300, 1.0, '+', '8I', 'ACC2'),
+    ])
+    result = database.dereplicate(clust, metadata)
+    assert list(result['accession']) == ['ACC1']
+
+def test_dereplicate_no_duplicate_cluster_tax_id():
+    metadata = _make_metadata([
+        ('ACC1', 1, 500),
+        ('ACC2', 1, 400),
+        ('ACC3', 2, 300),
+        ('ACC4', 2, 200),
+    ])
+    clust = _make_clust_results([
+        ('H', 'C1', 500, 1.0, '+', '8I', 'ACC1'),
+        ('H', 'C1', 400, 1.0, '+', '8I', 'ACC2'),
+        ('H', 'C1', 300, 1.0, '+', '8I', 'ACC3'),
+        ('H', 'C1', 200, 1.0, '+', '8I', 'ACC4'),
+    ])
+    result = database.dereplicate(clust, metadata)
+    assert result.duplicated(subset=['cluster_id', 'tax_id']).sum() == 0
+
+def test_dereplicate_multiple_clusters_and_tax_ids():
+    # C1/tax1: ACC1(500) > ACC2(300) → ACC1
+    # C1/tax2: ACC3(400)             → ACC3
+    # C2/tax1: ACC4(600)             → ACC4
+    metadata = _make_metadata([
+        ('ACC1', 1, 500),
+        ('ACC2', 1, 300),
+        ('ACC3', 2, 400),
+        ('ACC4', 1, 600),
+    ])
+    clust = _make_clust_results([
+        ('H', 'C1', 500, 1.0, '+', '8I', 'ACC1'),
+        ('H', 'C1', 300, 1.0, '+', '8I', 'ACC2'),
+        ('H', 'C1', 400, 1.0, '+', '8I', 'ACC3'),
+        ('H', 'C2', 600, 1.0, '+', '8I', 'ACC4'),
+    ])
+    result = database.dereplicate(clust, metadata)
+    assert set(result['accession']) == {'ACC1', 'ACC3', 'ACC4'}
+
+def test_dereplicate_single_row_cluster():
+    metadata = _make_metadata([('ACC1', 1, 500)])
+    clust = _make_clust_results([('S', 'C1', 500, 1.0, '+', '8I', 'ACC1')])
+    result = database.dereplicate(clust, metadata)
+    assert len(result) == 1
+    assert result['accession'].iloc[0] == 'ACC1'
+
+def test_dereplicate_drops_columns():
+    metadata = _make_metadata([('ACC1', 1, 500)])
+    clust = _make_clust_results([('S', 'C1', 500, 1.0, '+', '8I', 'ACC1')])
+    result = database.dereplicate(clust, metadata)
+    dropped = {'type', 'query_length', 'similarity', 'align_res', 'query_label', 'strand'}
+    assert dropped.isdisjoint(result.columns)
+

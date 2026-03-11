@@ -102,19 +102,10 @@ def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | st
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
+    # Sort so that the longest sequence per (cluster_id, tax_id) comes first,
+    # then drop_duplicates keeps exactly one row per (cluster_id, tax_id) — the longest.
     df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len', 'accession'], ascending=[True, True, False, True])
-
-    def filter_func(group: pd.DataFrame):
-        # only keep identical sequences if they are from different species
-        # Removes identical (but potentially shorter) sequences from the same species
-        # ==> Remove redundant sequences that don't give any new information
-        # PRE: each group is sorted (desc) by trimed_seq_len
-        if group.shape[0] == 1:
-            return group
-        subgroup = group.groupby('tax_id', group_keys=False)
-        return subgroup.head(1)
-
-    df_filtered = df_sorted.copy().groupby('cluster_id', group_keys=False).apply(filter_func)
+    df_filtered = df_sorted.drop_duplicates(subset=['cluster_id', 'tax_id'], keep='first')
     return df_filtered.drop(columns=['type', 'query_length', 'similarity', 'align_res', 'query_label', 'strand'])
 
 
