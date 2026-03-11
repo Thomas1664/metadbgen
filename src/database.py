@@ -49,6 +49,7 @@ def prefer_refseq(trimmed: pd.DataFrame):
 def filter_data(df: pd.DataFrame):
     # remove unverified sequences
     filtered = df.drop(df[df['title'].str.lower().str.startswith('unverified')].index).copy()
+    filtered = filtered.drop_duplicates(subset=['accession'])
     # remove sequences with unknown species (i.e. sp.)
     filtered = remove_if_contains_substr(filtered, 'organism_name', 'sp.')
     # remove sequences from uncultured samples
