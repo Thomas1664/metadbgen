@@ -77,6 +77,7 @@ class HttpClient:
                     with open(current_out_file, 'r') as f:
                         record_count =  sum(1 for line in f if line.strip() == '//')
                         if record_count == MAX_ENTRIES - 1:
+                            out_files.add(current_out_file)
                             continue
 
             params = {
