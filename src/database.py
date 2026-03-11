@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+import subprocess
 
 
 def build_search_query(keywords: list[str], organism: str):
@@ -83,22 +84,12 @@ def filter_data(df: pd.DataFrame):
 def write_seq(file: TextIOWrapper, accession: str, seq: SeqRecord | str):
     file.write(f">{accession}\n{str(seq)}\n")
 
-def write_fasta(records: Iterable[SeqRecord] | str, out_file: TextIOWrapper | str, accessions: Iterable[str] | None=None):
-    if isinstance(records, str):
-        records = SeqIO.parse(records, 'fasta')
-    if isinstance(accessions, pd.Series):
-        accessions = accessions.values
-    if accessions is not None:
-        filter_fn = filter(lambda x: x.id in accessions, records) # type: ignore
-    else:
-        filter_fn = filter(lambda _: True, records)
-    if isinstance(out_file, str):
-        with open(out_file, 'w') as f:
-            for record in filter_fn:
-                write_seq(f, record.id, record.seq) # type: ignore
-    else:
-        for record in filter_fn:
-            write_seq(out_file, record.id, record.seq) # type: ignore
+def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Series):
+    if not isinstance(accessions, pd.Series):
+        accessions = pd.Series(accessions)
+    acc_list_file = f'{out_fasta}.txt'
+    accessions.to_csv(acc_list_file, header=False, index=False)
+    subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta])
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))

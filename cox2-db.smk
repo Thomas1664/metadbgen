@@ -263,11 +263,10 @@ rule sequence_quality_filter:
             composition[record.id] = database.seq_base_composition(str(record.seq))
         df = pd.DataFrame.from_dict(composition, orient='index')
         df = df[df['other'] <= params.max_ambiguous_bases]
-        records = list(filter(lambda record: record.id in df.index.values, records))
         meta = pd.read_csv(input.meta, sep='\t')
         meta = meta[meta['accession'].isin(df.index)]
         meta.to_csv(output.meta, sep='\t', index=False)
-        database.write_fasta(records, output.fasta)
+        database.write_fasta(input.fasta, output.fasta, meta['accession'])
 
 rule trim_alignment:
     input:
@@ -278,6 +277,7 @@ rule trim_alignment:
     output:
         msa = "{src}/alignment/msa.fasta",
         gap_scores = "{src}/alignment/msa-gap-scores.csv",
+        fasta_tmp = "{src}/alignment/seq-trimmed.fasta",
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
         meta = "{src}/alignment/metadata.tsv",
     params:
@@ -286,7 +286,7 @@ rule trim_alignment:
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
 rule taxonomy_outgroup:
     input:

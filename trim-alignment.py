@@ -4,9 +4,9 @@ import pandas as pd
 from Bio import SeqIO
 
 
-msa, cutadapt_info, meta, fasta_out, out_path, gap_treshold = sys.argv[1:]
+msa, cutadapt_info, meta, fasta_tmp, fasta_out, out_path, gap_treshold = sys.argv[1:]
 
-primer.trim_msa(cutadapt_info, meta, msa, fasta_out)
+primer.trim_msa(cutadapt_info, meta, msa, fasta_tmp)
 
 gap_df = alignment.calculate_gappiness(msa).sort_values('gappiness_normalized', ascending=False)
 gap_df.to_csv(f'{out_path}/msa-gap-scores.csv', index=False)
@@ -20,5 +20,4 @@ gap_df = alignment.filter_by_gappiness(gap_df, float(gap_treshold))
 meta_df = pd.read_csv(meta, sep='\t')
 meta_df = meta_df[meta_df['accession'].isin(gap_df['accession'])]
 meta_df.to_csv(f'{out_path}/metadata.tsv', sep='\t', index=False)
-records = list(SeqIO.parse(fasta_out, 'fasta'))
-database.write_fasta(records, fasta_out, meta_df['accession'])
+database.write_fasta(fasta_tmp, fasta_out, meta_df['accession'])
