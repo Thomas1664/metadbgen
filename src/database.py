@@ -89,7 +89,7 @@ def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Se
         accessions = pd.Series(accessions)
     acc_list_file = f'{out_fasta}.txt'
     accessions.to_csv(acc_list_file, header=False, index=False)
-    subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta])
+    subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta], check=True)
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))

@@ -1,4 +1,6 @@
 import sys
+import os
+from pathlib import Path
 from src import primer, alignment, database
 import pandas as pd
 from Bio import SeqIO
@@ -6,6 +8,7 @@ from Bio import SeqIO
 
 msa, cutadapt_info, meta, fasta_tmp, fasta_out, out_path, gap_treshold = sys.argv[1:]
 
+os.makedirs(Path(fasta_out).parent, exist_ok=True)
 primer.trim_msa(cutadapt_info, meta, msa, fasta_tmp)
 
 gap_df = alignment.calculate_gappiness(msa).sort_values('gappiness_normalized', ascending=False)
