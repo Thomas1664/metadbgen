@@ -284,11 +284,10 @@ rule trim_alignment:
         meta = "{src}/alignment/metadata.tsv",
     params:
         gap_threshold = config['gappiness_threshold'],
-    threads: workflow.cores
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         os.makedirs(f'{wildcards.src}/output', exist_ok=True)
-        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
+        shell("muscle -super5 {input.fasta} -nt -threads 12 -output {output.msa}")
         shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
 rule taxonomy_outgroup:
@@ -333,7 +332,7 @@ rule tree:
         tree = f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile",
         tree_dist = f"{{src}}/tree/{config['db_name']}-tree-dist.csv",
     run: 
-        shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
+        shell("muscle -super5 {input} -nt -threads 12 -output {output.msa}")
         shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
         dist_df = mislabel_detection.tree_distances(output.tree)
         dist_df.to_csv(output.tree_dist, header=True, index=True)
@@ -382,7 +381,7 @@ rule export_sintax:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
     run:
-        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
+        shell("muscle -super5 {input.fasta} -nt -threads 12 -output {output.msa}")
         shell("python {input.script} {output.msa} {input.tax} {output.db}")
 
 rule plot:
