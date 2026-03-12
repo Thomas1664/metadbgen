@@ -285,6 +285,7 @@ rule trim_alignment:
     threads: workflow.cores
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
+        os.makedirs(f'{wildcards.src}/output', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
         shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
