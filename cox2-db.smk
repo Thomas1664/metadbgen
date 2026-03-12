@@ -121,10 +121,12 @@ rule parse_metadata:
         script = "parse-gb.py"
     output:
         meta_csv = "{src}/seq-meta.csv",
+        fasta_tmp = "{src}/sequences.fasta.tmp",
         fasta = "{src}/sequences.fasta",
     shell:
         """
-        python {input.script} {input.gb_file} {output.meta_csv} {output.fasta}
+        python {input.script} {input.gb_file} {output.meta_csv} {output.fasta_tmp}
+        seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
         """
 
 
