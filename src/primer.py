@@ -63,11 +63,9 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
     cut_filtered = cutadapt[cutadapt['accession'].isin(meta['accession'])]
     
     references = cut_filtered.dropna(subset=['primer_seq_forward', 'primer_seq_reverse'])
-    accessions = references['accession'].tolist()
+    accessions = set(references['accession'])
 
     alignment = AlignIO.read(msa_path, 'fasta')
-    firsts = []
-    lasts = []
     if len(accessions) == 0:
         # No references available; skip trimming
         with open(fasta_out, 'w') as fasta:
@@ -76,23 +74,15 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
                 ungapped_seq = str(record.seq).replace('-', '').upper()
                 database.write_seq(fasta, record.id, ungapped_seq)
         return
-    
-    for sequence in alignment:
-        if sequence.id not in accessions:
-            continue
-        seq = str(sequence.seq)
-        # find first non-gap
-        first = next(i for i, base in enumerate(seq) if base != "-")
-        # find last non-gap
-        last = len(seq) - next(i for i, base in enumerate(reversed(seq)) if base != "-") - 1
-        firsts.append(first)
-        lasts.append(last)
-    firsts = pd.Series(firsts)
-    lasts = pd.Series(lasts)
-    # trim at most frequent position among the reference sequences
-    trim_start = int(firsts.value_counts(sort=True, ascending=False).index[0])
-    trim_end = int(lasts.value_counts(sort=True, ascending=False).index[0])
 
+    ref_seqs = [str(seq.seq) for seq in alignment if seq.id in accessions]
+    aln_len = len(ref_seqs[0])
+    matrix = np.frombuffer(''.join(ref_seqs).encode('ascii'), dtype='S1').reshape(len(ref_seqs), aln_len)
+    firsts_arr = np.argmax(matrix != b'-', axis=1)
+    lasts_arr = aln_len - 1 - np.argmax(matrix[:, ::-1] != b'-', axis=1)
+    # trim at most frequent position among the reference sequences
+    trim_start = int(np.bincount(firsts_arr).argmax())
+    trim_end = int(np.bincount(lasts_arr).argmax())
     # slice alignment: [rows, columns]
     msa_trimmed = alignment[:, trim_start:trim_end + 1]
     # write fasta file
