@@ -60,6 +60,9 @@ def filter_data(df: pd.DataFrame):
     # remove nom. inval. species
     filtered = remove_if_contains_substr(filtered, 'title', 'nom. inval.')
     filtered = remove_if_contains_substr(filtered, 'organism_name', 'nom. inval.')
+    # filter "imposters"
+    filtered = remove_if_contains_substr(filtered, 'title', '-like ')
+    filtered = remove_if_contains_substr(filtered, 'title', 'predicted')
 
     removed = df.merge(filtered, how='outer', indicator=True).query('_merge == "left_only"').drop(columns='_merge')
 
