@@ -20,7 +20,6 @@ import csv
 import httpx
 import re
 import subprocess
-import threading
 import json
 
 
@@ -61,7 +60,7 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
     cutadapt = pd.read_csv(cutadapt_path, sep='\t')
     meta = pd.read_csv(meta_path, sep='\t')
     cut_filtered = cutadapt[cutadapt['accession'].isin(meta['accession'])]
-    
+
     references = cut_filtered.dropna(subset=['primer_seq_forward', 'primer_seq_reverse'])
     accessions = set(references['accession'])
 
@@ -262,7 +261,7 @@ class PrimerBlastJob():
         }
         self._data['ORGANISM'] = str(tax_id)
         self._client = client
-    
+
     async def submit(self):
         response = await self._client.post('https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi', data=self._data)
         response.raise_for_status()
@@ -270,7 +269,7 @@ class PrimerBlastJob():
         if self._job_info is None:
             raise AttributeError()
         print(f'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi?ctg_time={self._job_info.time}&job_key={self._job_info.id}')
-    
+
     @staticmethod
     def _parse_form_submission(html: str):
         soup = BeautifulSoup(html, "html.parser")
@@ -294,11 +293,11 @@ class PrimerBlastJob():
         })
         response.raise_for_status()
         return response
-    
+
     @staticmethod
     def _is_job_done(response: str):
         return response.find('Detailed primer reports') != -1
-    
+
     async def _poll_for_results(self, delay: int):
         response = await self._poll_request()
         while response.status_code == 200 and not self._is_job_done(response.text):
@@ -325,7 +324,7 @@ class PrimerBlastJob():
                 "sequence": parts[-2],
                 "end": int(parts[-1]),
             }
-        
+
         bs = BeautifulSoup(html, "html.parser")
         res_accessions = bs.find_all("a", {"target": "new_entrez"})
 
@@ -349,7 +348,7 @@ class PrimerBlastJob():
                 row[f"{label}_start"] = entry["start"]
                 row[f"{label}_seq"] = entry["sequence"]
                 row[f"{label}_end"] = entry["end"]
-            
+
             # accession
             row['accession'] = str(accession.text)
             acc_link = accession.attrs['href']
@@ -467,7 +466,7 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
             print(f"Taxid {tax_data['taxonomy']['tax_id']} has {len(current_childs)} kids")
             for child in tax_data['taxonomy']['children']:
                 children.append(SisterTaxon(int(child), parent_data.parent))
-        
+
         results = await _off_targets_in_sisters(children, primer_f, primer_r, csv_writer)
         for item, sister in results:
             if sister is not None and len(sister) != 0:
