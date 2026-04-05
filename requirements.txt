@@ -24,3 +24,4 @@ pydantic
 xmltodict==0.15.1
 dendropy
 tenacity
+tqdm

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 import asyncio
+from tqdm import tqdm
 
 
 @dataclass
@@ -67,7 +68,7 @@ class HttpClient:
         # Can only fetch 10K entries per request!
         MAX_ENTRIES = 10000
         path = Path(out_file)
-        for start in range(0, esearch_result.result_count, MAX_ENTRIES):
+        for start in tqdm(range(0, esearch_result.result_count, MAX_ENTRIES)):
             current_out_file = Path(f'{path.parent}/{path.stem}_{start}{path.suffix}')
             # Avoid downloading the same records again
             if rettype == 'gb' and current_out_file.exists():
