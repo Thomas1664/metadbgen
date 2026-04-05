@@ -2,6 +2,7 @@ import glob
 import os
 import asyncio
 from src import metadata, request, taxonomy, primer, database, mislabel_detection
+from src.ncbi_taxonomy import download_and_build_db
 from Bio.Seq import Seq
 from Bio import SeqIO
 import pandas as pd
@@ -18,7 +19,7 @@ if config['find_outgroups']:
 rule all:
     input:
         # Taxonomy
-        f"{db_prefix}/taxonomy/filtered.tsv",
+        f"{db_prefix}/taxonomy/parsed.csv",
 
         # Metadata plots
         expand("{src}/primer-f.fasta", src=sources),
@@ -87,9 +88,18 @@ rule primer_blast_outgroups:
             future = pool.submit(lambda: asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path)))
             future.result()
 
+
+rule tax_db_download:
+    output:
+        tax_db = f"{db_prefix}/taxonomy/tax_db.sqlite",
+    run:
+        download_and_build_db(db_path=output.tax_db, taxdump_dir=f"{db_prefix}/ncbi_tax_dump")
+
+
 rule download_outgroups:
     input:
-        in_file = rules.primer_blast_outgroups.output.out
+        in_file = rules.primer_blast_outgroups.output.out,
+        tax_db = rules.tax_db_download.output.tax_db,
     output:
         gb_file = f"{db_prefix}/outgroups/input-sequences.gb",
     run:
@@ -97,27 +107,26 @@ rule download_outgroups:
             future = pool.submit(lambda: asyncio.run(primer.get_outgroup_gb(input.in_file, output.gb_file)))
             future.result()
 
+
 rule taxonomy:
+    input:
+        tax_db = rules.tax_db_download.output.tax_db,
     params:
         organism = config['organism'],
-        tax_file = f"{db_prefix}/taxonomy/results.xml",
     output:
-        out_tax = f"{db_prefix}/taxonomy/parsed.csv",
+        tax = f"{db_prefix}/taxonomy/parsed.csv",
     run:
         with ThreadPoolExecutor() as pool:
-            future = pool.submit(lambda: asyncio.run(taxonomy.download_taxonomy(params.organism, params.tax_file)))
-            out_files = future.result()
-        with open(output.out_tax, 'w', newline='') as csv_file:
+            future = pool.submit(lambda: asyncio.run(taxonomy.download_taxonomy(params.organism, input.tax_db)))
+            tax_data = future.result()
+        with open(output.tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            taxonomy.write_csv_header(csv_writer)
-            for file in out_files:
-                with open(file, 'r', encoding='utf-8') as f:
-                    taxa = taxonomy.parse_xml(f.read())
-                    taxonomy.to_csv(taxa, csv_writer, header=False)
+            taxonomy.to_csv(tax_data, csv_writer, header=True)
 
 rule parse_metadata:
     input:
         gb_file = f"{{src}}/input-sequences.gb",
+        tax_db = rules.tax_db_download.output.tax_db,
         script = "parse-gb.py"
     output:
         meta_csv = "{src}/seq-meta.csv",
@@ -125,15 +134,32 @@ rule parse_metadata:
         fasta = "{src}/sequences.fasta",
     shell:
         """
-        python {input.script} {input.gb_file} {output.meta_csv} {output.fasta_tmp}
+        python {input.script} {input.gb_file} {input.tax_db} {output.meta_csv} {output.fasta_tmp}
         seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
         """
+
+
+if config['find_outgroups']:
+    rule outgroup_tax:
+        input:
+            meta = f"{db_prefix}/outgroups/seq-meta.csv",
+            tax_db = rules.tax_db_download.output.tax_db,
+        output:
+            tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
+        run:
+            with taxonomy.NCBITaxonomyDB(input.tax_db) as db:
+                tax_ids = pd.read_csv(input.meta)['tax_id'].unique().tolist()
+                tax_data = db.get_taxon_data_bulk(tax_ids)
+            with open(output.tax, 'w', newline='') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                taxonomy.to_csv(tax_data, csv_writer, header=True)
 
 
 rule clean_db:
     input:
         meta = rules.parse_metadata.output.meta_csv,
         fasta = rules.parse_metadata.output.fasta,
+        tax = "{src}/taxonomy/parsed.csv",
         script = "db-clean.py"
     output:
         meta = "{src}/seq-meta-filtered.tsv",
@@ -144,7 +170,7 @@ rule clean_db:
         accessions_removed = "{src}/seq-filtered-removed.txt",
     shell:
         """
-        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --out-metadata {output.meta} --out-fasta {output.accessions} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.accessions_removed}
+        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --in-tax {input.tax} --out-metadata {output.meta} --out-fasta {output.accessions} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.accessions_removed}
         seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
         seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
         """
@@ -290,29 +316,15 @@ rule trim_alignment:
         shell("muscle -super5 {input.fasta} -nt -threads 12 -output {output.msa}")
         shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
-rule taxonomy_outgroup:
-    input:
-        meta = f"{db_prefix}/outgroups/alignment/metadata.tsv",
-    output:
-        tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
-    run:
-        meta_df = pd.read_csv(input.meta, sep='\t')
-        tax_ids = meta_df['tax_id'].astype(int).astype(str).drop_duplicates().tolist()
-        client = request.HttpClient()
-        with ThreadPoolExecutor() as pool:
-            future = pool.submit(lambda: asyncio.run(taxonomy.fetch_by_tax_ids(tax_ids, client, output.tax)))
-            future.result()
-
 
 rule export_db:
     input:
         meta = rules.trim_alignment.output.meta,
-        tax = "{src}/taxonomy/parsed.csv",
+        tax_db = rules.tax_db_download.output.tax_db,
         script = 'taxonomy-export.py'
     output:
         meta = f"{{src}}/output/{config['db_name']}-meta.tsv",
         tax = f"{{src}}/output/{config['db_name']}-qiime.tsv",
-        tax_meta = "{src}/taxonomy/filtered.tsv",
     params:
         # It's not guaranteed this file will be always present
         # because it might be possible that none of the organisms in the database has a host.
@@ -320,7 +332,7 @@ rule export_db:
         host_tax = "{src}/metadata/host-tax.csv",
     run:
         os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
-        shell("python {input.script} {input.meta} {input.tax} {output.meta} {output.tax_meta} {output.tax} {params.host_tax}")
+        shell("python {input.script} {input.meta} {input.tax_db} {output.meta} {output.tax} {params.host_tax}")
 
 
 rule tree:
