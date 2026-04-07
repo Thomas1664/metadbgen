@@ -159,6 +159,7 @@ rule clean_db:
     input:
         meta = rules.parse_metadata.output.meta_csv,
         fasta = rules.parse_metadata.output.fasta,
+        tax_db = rules.tax_db_download.output.tax_db,
         tax = "{src}/taxonomy/parsed.csv",
         script = "db-clean.py"
     output:
@@ -168,9 +169,19 @@ rule clean_db:
         fasta_removed = "{src}/seq-filtered-removed.fasta",
         accessions = "{src}/seq-filtered.txt",
         accessions_removed = "{src}/seq-filtered-removed.txt",
+    params:
+        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else ""
     shell:
         """
-        python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --in-tax {input.tax} --out-metadata {output.meta} --out-fasta {output.accessions} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.accessions_removed}
+        python {input.script} \\
+            --in-metadata {input.meta} \\
+            --in-fasta {input.fasta} \\
+            --in-tax {input.tax} \\
+            --out-metadata {output.meta} \\
+            --out-fasta {output.accessions} \\
+            --out-metadata-removed {output.meta_removed} \\
+            --out-fasta-removed {output.accessions_removed} \\
+            --tax-db {input.tax_db} {params.organism}
         seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
         seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
         """

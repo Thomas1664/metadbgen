@@ -228,6 +228,15 @@ def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | Non
             .drop(columns=['old', 'tax_id'])
             .rename(columns={'new': 'tax_id'})
     )
+    
+async def filter_descendants(tax_db_path: str, meta_df: pd.DataFrame, ancestor_name: str):
+    client = request.HttpClient()
+    ancestor_tax_id = await get_taxid_by_name(ancestor_name, client)
+    if ancestor_tax_id is None:
+        raise ValueError(f'Unknown organism {ancestor_name}')
+    with NCBITaxonomyDB(tax_db_path) as db:
+        tax_ids_in_ancestor = db.filter_descendants(meta_df['tax_id'].unique().tolist(), ancestor_tax_id)
+    return meta_df[meta_df['tax_id'].isin(tax_ids_in_ancestor)]
 
 
 def merge_taxonomy(meta_df: pd.DataFrame, tax_df: pd.DataFrame) -> pd.DataFrame:

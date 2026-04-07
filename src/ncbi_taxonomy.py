@@ -450,6 +450,35 @@ class NCBITaxonomyDB:
             return []
         return self.get_taxon_data_bulk(descendant_ids)
 
+    def filter_descendants(self, tax_ids: list[int], ancestor_tax_id: int) -> list[int]:
+        """
+        Return the subset of tax_ids that are descendants of ancestor_tax_id
+        (inclusive — ancestor_tax_id itself is returned if present in tax_ids).
+
+        Uses the pre-computed track column: a taxid is a descendant if
+        ancestor_tax_id appears in its lineage string. Unknown tax IDs are
+        silently excluded. Output order is not guaranteed to match input order.
+
+        Args:
+            tax_ids:         Candidate tax IDs to test.
+            ancestor_tax_id: The higher-rank ancestor to test membership against.
+
+        Returns:
+            List of tax IDs from tax_ids that are descendants of ancestor_tax_id.
+        """
+        ancestor_str = str(ancestor_tax_id)
+        matched: list[int] = []
+        for chunk in batched(tax_ids, SQLITE_MAX_VARS):
+            placeholders = ",".join("?" * len(chunk))
+            rows = self.conn.execute(
+                f"SELECT taxid FROM species "
+                f"WHERE taxid IN ({placeholders}) "
+                f"AND INSTR(',' || track || ',', ',' || ? || ',') > 0",
+                list(chunk) + [ancestor_str],
+            ).fetchall()
+            matched.extend(r["taxid"] for r in rows)
+        return matched
+
     def find_parent_at_rank(self, tax_ids: list[int], rank: str) -> dict[int, Taxon | None]:
         """
         For each tax ID, return the nearest ancestor (including itself) that has
