@@ -324,8 +324,8 @@ rule trim_alignment:
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         os.makedirs(f'{wildcards.src}/output', exist_ok=True)
-        shell('echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"')
-        shell('echo "OMP_THREAD_LIMIT=${OMP_THREAD_LIMIT}"')
+        shell('echo "OMP_NUM_THREADS=${{OMP_NUM_THREADS}}"')
+        shell('echo "OMP_THREAD_LIMIT=${{OMP_THREAD_LIMIT}}"')
         shell("muscle -super5 {input.fasta} -nt -threads 12 -output {output.msa}")
         shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
 
