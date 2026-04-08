@@ -4,9 +4,9 @@ import pandas as pd
 from Bio import SeqIO
 
 
-msa, cutadapt_info, meta, fasta_tmp, fasta_out, out_path, gap_treshold = sys.argv[1:]
+msa, cutadapt_info, meta, fasta_tmp, fasta_out, out_path, gap_treshold, min_seq_size = sys.argv[1:]
 
-primer.trim_msa(cutadapt_info, meta, msa, fasta_tmp)
+primer.trim_msa(cutadapt_info, meta, msa, fasta_tmp, int(min_seq_size))
 
 gap_df = alignment.calculate_gappiness(msa).sort_values('gappiness_normalized', ascending=False)
 gap_df.to_csv(f'{out_path}/msa-gap-scores.csv', index=False)

@@ -321,11 +321,12 @@ rule trim_alignment:
         meta = "{src}/alignment/metadata.tsv",
     params:
         gap_threshold = config['gappiness_threshold'],
+        min_length = config['min_seq_len'],
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         os.makedirs(f'{wildcards.src}/output', exist_ok=True)
         shell("OMP_THREAD_LIMIT=12 muscle -super5 {input.fasta} -nt -threads 12 -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold}")
+        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold} {params.min_length}")
 
 
 rule export_db:

@@ -56,7 +56,7 @@ def parse_cutadapt_info(info_file: str, out_path: str):
     wide.to_csv(out_path, sep='\t', index=False)
 
 
-def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
+def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, min_seq_size: int, align_format='fasta'):
     cutadapt = pd.read_csv(cutadapt_path, sep='\t')
     meta = pd.read_csv(meta_path, sep='\t')
     cut_filtered = cutadapt[cutadapt['accession'].isin(meta['accession'])]
@@ -64,14 +64,14 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
     references = cut_filtered.dropna(subset=['primer_seq_forward', 'primer_seq_reverse'])
     accessions = set(references['accession'])
 
-    alignment = AlignIO.read(msa_path, 'fasta')
+    alignment = AlignIO.read(msa_path, align_format)
     if len(accessions) == 0:
         # No references available; skip trimming
         with open(fasta_out, 'w') as fasta:
             for record in alignment:
-                #TODO: check again for min_size?
                 ungapped_seq = str(record.seq).replace('-', '').upper()
-                database.write_seq(fasta, record.id, ungapped_seq)
+                if len(ungapped_seq) >= min_seq_size:
+                    database.write_seq(fasta, record.id, ungapped_seq)
         return
 
     ref_seqs = [str(seq.seq) for seq in alignment if seq.id in accessions]
@@ -87,9 +87,9 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str):
     # write fasta file
     with open(fasta_out, 'w') as fasta:
         for record in msa_trimmed:
-            #TODO: check again for min_size?
             ungapped_seq = str(record.seq).replace('-', '').upper()
-            database.write_seq(fasta, record.id, ungapped_seq)
+            if len(ungapped_seq) >= min_seq_size:
+                database.write_seq(fasta, record.id, ungapped_seq)
 
 
 def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_size: int, direction: str):
