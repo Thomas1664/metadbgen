@@ -7,6 +7,7 @@ from Bio.Seq import Seq
 from Bio import SeqIO
 import pandas as pd
 import csv
+import io
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -230,8 +231,7 @@ rule trim:
     threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
-        # seqkit stats -T outputs a tab-separated table where column 9 is max_len
-        max_seq_len = int(shell("seqkit stats -T {input.fasta} | tail -n1 | cut -f8", read=True).strip())
+        max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')['max_len'][0]
         buffer_size = max(max_seq_len * 2, 1048576)
         shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
