@@ -1,4 +1,3 @@
-import io
 import pytest
 import pandas as pd
 from src import database
@@ -11,7 +10,14 @@ def test_prefer_refseq():
 
 def test_sanitize_org_name():
     assert database.sanitize_org_name('Phytophthora taxon juncus') == 'Phytophthora juncus'
-    
+    assert database.sanitize_org_name('Phytophthora x juncus') == 'Phytophthora juncus'
+    assert database.sanitize_org_name('Phytophthora cf. juncus') == 'Phytophthora juncus'
+    assert database.sanitize_org_name('Phytophthora aff. juncus') == 'Phytophthora juncus'
+    assert database.sanitize_org_name('Phytophthora v juncus') == 'Phytophthora juncus'
+    assert database.sanitize_org_name('Phytophthora irregulare juncus') == 'Phytophthora irregulare'
+    assert database.sanitize_org_name('Phytophthora juncus') == 'Phytophthora juncus'
+    assert database.sanitize_org_name('Phytophthora') == 'Phytophthora'
+
 
 def _make_clust_results(rows):
     """rows: list of (type, cluster_id, query_length, similarity, strand, align_res, query_label)"""
@@ -40,12 +46,14 @@ def test_dereplicate_no_duplicate_cluster_tax_id():
         ('ACC2', 1, 400),
         ('ACC3', 2, 300),
         ('ACC4', 2, 200),
+        ('ACC5', 1, 500),
     ])
     clust = _make_clust_results([
         ('H', 'C1', 500, 1.0, '+', '8I', 'ACC1'),
         ('H', 'C1', 400, 1.0, '+', '8I', 'ACC2'),
         ('H', 'C1', 300, 1.0, '+', '8I', 'ACC3'),
         ('H', 'C1', 200, 1.0, '+', '8I', 'ACC4'),
+        ('H', 'C1', 500, 1.0, '+', '8I', 'ACC5'),
     ])
     result = database.dereplicate(clust, metadata)
     assert result.duplicated(subset=['cluster_id', 'tax_id']).sum() == 0
@@ -82,4 +90,3 @@ def test_dereplicate_drops_columns():
     result = database.dereplicate(clust, metadata)
     dropped = {'type', 'query_length', 'similarity', 'align_res', 'query_label', 'strand'}
     assert dropped.isdisjoint(result.columns)
-

@@ -5,6 +5,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import subprocess
+import re
 
 
 def build_search_query(keywords: list[str], organism: str):
@@ -16,14 +17,17 @@ def remove_if_contains_substr(df: pd.DataFrame, col: str, substr: str):
     return df[~df[col].str.contains(substr, case=False, regex=False)]
 
 def sanitize_org_name(org_name: str) -> str:
-    org_name_arr = org_name.split(' ')
-    to_remove = ['x', 'var.', 'var', 'aff.', 'aff', 'cf.', 'cf', 'taxon']
-    for s in to_remove:
-        try:
-            org_name_arr.remove(s)
-        except ValueError:
-            pass
-    return ' '.join(org_name_arr[:2])
+    words = org_name.split(' ')
+    explicit_modifiers = {'taxon'}
+    # TODO: first check if name matches binomen: "^[A-Z][a-z\-]+ [a-z\-]+$"gmu
+    # also check 3rd word when removing second word
+    if len(words) > 2:
+        second = words[1]
+        epitet_pat = re.compile(r"^[a-z\-]+$")
+        if second in explicit_modifiers or len(second) == 1 or epitet_pat.match(second) is None:
+            words = [words[0]] + words[2:]
+
+    return ' '.join(words[:2])
 
 def fix_tax_id(row: pd.Series, trimmed: pd.DataFrame):
     if row['organism_name_sanitized'] == row['organism_name']:
