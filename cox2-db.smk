@@ -358,7 +358,7 @@ rule tree:
         tree_dist = f"{{src}}/tree/{config['db_name']}-tree-dist.csv",
     run: 
         shell("muscle -super5 {input} -nt -threads 12 -output {output.msa}")
-        shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo -B 1000")
+        shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
         dist_df = mislabel_detection.tree_distances(output.tree)
         dist_df.to_csv(output.tree_dist, header=True, index=True)
 
