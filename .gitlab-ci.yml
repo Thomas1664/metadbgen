@@ -9,7 +9,7 @@ tests:
   script:
     - conda env create -f environment.yml
     - source activate cox2-db
-    - snakemake -s cox2-db.smk -c 2 --configfile config.yml --keep-incomplete
+    - snakemake -s cox2-db.smk -c 8 --configfile config.yml --keep-incomplete
     - python ./parse_snakemake_log.py --output data/cox2_th/workflow-stats.json
     - pytest
   artifacts:
