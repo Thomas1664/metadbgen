@@ -100,6 +100,13 @@ def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Se
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
+    # Remove ON sequences from clusters that also contain non-ON sequences.
+    # ON = species doesn't match the standard binomial pattern.
+    on_pattern = re.compile(r'^[A-Z][a-z\-]+ [a-z\-]+$')
+    is_on = ~merged['species'].str.match(on_pattern)
+    clusters_with_non_on = merged.loc[~is_on, 'cluster_id'].unique()
+    # remove rows if row is ON and cluster has non-ON sequences
+    merged = merged[~(is_on & merged['cluster_id'].isin(clusters_with_non_on))]
     # Sort so that the longest sequence per (cluster_id, tax_id) comes first,
     # then drop_duplicates keeps exactly one row per (cluster_id, tax_id) — the longest.
     df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len', 'accession'], ascending=[True, True, False, True])
