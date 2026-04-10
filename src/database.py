@@ -84,7 +84,7 @@ def filter_data(df: pd.DataFrame):
     on_native_mask = is_on_mask & ~trimmed['organism_name_sanitized'].isin(non_on_species)
     on_native = trimmed[on_native_mask]
     trimmed = trimmed.filter([*non_on_seqs.index, *on_native.index], axis='index')
-
+    trimmed = trimmed.dropna(subset='genus')
     trimmed = prefer_refseq(trimmed)
     return trimmed, removed
 
