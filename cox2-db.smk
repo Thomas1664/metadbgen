@@ -32,6 +32,7 @@ rule all:
 
         # Dereplicate
         expand("{src}/dereplicate/clust-msa.fa", src=sources),
+        expand("{src}/alignment/clust-msa.fa", src=sources),
 
         # Tree
         expand(f"{{src}}/tree/{config['db_name']}-tree-dist.csv", src=sources),
@@ -262,12 +263,24 @@ rule trim_removed:
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
+def _dedup_fasta(wildcards):
+    if wildcards.dedup_dir == "dereplicate":
+        return f"{wildcards.src}/primer-trim/sequences.fasta"
+    else:  # alignment
+        return f"{wildcards.src}/output/{config['db_name']}-qiime.fa"
+
+def _dedup_meta(wildcards):
+    if wildcards.dedup_dir == "dereplicate":
+        return f"{wildcards.src}/primer-trim/metadata.tsv"
+    else:  # alignment
+        return f"{wildcards.src}/alignment/metadata-pre-derep.tsv"
+
 rule cluster:
     input:
-        fasta = rules.trim.output.fasta,
+        fasta = _dedup_fasta,
     output:
-        msa = "{src}/dereplicate/clust-msa.fa",
-        clust = "{src}/dereplicate/clust-results.tsv"
+        msa = "{src}/{dedup_dir}/clust-msa.fa",
+        clust = "{src}/{dedup_dir}/clust-results.tsv"
     shell:
         """
         vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
@@ -275,13 +288,13 @@ rule cluster:
 
 rule dereplicate:
     input:
-        meta = rules.trim.output.meta,
-        fasta = rules.trim.output.fasta,
+        meta = _dedup_meta,
+        fasta = _dedup_fasta,
         clust = rules.cluster.output.clust,
         script = 'dereplicate.py'
     output:
-        meta = "{src}/dereplicate/metadata.tsv",
-        fasta = "{src}/dereplicate/sequences.fasta",
+        meta = "{src}/{dedup_dir}/metadata.tsv",
+        fasta = "{src}/{dedup_dir}/sequences.fasta",
     shell:
         """
         python {input.script} {input.meta} {input.fasta} {input.clust} {output.meta} {output.fasta}
@@ -289,8 +302,8 @@ rule dereplicate:
 
 rule sequence_quality_filter:
     input:
-        fasta = rules.dereplicate.output.fasta,
-        meta = rules.dereplicate.output.meta,
+        fasta = "{src}/dereplicate/sequences.fasta",
+        meta = "{src}/dereplicate/metadata.tsv",
     params:
         max_ambiguous_bases = config['max_ambiguous_bases']
     output:
@@ -319,7 +332,7 @@ rule trim_alignment:
         gap_scores = "{src}/alignment/msa-gap-scores.csv",
         fasta_tmp = "{src}/alignment/seq-trimmed.fasta",
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
-        meta = "{src}/alignment/metadata.tsv",
+        meta = "{src}/alignment/metadata-pre-derep.tsv",
     params:
         gap_threshold = config['gappiness_threshold'],
         min_length = config['min_seq_len'],
@@ -333,7 +346,7 @@ rule trim_alignment:
 
 rule export_db:
     input:
-        meta = rules.trim_alignment.output.meta,
+        meta = "{src}/alignment/metadata.tsv",
         tax_db = rules.tax_db_download.output.tax_db,
         script = 'taxonomy-export.py'
     output:
@@ -350,7 +363,7 @@ rule export_db:
 
 
 rule tree:
-    input: rules.trim_alignment.output.fasta,
+    input: "{src}/alignment/sequences.fasta",
     params:
         max_iterations = config['tree']['max_iterations']
     output: 
@@ -370,7 +383,7 @@ rule mislabel_detection:
         tree_dist = rules.tree.output.tree_dist,
         tax = rules.export_db.output.tax,
         meta = rules.export_db.output.meta,
-        fasta = rules.trim_alignment.output.fasta
+        fasta = "{src}/alignment/sequences.fasta"
     params:
         mislabel = config['mislabel_detection'],
     output:
