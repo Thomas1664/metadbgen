@@ -262,30 +262,23 @@ rule trim_removed:
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
-rule cluster:
-    input:
-        fasta = rules.trim.output.fasta,
-    output:
-        msa = "{src}/dereplicate/clust-msa.fa",
-        clust = "{src}/dereplicate/clust-results.tsv"
-    shell:
-        """
-        vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
-        """
 
 rule dereplicate:
     input:
         meta = rules.trim.output.meta,
         fasta = rules.trim.output.fasta,
-        clust = rules.cluster.output.clust,
-        script = 'dereplicate.py'
+        script = 'dereplicate.py',
     output:
+        msa = "{src}/dereplicate/clust-msa.fa",
+        clust = "{src}/dereplicate/clust-results.tsv",
         meta = "{src}/dereplicate/metadata.tsv",
         fasta = "{src}/dereplicate/sequences.fasta",
     shell:
         """
-        python {input.script} {input.meta} {input.fasta} {input.clust} {output.meta} {output.fasta}
+        vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
+        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta}
         """
+
 
 rule sequence_quality_filter:
     input:
@@ -318,8 +311,8 @@ rule trim_alignment:
         msa = "{src}/alignment/msa.fasta",
         gap_scores = "{src}/alignment/msa-gap-scores.csv",
         fasta_tmp = "{src}/alignment/seq-trimmed.fasta",
-        fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
-        meta = "{src}/alignment/metadata.tsv",
+        fasta = "{src}/alignment/sequences.fasta",
+        meta = "{src}/alignment/metadata-trim.tsv",
     params:
         gap_threshold = config['gappiness_threshold'],
         min_length = config['min_seq_len'],
@@ -329,6 +322,23 @@ rule trim_alignment:
         os.makedirs(f'{wildcards.src}/output', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
         shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {wildcards.src}/alignment {params.gap_threshold} {params.min_length}")
+
+
+rule dereplicate_alignment:
+    input:
+        meta = rules.trim_alignment.output.meta,
+        fasta = rules.trim_alignment.output.fasta,
+        script = 'dereplicate.py',
+    output:
+        msa = "{src}/alignment/clust-msa.fa",
+        clust = "{src}/alignment/clust-results.tsv",
+        meta = "{src}/alignment/metadata.tsv",
+        fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
+    shell:
+        """
+        vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
+        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta}
+        """
 
 
 rule export_db:
