@@ -256,7 +256,7 @@ rule trim_removed:
         primer_r_len = config['primer_r']['min_len'],
         min_seq_len = config['min_seq_len'],
         max_seq_len = config['max_seq_len'],
-    threads: workflow.cores
+    threads: workflow.cores / 2
     run:
         shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
@@ -316,7 +316,7 @@ rule trim_alignment:
     params:
         gap_threshold = config['gappiness_threshold'],
         min_length = config['min_seq_len'],
-    threads: workflow.cores
+    threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
         os.makedirs(f'{wildcards.src}/output', exist_ok=True)
@@ -367,7 +367,7 @@ rule tree:
         msa = f"{{src}}/tree/{config['db_name']}-msa.fasta",
         tree = f"{{src}}/tree/{config['db_name']}-msa.fasta.treefile",
         tree_dist = f"{{src}}/tree/{config['db_name']}-tree-dist.csv",
-    threads: workflow.cores
+    threads: workflow.cores / 2
     run: 
         shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
         shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
@@ -417,7 +417,7 @@ rule export_sintax:
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
-    threads: workflow.cores
+    threads: workflow.cores / 2
     run:
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
         shell("python {input.script} {output.msa} {input.tax} {output.db}")
