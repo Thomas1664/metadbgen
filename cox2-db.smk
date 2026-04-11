@@ -343,7 +343,7 @@ rule dereplicate_alignment:
 
 rule export_db:
     input:
-        meta = rules.trim_alignment.output.meta,
+        meta = rules.dereplicate_alignment.output.meta,
         tax_db = rules.tax_db_download.output.tax_db,
         script = 'taxonomy-export.py'
     output:
@@ -360,7 +360,7 @@ rule export_db:
 
 
 rule tree:
-    input: rules.trim_alignment.output.fasta,
+    input: rules.dereplicate_alignment.output.fasta,
     params:
         max_iterations = config['tree']['max_iterations']
     output: 
@@ -380,7 +380,7 @@ rule mislabel_detection:
         tree_dist = rules.tree.output.tree_dist,
         tax = rules.export_db.output.tax,
         meta = rules.export_db.output.meta,
-        fasta = rules.trim_alignment.output.fasta
+        fasta = rules.dereplicate_alignment.output.fasta
     params:
         mislabel = config['mislabel_detection'],
     output:
