@@ -98,6 +98,7 @@ rule tax_db_download:
 
 
 rule download_outgroups:
+    retries: 5
     input:
         in_file = rules.primer_blast_outgroups.output.out,
         tax_db = rules.tax_db_download.output.tax_db,
