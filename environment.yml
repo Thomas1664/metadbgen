@@ -14,5 +14,6 @@ dependencies:
   - muscle
   - seqkit
   - iqtree
+  - gotree=0.5.1
   - pip:
       - -r requirements.txt

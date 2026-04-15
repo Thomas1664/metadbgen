@@ -372,8 +372,7 @@ rule tree:
     run: 
         shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
         shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
-        dist_df = mislabel_detection.tree_distances(output.tree)
-        dist_df.to_csv(output.tree_dist, header=True, index=True)
+        shell("gotree matrix -i {output.tree} -o {output.dist_mat} -t {threads}")
 
 
 rule mislabel_detection:
@@ -392,11 +391,8 @@ rule mislabel_detection:
         accessions = f"{{src}}/output/{config['db_name']}-accessions.txt",
         removed = f"{{src}}/mislabeled-sequences.fasta",
     run:
-        dist_df = pd.read_csv(input.tree_dist, index_col=0)
-        tax_df = taxonomy.load_tax_qiime(input.tax)
-        # ensure that tax_df and dist_df are in the same order.
-        tax_df = tax_df.loc[dist_df.index]
-        mislabel_df = mislabel_detection.validate_at_rank(tax_df, dist_df.values, **params.mislabel)
+        tax_df = taxonomy.load_tax_qiime(input.tax).rename_axis('seq_id').reset_index()
+        mislabel_df = mislabel_detection.validate_at_rank(tax_df, input.tree_dist, **params.mislabel)
         seq_ids_to_keep = mislabel_df[~mislabel_df['is_mislabeled'].values]['seq_id']
         meta_df = pd.read_csv(input.meta, sep='\t')
         meta_df = meta_df[meta_df['accession'].isin(seq_ids_to_keep)]
