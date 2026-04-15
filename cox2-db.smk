@@ -372,7 +372,7 @@ rule tree:
     run: 
         shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
         shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
-        shell("gotree matrix -i {output.tree} -o {output.dist_mat} -t {threads}")
+        shell("gotree matrix -i {output.tree} -o {output.tree_dist} -t {threads}")
 
 
 rule mislabel_detection:
