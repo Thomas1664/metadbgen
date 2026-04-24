@@ -166,13 +166,13 @@ def _build_sqlite(
 
     conn.executescript("""
         DROP TABLE IF EXISTS stats;
-        DROP TABLE IF EXISTS species;
+        DROP TABLE IF EXISTS tax_meta;
         DROP TABLE IF EXISTS synonym;
         DROP TABLE IF EXISTS merged;
 
         CREATE TABLE stats (version INT PRIMARY KEY);
 
-        CREATE TABLE species (
+        CREATE TABLE tax_meta (
             taxid  INT PRIMARY KEY,
             parent INT,
             spname VARCHAR(50) COLLATE NOCASE,
@@ -189,9 +189,9 @@ def _build_sqlite(
 
         CREATE TABLE merged (taxid_old INT, taxid_new INT);
 
-        CREATE INDEX spname1 ON species (spname COLLATE NOCASE);
+        CREATE INDEX spname1 ON tax_meta (spname COLLATE NOCASE);
         CREATE INDEX spname2 ON synonym  (spname COLLATE NOCASE);
-        CREATE INDEX idx_species_rank ON species (rank);
+        CREATE INDEX idx_species_rank ON tax_meta (rank);
     """)
 
     conn.execute("INSERT INTO stats (version) VALUES (?)", (DB_VERSION,))
@@ -209,7 +209,7 @@ def _build_sqlite(
         for tid, (parent, rank) in nodes.items()
     ]
     conn.executemany(
-        "INSERT INTO species (taxid, parent, spname, common, rank, track) VALUES (?,?,?,?,?,?)",
+        "INSERT INTO tax_meta (taxid, parent, spname, common, rank, track) VALUES (?,?,?,?,?,?)",
         species_rows,
     )
 
@@ -314,7 +314,7 @@ class NCBITaxonomyDB:
             placeholders = ",".join("?" * len(chunk))
             rows.extend(
                 self.conn.execute(
-                    f"SELECT taxid, parent, spname, rank, track FROM species "
+                    f"SELECT taxid, parent, spname, rank, track FROM tax_meta "
                     f"WHERE taxid IN ({placeholders})",
                     list(chunk),
                 ).fetchall()
@@ -439,7 +439,7 @@ class NCBITaxonomyDB:
         """
         rows = self.conn.execute(
             """
-            SELECT taxid FROM species
+            SELECT taxid FROM tax_meta
             WHERE rank = ?
             AND INSTR(',' || track || ',', ',' || ? || ',') > 0
             """,
@@ -471,7 +471,7 @@ class NCBITaxonomyDB:
         for chunk in batched(tax_ids, SQLITE_MAX_VARS):
             placeholders = ",".join("?" * len(chunk))
             rows = self.conn.execute(
-                f"SELECT taxid FROM species "
+                f"SELECT taxid FROM tax_meta "
                 f"WHERE taxid IN ({placeholders}) "
                 f"AND INSTR(',' || track || ',', ',' || ? || ',') > 0",
                 list(chunk) + [ancestor_str],
