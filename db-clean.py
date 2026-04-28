@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--out-metadata-removed", type=str, required=True, help="Output metadata file containing removed sequences")
     parser.add_argument("--out-fasta-removed", type=str, required=True, help="Output FASTA file containing removed sequences")
     parser.add_argument("--organism", type=str, required=False, help="Organism name")
+    parser.add_argument("--no-remove-on-species", action="store_true", help="Disable removal of open nomenclature (ON) species")
     args = parser.parse_args()
 
     df = pd.read_csv(args.in_metadata)
@@ -22,7 +23,7 @@ if __name__ == "__main__":
         df = asyncio.run(taxonomy.filter_descendants(args.tax_db, df, args.organism))
     tax_df = pd.read_csv(args.in_tax)
     df = taxonomy.merge_taxonomy(df, tax_df)
-    filtered, removed = database.filter_data(df)
+    filtered, removed = database.filter_data(df, remove_on_species=not args.no_remove_on_species)
     filtered.to_csv(args.out_metadata, sep='\t', index=False)
     removed.to_csv(args.out_metadata_removed, sep='\t', index=False)
     filtered['accession'].to_csv(args.out_fasta, header=False, index=False)

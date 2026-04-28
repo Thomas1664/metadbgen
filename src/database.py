@@ -51,7 +51,7 @@ def prefer_refseq(trimmed: pd.DataFrame):
     return trimmed[mask].copy()
 
 
-def filter_data(df: pd.DataFrame):
+def filter_data(df: pd.DataFrame, remove_on_species: bool = True):
     # remove unverified sequences
     filtered = df.drop(df[df['title'].str.lower().str.startswith('unverified')].index).copy()
     filtered = filtered.drop_duplicates(subset=['accession'])
@@ -70,7 +70,6 @@ def filter_data(df: pd.DataFrame):
 
     removed = df.merge(filtered, how='outer', indicator=True).query('_merge == "left_only"').drop(columns='_merge')
 
-    # Remove sequences that are too short
     trimmed = filtered.copy()
     # sanitize organism name
     trimmed['organism_name_sanitized'] = trimmed['organism_name']
@@ -78,12 +77,13 @@ def filter_data(df: pd.DataFrame):
     trimmed.index = trimmed['accession']
     is_on_mask = trimmed['organism_name'] != trimmed['organism_name_sanitized']
     non_on_seqs = trimmed[~is_on_mask]
-    non_on_species = non_on_seqs['organism_name'].unique()
-    # ON species that don't have a non-ON species name
-    # e.g. Globisporangium aff. irregulare while there is no Globisporangium irregulare
-    on_native_mask = is_on_mask & ~trimmed['organism_name_sanitized'].isin(non_on_species)
-    on_native = trimmed[on_native_mask]
-    trimmed = trimmed.filter([*non_on_seqs.index, *on_native.index], axis='index')
+    if remove_on_species:
+        non_on_species = non_on_seqs['organism_name'].unique()
+        # ON species that don't have a non-ON species name
+        # e.g. Globisporangium aff. irregulare while there is no Globisporangium irregulare
+        on_native_mask = is_on_mask & ~trimmed['organism_name_sanitized'].isin(non_on_species)
+        on_native = trimmed[on_native_mask]
+        trimmed = trimmed.filter([*non_on_seqs.index, *on_native.index], axis='index')
     trimmed = trimmed.dropna(subset='genus')
     trimmed = prefer_refseq(trimmed)
     return trimmed, removed

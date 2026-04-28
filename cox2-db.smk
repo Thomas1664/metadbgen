@@ -172,7 +172,8 @@ rule clean_db:
         accessions = "{src}/seq-filtered.txt",
         accessions_removed = "{src}/seq-filtered-removed.txt",
     params:
-        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else ""
+        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else "",
+        no_remove_on = "--no-remove-on-species" if not config.get('remove_on_species', True) else "",
     shell:
         """
         python {input.script} \\
@@ -183,7 +184,7 @@ rule clean_db:
             --out-fasta {output.accessions} \\
             --out-metadata-removed {output.meta_removed} \\
             --out-fasta-removed {output.accessions_removed} \\
-            --tax-db {input.tax_db} {params.organism}
+            --tax-db {input.tax_db} {params.organism} {params.no_remove_on}
         seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
         seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
         """
@@ -234,7 +235,7 @@ rule trim:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
         max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')['max_len'][0]
         buffer_size = max(max_seq_len * 2, 1048576)
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
