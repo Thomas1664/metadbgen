@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-remove-on-species", action="store_true", help="Disable removal of open nomenclature (ON) species")
     args = parser.parse_args()
 
-    df = pd.read_csv(args.in_metadata)
+    df = pd.read_csv(args.in_metadata, sep='\t')
     if args.organism is not None:
         df = asyncio.run(taxonomy.filter_descendants(args.tax_db, df, args.organism))
     tax_df = pd.read_csv(args.in_tax)
