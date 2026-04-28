@@ -49,12 +49,6 @@ rule all:
         expand(f"{{src}}/output/{config['db_name']}-qiime.tsv", src=sources),
         expand(f"{{src}}/output/{config['db_name']}-sintax.fasta", src=sources),
 
-        # Primer trimming
-        expand("{src}/primer-trim/removed-sequences.fasta", src=sources),
-        expand("{src}/primer-trim/removed-metadata.tsv", src=sources),
-        expand("{src}/primer-trim/removed-cutadapt-info.tsv", src=sources),
-        expand("{src}/primer-trim/removed-cutadapt-info-parsed.tsv", src=sources),
-
         expand("{src}/seq-meta-filtered-removed.tsv", src=sources),
         expand("{src}/seq-filtered-removed.fasta", src=sources),
         expand("{src}/seq-filtered-removed.txt", src=sources),
@@ -157,42 +151,10 @@ if config['find_outgroups']:
                 taxonomy.to_csv(tax_data, csv_writer, header=True)
 
 
-rule clean_db:
-    input:
-        meta = rules.parse_metadata.output.meta_csv,
-        fasta = rules.parse_metadata.output.fasta,
-        tax_db = rules.tax_db_download.output.tax_db,
-        tax = "{src}/taxonomy/parsed.csv",
-        script = "db-clean.py"
-    output:
-        meta = "{src}/seq-meta-filtered.tsv",
-        meta_removed = "{src}/seq-meta-filtered-removed.tsv",
-        fasta = "{src}/seq-filtered.fasta",
-        fasta_removed = "{src}/seq-filtered-removed.fasta",
-        accessions = "{src}/seq-filtered.txt",
-        accessions_removed = "{src}/seq-filtered-removed.txt",
-    params:
-        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else ""
-    shell:
-        """
-        python {input.script} \\
-            --in-metadata {input.meta} \\
-            --in-fasta {input.fasta} \\
-            --in-tax {input.tax} \\
-            --out-metadata {output.meta} \\
-            --out-fasta {output.accessions} \\
-            --out-metadata-removed {output.meta_removed} \\
-            --out-fasta-removed {output.accessions_removed} \\
-            --tax-db {input.tax_db} {params.organism}
-        seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
-        seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
-        """
-
-
 if "outer_primer_f" in config or "outer_primer_r" in config:
     rule pcr_outer:
         input:
-            rules.clean_db.output.fasta
+            rules.parse_metadata.output.fasta
         output:
             "{src}/primer-trim/nested.fasta"
         params:
@@ -212,9 +174,9 @@ rule trim:
         fasta = lambda wildcards: (
             "{src}/primer-trim/nested.fasta"
             if "outer_primer_f" in config or "outer_primer_r" in config
-            else rules.clean_db.output.fasta
+            else rules.parse_metadata.output.fasta
         ),
-        meta = rules.clean_db.output.meta,
+        meta = rules.parse_metadata.output.meta_csv,
         script = "trim.py",
     output:
         fasta = "{src}/primer-trim/sequences.fasta",
@@ -234,40 +196,48 @@ rule trim:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
         max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')['max_len'][0]
         buffer_size = max(max_seq_len * 2, 1048576)
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
-rule trim_removed:
+rule clean_db:
     input:
-        fasta = rules.clean_db.output.fasta_removed,
-        meta = rules.clean_db.output.meta_removed,
-        script = "trim.py",
+        meta = rules.trim.output.meta,
+        fasta = rules.trim.output.fasta,
+        tax_db = rules.tax_db_download.output.tax_db,
+        tax = "{src}/taxonomy/parsed.csv",
+        script = "db-clean.py"
     output:
-        fasta = "{src}/primer-trim/removed-sequences.fasta",
-        meta = "{src}/primer-trim/removed-metadata.tsv",
-        info_tmp = "{src}/primer-trim/removed-cutadapt-info-tmp.tsv",
-        info = "{src}/primer-trim/removed-cutadapt-info.tsv",
-        info_out = "{src}/primer-trim/removed-cutadapt-info-parsed.tsv",
+        meta = "{src}/seq-meta-filtered.tsv",
+        meta_removed = "{src}/seq-meta-filtered-removed.tsv",
+        fasta = "{src}/seq-filtered.fasta",
+        fasta_removed = "{src}/seq-filtered-removed.fasta",
+        accessions = "{src}/seq-filtered.txt",
+        accessions_removed = "{src}/seq-filtered-removed.txt",
     params:
-        primer_f_seq = config['primer_f']['seq'],
-        primer_f_len = config['primer_f']['min_len'],
-        primer_r_seq = str(Seq(config['primer_r']['seq']).reverse_complement()),
-        primer_r_len = config['primer_r']['min_len'],
-        min_seq_len = config['min_seq_len'],
-        max_seq_len = config['max_seq_len'],
-    threads: workflow.cores / 2
-    run:
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size 104857600 {input.fasta}")
-        shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
-        shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
+        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else "",
+        no_remove_on = "--no-remove-on-species" if not config.get('remove_on_species', True) else "",
+    shell:
+        """
+        python {input.script} \\
+            --in-metadata {input.meta} \\
+            --in-fasta {input.fasta} \\
+            --in-tax {input.tax} \\
+            --out-metadata {output.meta} \\
+            --out-fasta {output.accessions} \\
+            --out-metadata-removed {output.meta_removed} \\
+            --out-fasta-removed {output.accessions_removed} \\
+            --tax-db {input.tax_db} {params.organism} {params.no_remove_on}
+        seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
+        seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
+        """
 
 
 rule dereplicate:
     input:
-        meta = rules.trim.output.meta,
-        fasta = rules.trim.output.fasta,
+        meta = rules.clean_db.output.meta,
+        fasta = rules.clean_db.output.fasta,
         script = 'dereplicate.py',
     output:
         msa = "{src}/dereplicate/clust-msa.fa",

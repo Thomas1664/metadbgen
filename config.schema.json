@@ -127,6 +127,11 @@
         }
       }
     },
+    "remove_on_species": {
+      "type": "boolean",
+      "description": "Whether to remove open nomenclature (ON) species from the database. ON sequences are removed when a sequence with the sanitized name already exists. Disable to study the effect of including ON species.",
+      "default": true
+    },
     "mislabel_detection": {
       "type": "object",
       "description": "Settings for detecting sequences with likely incorrect taxonomic labels using a k-nearest-neighbor majority vote.",
