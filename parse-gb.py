@@ -13,6 +13,7 @@ with open(f"{out_file}.tmp", 'w', newline='') as csv_file, open(fasta_out, 'w') 
 
 print("done parsing gb")
 df = pd.read_csv(f"{out_file}.tmp", index_col='accession')
+df = df[~df.index.duplicated(keep='first')]
 df['metadata'] = df['metadata'].apply(json.loads)
 new_df = pd.DataFrame(df['metadata'].tolist(), index=df.index)
 
