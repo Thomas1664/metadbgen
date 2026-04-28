@@ -93,7 +93,7 @@ gappiness_threshold: 0.090
 # ON species are sequences where the organism name contains qualifiers like "aff.", "cf.", "sp.", etc.
 # When enabled, ON sequences are removed if a sequence with the sanitized name already exists in the database.
 # Disable this to study the effect of including ON species.
-remove_on_species: false
+remove_on_species: true
 
 # Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
 # in a sequence after trimming.
