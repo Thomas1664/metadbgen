@@ -39,7 +39,7 @@ spe_mat = np.zeros((n_families, n_stages), dtype=int)
 for j, stage in enumerate(stage_names):
     df = dfs[stage]
     seq_grp = df.groupby('family').size()
-    spe_grp = df.groupby('family')['organism_name_sanitized'].nunique()
+    spe_grp = df.groupby('family')['tax_id'].nunique()
     for i, fam in enumerate(all_families):
         seq_mat[i, j] = seq_grp.get(fam, 0)
         spe_mat[i, j] = spe_grp.get(fam, 0)
