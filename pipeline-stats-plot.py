@@ -6,7 +6,7 @@ import plotly.colors
 BASE = 'data/cox2_th'
 
 stage_files = {
-    'Download': f'{BASE}/cox2_th/seq-meta.csv',
+    'Download': f'{BASE}/seq-meta.csv',
     'Trim': f'{BASE}/primer-trim/metadata.tsv',
     'Clean DB': f'{BASE}/seq-meta-filtered.tsv',
     'Dereplicate': f'{BASE}/dereplicate/metadata.tsv',
