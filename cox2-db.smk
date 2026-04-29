@@ -1,7 +1,7 @@
 import glob
 import os
 import asyncio
-from src import metadata, request, taxonomy, primer, database, mislabel_detection
+from src import metadata, request, taxonomy, primer, database, mislabel_detection, genbank_parser
 from src.ncbi_taxonomy import download_and_build_db
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -139,13 +139,19 @@ rule parse_metadata:
 if config['find_outgroups']:
     rule outgroup_tax:
         input:
-            meta = f"{db_prefix}/outgroups/seq-meta.csv",
+            gb_file = f"{db_prefix}/outgroups/input-sequences.gb",
             tax_db = rules.tax_db_download.output.tax_db,
         output:
             tax = f"{db_prefix}/outgroups/taxonomy/parsed.csv",
         run:
+            raw_tax_ids = list({
+                int(genbank_parser.parse_taxid(r.features))
+                for r in SeqIO.parse(input.gb_file, 'genbank')
+                if genbank_parser.parse_taxid(r.features) is not None
+            })
             with taxonomy.NCBITaxonomyDB(input.tax_db) as db:
-                tax_ids = pd.read_csv(input.meta)['tax_id'].unique().tolist()
+                resolved = db.resolve_tax_ids(raw_tax_ids)
+                tax_ids = list({t.tax_id for t in resolved.values()})
                 tax_data = db.get_taxon_data_bulk(tax_ids)
             with open(output.tax, 'w', newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
