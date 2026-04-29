@@ -11,6 +11,7 @@ tests:
     - source activate cox2-db
     - snakemake -s cox2-db.smk -c 8 --configfile config.yml --keep-incomplete
     - python ./parse_snakemake_log.py --output data/cox2_th/workflow-stats.json
+    - python ./pipeline-stats-plot.py
     - pytest
   artifacts:
     when: always
