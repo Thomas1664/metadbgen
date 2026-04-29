@@ -8,7 +8,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Clean the COX2 database.")
     parser.add_argument("--in-metadata", type=str, required=True, help="Input metadata file")
     parser.add_argument("--in-fasta", type=str, required=True, help="Input fasta file")
-    parser.add_argument("--in-tax", type=str, required=True, help="Input taxonomy file")
     parser.add_argument("--tax-db", type=str, required=True, help="Path to the taxonomy database")
     parser.add_argument("--out-metadata", type=str, required=True, help="Output metadata file")
     parser.add_argument("--out-fasta", type=str, required=True, help="Output FASTA file")
@@ -21,8 +20,6 @@ if __name__ == "__main__":
     df = pd.read_csv(args.in_metadata, sep='\t')
     if args.organism is not None:
         df = asyncio.run(taxonomy.filter_descendants(args.tax_db, df, args.organism))
-    tax_df = pd.read_csv(args.in_tax)
-    df = taxonomy.merge_taxonomy(df, tax_df)
     filtered, removed = database.filter_data(df, remove_on_species=not args.no_remove_on_species)
     filtered.to_csv(args.out_metadata, sep='\t', index=False)
     removed.to_csv(args.out_metadata_removed, sep='\t', index=False)

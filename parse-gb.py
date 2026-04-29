@@ -4,7 +4,7 @@ from src import genbank_parser, taxonomy
 import pandas as pd
 import json
 
-gb_dir, tax_db, out_file, fasta_out = sys.argv[1:]
+gb_dir, tax_db, tax_data, out_file, fasta_out = sys.argv[1:]
 
 with open(f"{out_file}.tmp", 'w', newline='') as csv_file, open(fasta_out, 'w') as fasta_file:
     csv_writer = csv.writer(csv_file)
@@ -26,4 +26,6 @@ new_df = new_df.map(unwrap_single_element)
 
 df = df.drop(columns='metadata').join(new_df)
 df = taxonomy.update_tax_ids(tax_db, df, index_col='accession')
+tax_df = pd.read_csv(tax_data)
+df = taxonomy.merge_taxonomy(df, tax_df)
 df.to_csv(out_file, index=False)

@@ -123,6 +123,7 @@ rule parse_metadata:
     input:
         gb_file = f"{{src}}/input-sequences.gb",
         tax_db = rules.tax_db_download.output.tax_db,
+        tax = "{src}/taxonomy/parsed.csv",
         script = "parse-gb.py"
     output:
         meta_csv = "{src}/seq-meta.csv",
@@ -130,7 +131,7 @@ rule parse_metadata:
         fasta = "{src}/sequences.fasta",
     shell:
         """
-        python {input.script} {input.gb_file} {input.tax_db} {output.meta_csv} {output.fasta_tmp}
+        python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}
         seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
         """
 
@@ -206,7 +207,6 @@ rule clean_db:
         meta = rules.trim.output.meta,
         fasta = rules.trim.output.fasta,
         tax_db = rules.tax_db_download.output.tax_db,
-        tax = "{src}/taxonomy/parsed.csv",
         script = "db-clean.py"
     output:
         meta = "{src}/seq-meta-filtered.tsv",
@@ -223,7 +223,6 @@ rule clean_db:
         python {input.script} \\
             --in-metadata {input.meta} \\
             --in-fasta {input.fasta} \\
-            --in-tax {input.tax} \\
             --out-metadata {output.meta} \\
             --out-fasta {output.accessions} \\
             --out-metadata-removed {output.meta_removed} \\
