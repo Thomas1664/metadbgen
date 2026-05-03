@@ -75,9 +75,9 @@ def filter_data(df: pd.DataFrame, remove_on_species: bool = True):
     trimmed['organism_name_sanitized'] = trimmed['organism_name']
     trimmed['organism_name_sanitized'] = trimmed['organism_name_sanitized'].apply(sanitize_org_name)
     trimmed.index = trimmed['accession']
-    is_on_mask = trimmed['organism_name'] != trimmed['organism_name_sanitized']
-    non_on_seqs = trimmed[~is_on_mask]
     if remove_on_species:
+        is_on_mask = trimmed['organism_name'] != trimmed['organism_name_sanitized']
+        non_on_seqs = trimmed[~is_on_mask]
         non_on_species = non_on_seqs['organism_name'].unique()
         # ON species that don't have a non-ON species name
         # e.g. Globisporangium aff. irregulare while there is no Globisporangium irregulare
@@ -98,15 +98,14 @@ def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Se
     accessions.to_csv(acc_list_file, header=False, index=False)
     subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta], check=True)
 
-def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame):
+def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame, remove_on_species: bool = True):
     merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
-    # Remove ON sequences from clusters that also contain non-ON sequences.
-    # ON = species doesn't match the standard binomial pattern.
-    on_pattern = re.compile(r'^[A-Z][a-z\-]+ [a-z\-]+$')
-    is_on = ~merged['species'].str.match(on_pattern)
-    clusters_with_non_on = merged.loc[~is_on, 'cluster_id'].unique()
-    # remove rows if row is ON and cluster has non-ON sequences
-    merged = merged[~(is_on & merged['cluster_id'].isin(clusters_with_non_on))]
+    if remove_on_species:
+        # Remove ON sequences from clusters that also contain non-ON sequences.
+        is_on = merged['organism_name'] != merged['organism_name_sanitized']
+        clusters_with_non_on = merged.loc[~is_on, 'cluster_id'].unique()
+        # remove rows if row is ON and cluster has non-ON sequences
+        merged = merged[~(is_on & merged['cluster_id'].isin(clusters_with_non_on))]
     # Sort so that the longest sequence per (cluster_id, tax_id) comes first,
     # then drop_duplicates keeps exactly one row per (cluster_id, tax_id) — the longest.
     df_sorted = merged.sort_values(by=['cluster_id', 'tax_id', 'trimed_seq_len', 'accession'], ascending=[True, True, False, True])

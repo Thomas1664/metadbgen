@@ -249,10 +249,12 @@ rule dereplicate:
         clust = "{src}/dereplicate/clust-results.tsv",
         meta = "{src}/dereplicate/metadata.tsv",
         fasta = "{src}/dereplicate/sequences.fasta",
+    params:
+        remove_on = str(config.get('remove_on_species', True)),
     shell:
         """
         vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
-        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta}
+        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}
         """
 
 
@@ -310,10 +312,12 @@ rule dereplicate_alignment:
         clust = "{src}/alignment/clust-results.tsv",
         meta = "{src}/alignment/metadata.tsv",
         fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
+    params:
+        remove_on = str(config.get('remove_on_species', True)),
     shell:
         """
         vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
-        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta}
+        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}
         """
 
 
