@@ -426,8 +426,8 @@ rule plot:
         geo_html = "{src}/metadata/country-heat.html",
         geo_svg = "{src}/metadata/country-heat.svg",
     params:
-        primer_f_len = len(config['primer_f']['seq']),
-        primer_r_len = len(config['primer_r']['seq']),
+        primer_f_len = len(config['primer_f']),
+        primer_r_len = len(config['primer_r']),
     run:
         primer.logo_plot(input.info, input.meta, output.fasta_f, params.primer_f_len, output.plot_f, 'forward')
         primer.logo_plot(input.info, input.meta, output.fasta_r, params.primer_r_len, output.plot_r, 'reverse')
