@@ -27,7 +27,7 @@ FILES_TO_TEST = [
     ('gappiness/sequences.fasta', 'gappiness/metadata.tsv'),
     ('output/{db}-qiime.fa', 'output/{db}-meta.tsv'),
     ('output/{db}-qiime-clean.fa', 'output/{db}-meta-clean.tsv'),
-    ('output/{db}-sintax.fa', 'output/{db}-meta-clean.tsv')
+    ('output/{db}-sintax.fasta', 'output/{db}-meta-clean.tsv')
 ]
 
 @pytest.mark.parametrize("fasta_t, meta_t", FILES_TO_TEST)
