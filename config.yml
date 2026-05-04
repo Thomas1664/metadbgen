@@ -60,7 +60,7 @@ min_seq_len: 200
 # Maximum sequence length after trimming, excluding primers.
 # This is used to avoid any false-positive sequences that only contain one of the primers.
 # We recommend this value to be at most 50% larger than the desired amplicon length.
-max_seq_len: 450
+max_seq_len: 400
 
 # Users can decide whether to search for amplicons outside of the specified taxon
 # of interest using Primer-BLAST.
