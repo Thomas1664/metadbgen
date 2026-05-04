@@ -11,7 +11,8 @@ import re
 def build_search_query(keywords: list[str], organism: str):
     keywords = [f'"{keyword}"' for keyword in keywords]
     joined_keywords = ' OR '.join(keywords)
-    return f'({joined_keywords}) AND "{organism}"[organism]'
+    # HOTFIX: For reproducability, limit release date
+    return f'({joined_keywords}) AND "{organism}"[organism] AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
 
 def remove_if_contains_substr(df: pd.DataFrame, col: str, substr: str):
     return df[~df[col].str.contains(substr, case=False, regex=False)]
