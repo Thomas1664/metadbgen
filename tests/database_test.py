@@ -26,7 +26,8 @@ def _make_clust_results(rows):
 def _make_metadata(rows, species_col=None):
     """rows: list of (accession, tax_id, trimed_seq_len)"""
     df = pd.DataFrame(rows, columns=['accession', 'tax_id', 'trimed_seq_len'])
-    df['species'] = species_col if species_col is not None else 'Genus species'
+    df['organism_name'] = species_col if species_col is not None else 'Genus species'
+    df['organism_name_sanitized'] = df['organism_name'].apply(database.sanitize_org_name)
     return df
 
 def test_dereplicate_keeps_longest_sequence():
