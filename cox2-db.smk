@@ -74,8 +74,8 @@ rule primer_blast_outgroups:
     output:
         out = f"{db_prefix}/outgroups/primer-blast.csv",
     params:
-        primer_f = config['primer_f']['seq'],
-        primer_r = config['primer_r']['seq'],
+        primer_f = config['primer_f'],
+        primer_r = config['primer_r'],
         organism = config['organism'],
         use_cache = config['primer_blast']['enable_cache'],
         cache_path = config['primer_blast']['cache_file'],
