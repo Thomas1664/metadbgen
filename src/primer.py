@@ -56,7 +56,7 @@ def parse_cutadapt_info(info_file: str, out_path: str):
     wide.to_csv(out_path, sep='\t', index=False)
 
 
-def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, min_seq_size: int, align_format='fasta'):
+def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, meta_out: str, min_seq_size: int, align_format='fasta'):
     cutadapt = pd.read_csv(cutadapt_path, sep='\t')
     meta = pd.read_csv(meta_path, sep='\t')
     cut_filtered = cutadapt[cutadapt['accession'].isin(meta['accession'])]
@@ -65,6 +65,7 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, 
     accessions = set(references['accession'])
 
     alignment = AlignIO.read(msa_path, align_format)
+    accessions_written = []
     if len(accessions) == 0:
         # No references available; skip trimming
         with open(fasta_out, 'w') as fasta:
@@ -72,6 +73,9 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, 
                 ungapped_seq = str(record.seq).replace('-', '').upper()
                 if len(ungapped_seq) >= min_seq_size:
                     database.write_seq(fasta, record.id, ungapped_seq)
+                    accessions_written.append(record.id)
+        meta = meta[meta['accession'].isin(accessions_written)]
+        meta.to_csv(meta_out, sep='\t', index=False)
         return
 
     ref_seqs = [str(seq.seq) for seq in alignment if seq.id in accessions]
@@ -90,6 +94,9 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, 
             ungapped_seq = str(record.seq).replace('-', '').upper()
             if len(ungapped_seq) >= min_seq_size:
                 database.write_seq(fasta, record.id, ungapped_seq)
+                accessions_written.append(record.id)
+    meta = meta[meta['accession'].isin(accessions_written)]
+    meta.to_csv(meta_out, sep='\t', index=False)
 
 
 def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_size: int, direction: str):

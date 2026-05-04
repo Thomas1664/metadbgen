@@ -83,9 +83,9 @@ def _compute_sequence_weights(alignment, matrix_name="NUC.4.4"):
         weights[i] = scores.sum()
     return weights.tolist()
 
-def calculate_gappiness(msa_path, substitution_matrix='NUC.4.4'):
+def calculate_gappiness(msa_path, format='fasta', substitution_matrix='NUC.4.4'):
     print("reading alignment")
-    alignment = AlignIO.read(msa_path, 'fasta')
+    alignment = AlignIO.read(msa_path, format=format)
     gappiness = _compute_gappiness(alignment)
     print("done calculating gap scores")
     # FIXME: Weights disabled because they're unused & take a really long time.

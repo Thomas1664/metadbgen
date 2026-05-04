@@ -284,22 +284,17 @@ rule trim_alignment:
         fasta = rules.sequence_quality_filter.output.fasta,
         meta = rules.sequence_quality_filter.output.meta,
         cutadapt_info = rules.trim.output.info_out,
-        script = "trim-alignment.py"
     output:
         msa = "{src}/alignment/msa.fasta",
-        gap_scores = "{src}/alignment/msa-gap-scores.csv",
-        fasta_tmp = "{src}/alignment/seq-trimmed.fasta",
         fasta = "{src}/alignment/sequences.fasta",
         meta = "{src}/alignment/metadata-trim.tsv",
     params:
-        gap_threshold = config['gappiness_threshold'],
         min_length = config['min_seq_len'],
     threads: workflow.cores / 2
     run:
         os.makedirs(f'{wildcards.src}/alignment', exist_ok=True)
-        os.makedirs(f'{wildcards.src}/output', exist_ok=True)
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.cutadapt_info} {input.meta} {output.fasta_tmp} {output.fasta} {output.meta} {wildcards.src}/alignment {params.gap_threshold} {params.min_length}")
+        primer.trim_msa(input.cutadapt_info, input.meta, output.msa, output.fasta, output.meta, int(params.min_length))
 
 
 rule dereplicate_alignment:
@@ -320,10 +315,28 @@ rule dereplicate_alignment:
         python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}
         """
 
+rule gappiness:
+    input:
+        fasta = rules.dereplicate_alignment.output.fasta,
+        meta = rules.dereplicate_alignment.output.meta,
+        script = "gappiness.py",
+    output:
+        msa = "{src}/gappiness/msa.fasta",
+        gap_scores = "{src}/gappiness/msa-gap-scores.csv",
+        fasta = "{src}/gappiness/sequences.fasta",
+        meta = "{src}/gappiness/metadata-trim.tsv",
+    params:
+        gap_threshold = config['gappiness_threshold'],
+    threads: workflow.cores / 2
+    run:
+        os.makedirs(f'{wildcards.src}/gappiness', exist_ok=True)
+        shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
+        shell("python {input.script} {output.msa} {input.meta} {input.fasta} {output.meta} {output.fasta} {output.gap_scores} {params.gap_threshold}")
+
 
 rule export_db:
     input:
-        meta = rules.dereplicate_alignment.output.meta,
+        meta = rules.gappiness.output.meta,
         tax_db = rules.tax_db_download.output.tax_db,
         script = 'taxonomy-export.py'
     output:
@@ -340,7 +353,7 @@ rule export_db:
 
 
 rule tree:
-    input: rules.dereplicate_alignment.output.fasta,
+    input: rules.gappiness.output.fasta,
     params:
         max_iterations = config['tree']['max_iterations']
     output: 
@@ -359,7 +372,7 @@ rule mislabel_detection:
         tree_dist = rules.tree.output.tree_dist,
         tax = rules.export_db.output.tax,
         meta = rules.export_db.output.meta,
-        fasta = rules.dereplicate_alignment.output.fasta
+        fasta = rules.gappiness.output.fasta
     params:
         mislabel = config['mislabel_detection'],
     output:
