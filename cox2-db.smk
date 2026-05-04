@@ -8,6 +8,7 @@ from Bio import SeqIO
 import pandas as pd
 import csv
 import io
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -286,7 +287,7 @@ rule trim_alignment:
         cutadapt_info = rules.trim.output.info_out,
     output:
         msa = "{src}/alignment/msa.fasta",
-        fasta = "{src}/alignment/sequences.fasta",
+        fasta = "{src}/alignment/sequences-trim.fasta",
         meta = "{src}/alignment/metadata-trim.tsv",
     params:
         min_length = config['min_seq_len'],
@@ -306,7 +307,7 @@ rule dereplicate_alignment:
         msa = "{src}/alignment/clust-msa.fa",
         clust = "{src}/alignment/clust-results.tsv",
         meta = "{src}/alignment/metadata.tsv",
-        fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
+        fasta = "{src}/alignment/sequences.fasta",
     params:
         remove_on = str(config.get('remove_on_species', True)),
     shell:
@@ -324,7 +325,7 @@ rule gappiness:
         msa = "{src}/gappiness/msa.fasta",
         gap_scores = "{src}/gappiness/msa-gap-scores.csv",
         fasta = "{src}/gappiness/sequences.fasta",
-        meta = "{src}/gappiness/metadata-trim.tsv",
+        meta = "{src}/gappiness/metadata.tsv",
     params:
         gap_threshold = config['gappiness_threshold'],
     threads: workflow.cores / 2
@@ -337,11 +338,13 @@ rule gappiness:
 rule export_db:
     input:
         meta = rules.gappiness.output.meta,
+        fasta = rules.gappiness.output.fasta,
         tax_db = rules.tax_db_download.output.tax_db,
         script = 'taxonomy-export.py'
     output:
         meta = f"{{src}}/output/{config['db_name']}-meta.tsv",
         tax = f"{{src}}/output/{config['db_name']}-qiime.tsv",
+        fasta = f"{{src}}/output/{config['db_name']}-qiime.fa",
     params:
         # It's not guaranteed this file will be always present
         # because it might be possible that none of the organisms in the database has a host.
@@ -350,6 +353,7 @@ rule export_db:
     run:
         os.makedirs(f'{wildcards.src}/metadata', exist_ok=True)
         shell("python {input.script} {input.meta} {input.tax_db} {output.meta} {output.tax} {params.host_tax}")
+        shutil.copy2(input.fasta, output.fasta)
 
 
 rule tree:
@@ -372,7 +376,7 @@ rule mislabel_detection:
         tree_dist = rules.tree.output.tree_dist,
         tax = rules.export_db.output.tax,
         meta = rules.export_db.output.meta,
-        fasta = rules.gappiness.output.fasta
+        fasta = rules.export_db.output.fasta,
     params:
         mislabel = config['mislabel_detection'],
     output:
