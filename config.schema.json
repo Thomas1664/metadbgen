@@ -10,6 +10,7 @@
     "keywords",
     "primer_f",
     "primer_r",
+    "min_primer_overlap",
     "min_seq_len",
     "max_seq_len",
     "find_outgroups",
@@ -22,21 +23,9 @@
   "additionalProperties": false,
   "$defs": {
     "primer": {
-      "type": "object",
-      "required": ["seq", "min_len"],
-      "additionalProperties": false,
-      "properties": {
-        "seq": {
-          "type": "string",
-          "description": "Primer sequence. Must only contain uppercase bases A, T, G, C, and N for degenerate sites.",
-          "pattern": "^[ATGCN]+$"
-        },
-        "min_len": {
-          "type": "integer",
-          "description": "Minimum length of the primer match required during trimming. Recommended to be at least 2/3 of the actual primer length.",
-          "minimum": 1
-        }
-      }
+      "type": "string",
+      "description": "Primer sequence. Must only contain uppercase bases A, T, G, C, and N for degenerate sites.",
+      "pattern": "^[ATGCN]+$"
     }
   },
   "properties": {
@@ -65,12 +54,17 @@
       "minItems": 1
     },
     "primer_f": {
-      "description": "Forward primer definition.",
+      "description": "Forward primer.",
       "$ref": "#/$defs/primer"
     },
     "primer_r": {
-      "description": "Reverse primer definition.",
+      "description": "Reverse primer.",
       "$ref": "#/$defs/primer"
+    },
+    "min_primer_overlap": {
+      "type": "integer",
+      "description": "Minimum length of the primer match required during trimming. Recommended to be at least 2/3 of the actual primer length.",
+      "minimum": 1
     },
     "min_seq_len": {
       "type": "integer",

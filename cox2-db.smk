@@ -193,10 +193,9 @@ rule trim:
         info = "{src}/primer-trim/cutadapt-info.tsv",
         info_out = "{src}/primer-trim/cutadapt-info-parsed.tsv",
     params:
-        primer_f_seq = config['primer_f']['seq'],
-        primer_f_len = config['primer_f']['min_len'],
-        primer_r_seq = str(Seq(config['primer_r']['seq']).reverse_complement()),
-        primer_r_len = config['primer_r']['min_len'],
+        primer_f_seq = config['primer_f'],
+        primer_r_seq = str(Seq(config['primer_r']).reverse_complement()),
+        min_primer_overlap = config['min_primer_overlap'],
         min_seq_len = config['min_seq_len'],
         max_seq_len = config['max_seq_len'],
     threads: workflow.cores / 2
@@ -204,7 +203,7 @@ rule trim:
         os.makedirs(f'{wildcards.src}/primer-trim', exist_ok=True)
         max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')['max_len'][0]
         buffer_size = max(max_seq_len * 2, 1048576)
-        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.primer_f_len} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
+        shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.min_primer_overlap} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
         shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 

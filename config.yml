@@ -39,19 +39,16 @@ keywords:
 # Primers
 # The primer sequences must only contain the uppercase bases A, T, G, C, and the letter N
 # for any degenerate sites.
-# min_len:
-#   The minimum length of the primers in bases.
-#   The minimum length specifies during primer trimming how large a partial hit for one primer
-#   needs to be in order to find also parts of the primer.
-#   We recommend using at least 2/3 of the actual primer length to avoid false positives.
-primer_f:
-  # Hud2-F (Peronosporomycete forward) Hudspeth et al. (2000) https://doi.org/10.1080/00275514.2000.12061208
-  seq: GGCAAATGGGTTTTCAAGATCC
-  min_len: 18
-primer_r:
-  # cox2_233D8r, Sapp et al. (2019) https://doi.org/10.1002/ece3.5577
-  seq: GAATATTCATANNTCCANTACC
-  min_len: 20
+# Hud2-F (Peronosporomycete forward) Hudspeth et al. (2000) https://doi.org/10.1080/00275514.2000.12061208
+primer_f: GGCAAATGGGTTTTCAAGATCC
+# cox2_233D8r, Sapp et al. (2019) https://doi.org/10.1002/ece3.5577
+primer_r: GAATATTCATANNTCCANTACC
+
+# The minimum length of the primers in bases.
+# The minimum length specifies during primer trimming how large a partial hit for one primer
+# needs to be in order to find also parts of the primer.
+# We recommend using at least 2/3 of the actual primer length to avoid false positives.
+min_primer_overlap: 18
 
 # TODO: Nested PCR
 
