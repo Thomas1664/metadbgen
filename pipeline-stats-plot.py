@@ -128,7 +128,7 @@ for j, stage in enumerate(stage_names):
         font=dict(size=11),
     ))
     annotations.append(dict(
-        x=[stage, 'All Species'],
+        x=[stage, 'Species'],
         y=spe_totals[j],
         text=str(spe_totals[j]),
         showarrow=False,
