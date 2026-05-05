@@ -52,7 +52,7 @@ def prefer_refseq(trimmed: pd.DataFrame):
     return trimmed[mask].copy()
 
 
-def filter_data(df: pd.DataFrame, remove_on_species: bool = True):
+def filter_data(df: pd.DataFrame, remove_on_species: bool=True, enable_refseq_filter: bool=True):
     # remove unverified sequences
     filtered = df.drop(df[df['title'].str.lower().str.startswith('unverified')].index).copy()
     filtered = filtered.drop_duplicates(subset=['accession'])
@@ -86,7 +86,8 @@ def filter_data(df: pd.DataFrame, remove_on_species: bool = True):
         on_native = trimmed[on_native_mask]
         trimmed = trimmed.filter([*non_on_seqs.index, *on_native.index], axis='index')
     trimmed = trimmed.dropna(subset='genus')
-    trimmed = prefer_refseq(trimmed)
+    if enable_refseq_filter:
+        trimmed = prefer_refseq(trimmed)
     return trimmed, removed
 
 def write_seq(file: TextIOWrapper, accession: str, seq: SeqRecord | str):

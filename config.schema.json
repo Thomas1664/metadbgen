@@ -18,7 +18,9 @@
     "gappiness_threshold",
     "max_ambiguous_bases",
     "tree",
-    "mislabel_detection"
+    "mislabel_detection",
+    "remove_on_species",
+    "prefer_refseq"
   ],
   "additionalProperties": false,
   "$defs": {
@@ -124,6 +126,11 @@
     "remove_on_species": {
       "type": "boolean",
       "description": "Whether to remove open nomenclature (ON) species from the database. ON sequences are removed when a sequence with the sanitized name already exists. Disable to study the effect of including ON species.",
+      "default": true
+    },
+    "prefer_refseq": {
+      "type": "boolean",
+      "description": "Whether to prefer RefSeq sequences of a species (when avaiable) and remove all other sequences of that species.",
       "default": true
     },
     "mislabel_detection": {

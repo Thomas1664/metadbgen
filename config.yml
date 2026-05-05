@@ -96,6 +96,11 @@ gappiness_threshold: 0.090
 # Disable this to study the effect of including ON species.
 remove_on_species: true
 
+# Whether to prefer RefSeq sequences if available for a given species.
+# When enabled, only RefSeq sequences of a species are preserved, while all other sequences of this species are removed.
+# This does not affect species without RefSeq sequences, which would still be included in the database.
+prefer_refseq: true
+
 # Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
 # in a sequence after trimming.
 # Sequences with excessive numbers of such bases will most likely result in a

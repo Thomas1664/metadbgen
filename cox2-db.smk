@@ -224,6 +224,7 @@ rule clean_db:
     params:
         organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else "",
         no_remove_on = "--no-remove-on-species" if not config.get('remove_on_species', True) else "",
+        no_prefer_refseq = "--no-prefer-refseq" if not config.get('prefer_refseq', True) else "",
     shell:
         """
         python {input.script} \\
@@ -233,7 +234,7 @@ rule clean_db:
             --out-fasta {output.accessions} \\
             --out-metadata-removed {output.meta_removed} \\
             --out-fasta-removed {output.accessions_removed} \\
-            --tax-db {input.tax_db} {params.organism} {params.no_remove_on}
+            --tax-db {input.tax_db} {params.organism} {params.no_remove_on} {params.no_prefer_refseq}
         seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
         seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
         """
