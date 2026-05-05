@@ -11,7 +11,8 @@ tests:
     - source activate cox2-db
     - snakemake -s cox2-db.smk -c 8 --configfile config.yml --keep-incomplete
     - python ./parse_snakemake_log.py --output data/cox2_th/workflow-stats.json
-    - python ./pipeline-stats-plot.py
+    - python ./pipeline-stats-plot.py --base data/cox2_th --rank order --out data/cox2_th/pipeline-stats
+    - python ./pipeline-stats-plot.py --base data/cox2_th/outgroups --rank order --out data/cox2_th/pipeline-stats-outgroup
     - pytest
   artifacts:
     when: always

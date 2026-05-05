@@ -1,11 +1,19 @@
+import argparse
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.colors
 from src.database import sanitize_org_name
 
-BASE = 'data/cox2_th'
-RANK = 'family'
+parser = argparse.ArgumentParser()
+parser.add_argument('--base', default='data/cox2_th', help='Base data directory')
+parser.add_argument('--rank', default='family', help='Taxonomic rank to group by')
+parser.add_argument('--out', default=None, help='Output file path (without extension); defaults to <base>/pipeline-stats')
+args = parser.parse_args()
+
+BASE = args.base
+RANK = args.rank
+OUT = args.out if args.out is not None else f'{BASE}/pipeline-stats'
 
 stage_files = {
     'Download': f'{BASE}/seq-meta.csv',
@@ -22,7 +30,19 @@ stage_files = {
 dfs = {}
 for stage, path in stage_files.items():
     sep = '\t' if path.endswith('.tsv') else ','
-    dfs[stage] = pd.read_csv(path, sep=sep)
+    df = pd.read_csv(path, sep=sep)
+    for _, row in df.iterrows():
+        if pd.isna(row["family"]):
+            row["family"] = row["genus"]
+        if pd.isna(row["order"]):
+            row["order"] = row["family"]
+        if pd.isna(row["class"]):
+            row["class"] = row["order"]
+        if pd.isna(row["phylum"]):
+            row["phylum"] = row["class"]
+        if pd.isna(row["kingdom"]):
+            row["kingdom"] = row["phylum"]
+    dfs[stage] = df
 
 stage_names = list(stage_files.keys())
 n_stages = len(stage_names)
@@ -108,7 +128,7 @@ for j, stage in enumerate(stage_names):
         font=dict(size=11),
     ))
     annotations.append(dict(
-        x=[stage, 'Species'],
+        x=[stage, 'All Species'],
         y=spe_totals[j],
         text=str(spe_totals[j]),
         showarrow=False,
@@ -139,5 +159,6 @@ fig.update_layout(
 fig.update_xaxes(showgrid=False)
 fig.update_yaxes(gridcolor='lightgrey')
 
-fig.write_html(f'{BASE}/pipeline-stats.html')
-print('Saved pipeline-stats.html')
+fig.write_html(f'{OUT}.html')
+fig.write_image(f'{OUT}.svg', format='svg')
+print(f'Saved {OUT}.html and {OUT}.svg')
