@@ -49,16 +49,13 @@ for stage, path in stage_files.items():
     sep = '\t' if path.endswith('.tsv') else ','
     df = pd.read_csv(path, sep=sep)
     for _, row in df.iterrows():
-        if pd.isna(row["family"]):
-            row["family"] = row["genus"]
-        if pd.isna(row["order"]):
-            row["order"] = row["family"]
-        if pd.isna(row["class"]):
-            row["class"] = row["order"]
-        if pd.isna(row["phylum"]):
-            row["phylum"] = row["class"]
-        if pd.isna(row["kingdom"]):
-            row["kingdom"] = row["phylum"]
+        df["family"] = df["family"].fillna(df["genus"])
+        df["order"] = df["order"].fillna(df["family"])
+        df["class"] = df["class"].fillna(df["order"])
+        df["phylum"] = df["phylum"].fillna(df["class"])
+        df["kingdom"] = df["kingdom"].fillna(df["phylum"])
+        for col in ["genus", "family", "order", "class", "phylum", "kingdom"]:
+            df[col] = df[col].fillna("Unknown")
     dfs[stage] = df
 
 stage_names = list(stage_files.keys())
