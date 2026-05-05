@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.colors
+from src.database import sanitize_org_name
 
 BASE = 'data/cox2_th'
+RANK = 'family'
 
 stage_files = {
     'Download': f'{BASE}/seq-meta.csv',
@@ -11,7 +13,9 @@ stage_files = {
     'Clean DB': f'{BASE}/seq-meta-filtered.tsv',
     'Dereplicate': f'{BASE}/dereplicate/metadata.tsv',
     'Quality Filter': f'{BASE}/quality-filter/metadata.tsv',
+    'Trim<br>(Alignment)': f'{BASE}/alignment/metadata-trim.tsv',
     'Dereplicate<br>(Alignment)': f'{BASE}/alignment/metadata.tsv',
+    'Gappiness': f'{BASE}/gappiness/metadata.tsv',
     'Mislabel<br>Detection': f'{BASE}/output/cox2_th-meta-clean.tsv',
 }
 
@@ -25,8 +29,8 @@ n_stages = len(stage_names)
 
 # Collect all families, sort by total sequence count descending so large families anchor the bottom
 family_totals = (
-    pd.concat([df[['family']] for df in dfs.values()])
-    .groupby('family')
+    pd.concat([df[[RANK]] for df in dfs.values()])
+    .groupby(RANK)
     .size()
     .sort_values(ascending=True)  # ascending so largest is at top of stack → legend order
 )
@@ -35,14 +39,20 @@ n_families = len(all_families)
 
 seq_mat = np.zeros((n_families, n_stages), dtype=int)
 spe_mat = np.zeros((n_families, n_stages), dtype=int)
+non_on_mat = np.zeros((n_families, n_stages), dtype=int)
 
 for j, stage in enumerate(stage_names):
     df = dfs[stage]
-    seq_grp = df.groupby('family').size()
-    spe_grp = df.groupby('family')['tax_id'].nunique()
+    if 'organism_name_sanitized' not in df.columns:
+        df = df.copy()
+        df['organism_name_sanitized'] = df['organism_name'].apply(sanitize_org_name)
+    seq_grp = df.groupby(RANK).size()
+    spe_grp = df.groupby(RANK)['tax_id'].nunique()
+    non_on_grp = df[df['organism_name'] == df['organism_name_sanitized']].groupby(RANK)['tax_id'].nunique()
     for i, fam in enumerate(all_families):
         seq_mat[i, j] = seq_grp.get(fam, 0)
         spe_mat[i, j] = spe_grp.get(fam, 0)
+        non_on_mat[i, j] = non_on_grp.get(fam, 0)
 
 # 21 families — use Light24 palette (24 colors)
 palette = plotly.colors.qualitative.Light24
@@ -61,7 +71,7 @@ for i, (fam, color) in enumerate(zip(all_families, colors)):
         showlegend=True,
         hovertemplate=f'<b>{fam}</b><br>Stage: %{{x}}<br>Sequences: %{{y}}<extra></extra>',
     ))
-    # Species bar (right bar in each stage group)
+    # Species bar (middle bar in each stage group)
     fig.add_trace(go.Bar(
         name=fam,
         x=[stage_names, ['Species'] * n_stages],
@@ -71,10 +81,21 @@ for i, (fam, color) in enumerate(zip(all_families, colors)):
         showlegend=False,
         hovertemplate=f'<b>{fam}</b><br>Stage: %{{x}}<br>Species: %{{y}}<extra></extra>',
     ))
+    # Non-ON species bar (right bar in each stage group)
+    fig.add_trace(go.Bar(
+        name=fam,
+        x=[stage_names, ['Non-ON Species'] * n_stages],
+        y=non_on_mat[i],
+        marker_color=color,
+        legendgroup=fam,
+        showlegend=False,
+        hovertemplate=f'<b>{fam}</b><br>Stage: %{{x}}<br>Non-ON Species: %{{y}}<extra></extra>',
+    ))
 
 # Annotate totals above each bar
 seq_totals = seq_mat.sum(axis=0)
 spe_totals = spe_mat.sum(axis=0)
+non_on_totals = non_on_mat.sum(axis=0)
 
 annotations = []
 for j, stage in enumerate(stage_names):
@@ -94,13 +115,21 @@ for j, stage in enumerate(stage_names):
         yanchor='bottom',
         font=dict(size=11),
     ))
+    annotations.append(dict(
+        x=[stage, 'Non-ON Species'],
+        y=non_on_totals[j],
+        text=str(non_on_totals[j]),
+        showarrow=False,
+        yanchor='bottom',
+        font=dict(size=11),
+    ))
 
 fig.update_layout(
     barmode='stack',
-    title=dict(text='Sequences and Species per Family across Pipeline Stages', font=dict(size=16)),
+    title=dict(text=f'Sequences, Species and Non-ON Species per {RANK.title()} across Pipeline Stages', font=dict(size=16)),
     xaxis=dict(title='Pipeline Stage'),
     yaxis=dict(title='Count'),
-    legend=dict(title='Family', traceorder='normal'),
+    legend=dict(title=RANK.title(), traceorder='normal'),
     height=650,
     width=1300,
     annotations=annotations,
