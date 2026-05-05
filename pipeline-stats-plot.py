@@ -3,12 +3,29 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.colors
-from src.database import sanitize_org_name
+import re
+
+
+def sanitize_org_name(org_name: str) -> str:
+    if isinstance(org_name, float):
+        return ''
+    words = org_name.split(' ')
+    explicit_modifiers = {'taxon'}
+    # TODO: first check if name matches binomen: "^[A-Z][a-z\-]+ [a-z\-]+$"gmu
+    # also check 3rd word when removing second word
+    if len(words) > 2:
+        second = words[1]
+        epitet_pat = re.compile(r"^[a-z\-]+$")
+        if second in explicit_modifiers or len(second) == 1 or epitet_pat.match(second) is None:
+            words = [words[0]] + words[2:]
+
+    return ' '.join(words[:2])
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--base', default='data/cox2_th', help='Base data directory')
 parser.add_argument('--rank', default='family', help='Taxonomic rank to group by')
 parser.add_argument('--out', default=None, help='Output file path (without extension); defaults to <base>/pipeline-stats')
+parser.add_argument('--colormap', default=None, help='CSV file with columns <name>,<color> mapping rank names to colors')
 args = parser.parse_args()
 
 BASE = args.base
@@ -74,9 +91,16 @@ for j, stage in enumerate(stage_names):
         spe_mat[i, j] = spe_grp.get(fam, 0)
         non_on_mat[i, j] = non_on_grp.get(fam, 0)
 
-# 21 families — use Light24 palette (24 colors)
-palette = plotly.colors.qualitative.Light24
-colors = [palette[i % len(palette)] for i in range(n_families)]
+if args.colormap is not None:
+    cm_df = pd.read_csv(args.colormap)
+    name_col, color_col = cm_df.columns[0], cm_df.columns[1]
+    explicit_colors = dict(zip(cm_df[name_col], cm_df[color_col]))
+    fallback = plotly.colors.qualitative.Light24
+    fallback_iter = iter(c for c in fallback if c not in explicit_colors.values())
+    colors = [explicit_colors.get(fam) or next(fallback_iter) for fam in all_families]
+else:
+    palette = plotly.colors.qualitative.Light24
+    colors = [palette[i % len(palette)] for i in range(n_families)]
 
 fig = go.Figure()
 
