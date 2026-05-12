@@ -440,6 +440,14 @@ rule plot:
 
 if config.get('find_missing_species', False):
 
+    rule round2_taxonomy:
+        input:
+            f"{db_prefix}/taxonomy/parsed.csv",
+        output:
+            f"{db_prefix}/round2/taxonomy/parsed.csv",
+        shell:
+            "cp {input} {output}"
+
     rule find_missing_species:
         input:
             tax = f"{db_prefix}/taxonomy/parsed.csv",
