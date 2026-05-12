@@ -123,6 +123,8 @@ rule taxonomy:
             taxonomy.to_csv(tax_data, csv_writer, header=True)
 
 rule parse_metadata:
+    wildcard_constraints:
+        src = f"(?!{db_prefix}/round2$).*",
     input:
         gb_file = f"{{src}}/input-sequences.gb",
         tax_db = rules.tax_db_download.output.tax_db,
@@ -439,9 +441,6 @@ rule plot:
 
 
 if config.get('find_missing_species', False):
-
-    ruleorder: parse_missing > parse_metadata
-    ruleorder: combine_sequences > trim
 
     rule round2_taxonomy:
         input:
