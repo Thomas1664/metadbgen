@@ -440,6 +440,9 @@ rule plot:
 
 if config.get('find_missing_species', False):
 
+    ruleorder: parse_missing > parse_metadata
+    ruleorder: combine_sequences > trim
+
     rule round2_taxonomy:
         input:
             f"{db_prefix}/taxonomy/parsed.csv",
