@@ -475,8 +475,6 @@ if config.get('find_missing_species', False):
             missing = f"{db_prefix}/round2/missing-species.csv",
         output:
             gb_file = f"{db_prefix}/round2/input-sequences.gb",
-        params:
-            keywords = config['keywords'],
         run:
             missing_df = pd.read_csv(input.missing)
             tmp_dir = f"{db_prefix}/round2/tmp"
@@ -486,7 +484,7 @@ if config.get('find_missing_species', False):
                 os.makedirs(tmp_dir, exist_ok=True)
                 skipped, downloaded = [], []
                 for _, row in missing_df.iterrows():
-                    query = database.build_search_query(params.keywords, row['species'])
+                    query = database.build_organism_query(row['species'])
                     res = await client.esearch(query)
                     if res.result_count == 0:
                         skipped.append(row['species'])

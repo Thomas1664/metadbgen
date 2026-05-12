@@ -8,6 +8,9 @@ import subprocess
 import re
 
 
+def build_organism_query(organism: str):
+    return f'"{organism}"[organism] AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
+
 def build_search_query(keywords: list[str], organism: str):
     keywords = [f'"{keyword}"' for keyword in keywords]
     joined_keywords = ' OR '.join(keywords)
