@@ -17,6 +17,8 @@ db_prefix = f"{config['base_dir']}/{config['db_name']}"
 sources = [db_prefix]
 if config['find_outgroups']:
     sources.append(f'{db_prefix}/outgroups')
+if config.get('find_missing_species', False):
+    sources.append(f'{db_prefix}/round2')
 
 rule all:
     input:
@@ -222,7 +224,7 @@ rule clean_db:
         accessions = "{src}/seq-filtered.txt",
         accessions_removed = "{src}/seq-filtered-removed.txt",
     params:
-        organism = lambda wildcards: f"--organism '{config['organism']}'" if wildcards.src == db_prefix else "",
+        organism = lambda wildcards: "" if wildcards.src == f"{db_prefix}/outgroups" else f"--organism '{config['organism']}'",
         no_remove_on = "--no-remove-on-species" if not config.get('remove_on_species', True) else "",
         no_prefer_refseq = "--no-prefer-refseq" if not config.get('prefer_refseq', True) else "",
     shell:
@@ -434,3 +436,155 @@ rule plot:
         primer.logo_plot(input.info, input.meta, output.fasta_r, params.primer_r_len, output.plot_r, 'reverse')
         meta = pd.read_csv(input.meta, sep='\t')
         metadata.plot_country_heatmap(meta, output.geo_html, output.geo_svg)
+
+
+if config.get('find_missing_species', False):
+
+    rule find_missing_species:
+        input:
+            tax = f"{db_prefix}/taxonomy/parsed.csv",
+            meta = f"{db_prefix}/output/{config['db_name']}-meta-clean.tsv",
+        output:
+            missing = f"{db_prefix}/round2/missing-species.csv",
+        run:
+            tax_df = pd.read_csv(input.tax)
+            tax_df['species_sanitized'] = tax_df['species'].apply(database.sanitize_org_name)
+            binom_df = tax_df[
+                (tax_df['species'] == tax_df['species_sanitized']) &
+                (~tax_df['species'].str.endswith('sp.')) &
+                (~tax_df['species'].str.startswith('uncultured'))
+            ]
+            db_tax_df = pd.read_csv(input.meta, sep='\t')
+            missing_df = binom_df[~binom_df['species'].isin(db_tax_df['species'])]
+            missing_df[['species', 'tax_id']].drop_duplicates().to_csv(output.missing, index=False)
+
+
+    rule download_missing:
+        retries: 5
+        input:
+            missing = f"{db_prefix}/round2/missing-species.csv",
+        output:
+            gb_file = f"{db_prefix}/round2/input-sequences.gb",
+        params:
+            keywords = config['keywords'],
+        run:
+            missing_df = pd.read_csv(input.missing)
+            tmp_dir = f"{db_prefix}/round2/tmp"
+
+            async def download_all():
+                client = request.HttpClient()
+                os.makedirs(tmp_dir, exist_ok=True)
+                for _, row in missing_df.iterrows():
+                    query = database.build_search_query(params.keywords, row['species'])
+                    res = await client.esearch(query)
+                    if res.result_count == 0:
+                        continue
+                    await client.efetch_all(res, f'{tmp_dir}/{row["tax_id"]}.gb')
+                    for split_file in glob.glob(f'{tmp_dir}/{row["tax_id"]}_*.gb'):
+                        os.remove(split_file)
+                gb_files = sorted(glob.glob(f'{tmp_dir}/*.gb'))
+                with open(output.gb_file, 'w') as out_f:
+                    for gb_file in gb_files:
+                        with open(gb_file) as f:
+                            out_f.write(f.read())
+
+            with ThreadPoolExecutor() as pool:
+                future = pool.submit(lambda: asyncio.run(download_all()))
+                future.result()
+
+
+    rule parse_missing:
+        input:
+            gb_file = f"{db_prefix}/round2/input-sequences.gb",
+            tax_db = rules.tax_db_download.output.tax_db,
+            tax = f"{db_prefix}/taxonomy/parsed.csv",
+            script = "parse-gb.py",
+        output:
+            meta_csv = f"{db_prefix}/round2/seq-meta.csv",
+            fasta_tmp = f"{db_prefix}/round2/sequences.fasta.tmp",
+            fasta = f"{db_prefix}/round2/sequences.fasta",
+        shell:
+            """
+            python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}
+            seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
+            """
+
+
+    rule trim_missing:
+        input:
+            fasta = f"{db_prefix}/round2/sequences.fasta",
+            meta = f"{db_prefix}/round2/seq-meta.csv",
+            script = "trim.py",
+        output:
+            fasta = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
+            meta = f"{db_prefix}/round2/primer-trim-new/metadata.tsv",
+            info_tmp = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-tmp.tsv",
+            info = f"{db_prefix}/round2/primer-trim-new/cutadapt-info.tsv",
+            info_out = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv",
+        params:
+            primer_f_seq = config['primer_f'],
+            primer_r_seq = str(Seq(config['primer_r']).reverse_complement()),
+            min_primer_overlap = config['min_primer_overlap'],
+            min_seq_len = config['min_seq_len'],
+            max_seq_len = config['max_seq_len'],
+        threads: workflow.cores / 2
+        run:
+            os.makedirs(f"{db_prefix}/round2/primer-trim-new", exist_ok=True)
+            stats = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')
+            try:
+                seq_max_len = int(stats['max_len'][0])
+            except (ValueError, TypeError):
+                seq_max_len = 0
+            buffer_size = max(seq_max_len * 2, 1048576)
+            shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.min_primer_overlap} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
+            shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
+            shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
+
+
+    rule combine_sequences:
+        """
+        Merges round-1 primer-trim outputs with newly trimmed missing-species sequences.
+        Downstream wildcard rules use {src}/primer-trim/... paths; since this rule's
+        outputs are concrete (no wildcards), Snakemake prefers them over the trim rule
+        when building the round2 source tree.
+        """
+        input:
+            fasta_orig = f"{db_prefix}/primer-trim/sequences.fasta",
+            meta_orig = f"{db_prefix}/primer-trim/metadata.tsv",
+            info_orig = f"{db_prefix}/primer-trim/cutadapt-info-parsed.tsv",
+            fasta_new = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
+            meta_new = f"{db_prefix}/round2/primer-trim-new/metadata.tsv",
+            info_new = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv",
+        output:
+            fasta = f"{db_prefix}/round2/primer-trim/sequences.fasta",
+            meta = f"{db_prefix}/round2/primer-trim/metadata.tsv",
+            info_out = f"{db_prefix}/round2/primer-trim/cutadapt-info-parsed.tsv",
+            info_tmp = f"{db_prefix}/round2/primer-trim/cutadapt-info-tmp.tsv",
+            info = f"{db_prefix}/round2/primer-trim/cutadapt-info.tsv",
+        run:
+            os.makedirs(f"{db_prefix}/round2/primer-trim", exist_ok=True)
+
+            orig_meta = pd.read_csv(input.meta_orig, sep='\t')
+            existing_accessions = set(orig_meta['accession'])
+
+            new_meta = pd.read_csv(input.meta_new, sep='\t') if os.path.getsize(input.meta_new) > 0 else pd.DataFrame(columns=orig_meta.columns)
+            new_meta_filtered = new_meta[~new_meta['accession'].isin(existing_accessions)]
+            new_accessions = set(new_meta_filtered['accession'])
+
+            pd.concat([orig_meta, new_meta_filtered], ignore_index=True).to_csv(output.meta, sep='\t', index=False)
+
+            shutil.copy2(input.fasta_orig, output.fasta)
+            if new_accessions:
+                acc_file = f"{db_prefix}/round2/primer-trim/.new_acc.txt"
+                with open(acc_file, 'w') as f:
+                    f.write('\n'.join(new_accessions))
+                shell("seqkit grep -f " + acc_file + " {input.fasta_new} >> {output.fasta}")
+                os.remove(acc_file)
+
+            orig_info = pd.read_csv(input.info_orig, sep='\t')
+            new_info = pd.read_csv(input.info_new, sep='\t') if os.path.getsize(input.info_new) > 0 else pd.DataFrame(columns=orig_info.columns)
+            new_info_filtered = new_info[new_info['accession'].isin(new_accessions)]
+            pd.concat([orig_info, new_info_filtered], ignore_index=True).to_csv(output.info_out, sep='\t', index=False)
+
+            shutil.copy2(output.info_out, output.info_tmp)
+            shutil.copy2(output.info_out, output.info)

@@ -70,6 +70,12 @@ max_seq_len: 400
 # subfolder.
 find_outgroups: true
 
+# Whether to search for sequences of species that are present in the taxonomy
+# but have no sequences in the final database after mislabel detection.
+# When enabled, a second pass (round2) downloads sequences for missing species,
+# runs in-silico PCR, and re-runs the full pipeline on the combined sequence set.
+find_missing_species: true
+
 primer_blast:
   # Whether to use a local cache when retrieving results from Primer BLAST.
   # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
