@@ -484,14 +484,21 @@ if config.get('find_missing_species', False):
             async def download_all():
                 client = request.HttpClient()
                 os.makedirs(tmp_dir, exist_ok=True)
+                skipped, downloaded = [], []
                 for _, row in missing_df.iterrows():
                     query = database.build_search_query(params.keywords, row['species'])
                     res = await client.esearch(query)
                     if res.result_count == 0:
+                        skipped.append(row['species'])
                         continue
+                    downloaded.append(row['species'])
                     await client.efetch_all(res, f'{tmp_dir}/{row["tax_id"]}.gb')
                     for split_file in glob.glob(f'{tmp_dir}/{row["tax_id"]}_*.gb'):
                         os.remove(split_file)
+                print(f"download_missing: {len(downloaded)} species downloaded, "
+                      f"{len(skipped)} skipped (no NCBI results)")
+                if skipped:
+                    print(f"  Skipped: {', '.join(skipped)}")
                 gb_files = sorted(glob.glob(f'{tmp_dir}/*.gb'))
                 with open(output.gb_file, 'w') as out_f:
                     for gb_file in gb_files:
