@@ -130,23 +130,28 @@ def _align_primers(fasta: str, tmp_out_file: str):
     subprocess.run(['muscle', '-super5', fasta, '-output', tmp_out_file, '-nt'], check=True, text=True)
     return [str(record.seq).upper() for record in SeqIO.parse(tmp_out_file, 'fasta')]
 
-def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
+def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str = ''):
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
     fig, ax = plt.subplots()
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
-    ax.set_xticks(range(1, np.max(lengths), 2))
-    ax.set_xlabel("Base positions")
+    if primer_seq:
+        ax.set_xticks(range(len(primer_seq)))
+        ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace')
+        ax.set_xlabel("Reference primer")
+    else:
+        ax.set_xticks(range(1, np.max(lengths), 2))
+        ax.set_xlabel("Base positions")
     ax.set_ylabel("Proportions")
     ax.set_ylim((0, 1))
     fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
 
-def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str):
+def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str, primer_seq: str = ''):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
     seqs = _align_primers(fasta_path, f'{fasta_path}.tmp')
-    _draw_logo(seqs, logo_path, total_seqs)
+    _draw_logo(seqs, logo_path, total_seqs, primer_seq)
 
 
 @dataclass

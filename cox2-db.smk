@@ -431,11 +431,11 @@ rule plot:
         geo_html = "{src}/metadata/country-heat.html",
         geo_svg = "{src}/metadata/country-heat.svg",
     params:
-        primer_f_len = len(config['primer_f']),
-        primer_r_len = len(config['primer_r']),
+        primer_f = config['primer_f'],
+        primer_r = config['primer_r'],
     run:
-        primer.logo_plot(input.info, input.meta, output.fasta_f, params.primer_f_len, output.plot_f, 'forward')
-        primer.logo_plot(input.info, input.meta, output.fasta_r, params.primer_r_len, output.plot_r, 'reverse')
+        primer.logo_plot(input.info, input.meta, output.fasta_f, len(params.primer_f), output.plot_f, 'forward', params.primer_f)
+        primer.logo_plot(input.info, input.meta, output.fasta_r, len(params.primer_r), output.plot_r, 'reverse', params.primer_r)
         meta = pd.read_csv(input.meta, sep='\t')
         metadata.plot_country_heatmap(meta, output.geo_html, output.geo_svg)
 
