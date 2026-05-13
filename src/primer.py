@@ -143,7 +143,7 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str
     else:
         ax.set_xticks(range(1, np.max(lengths), 2))
         ax.set_xlabel("Base positions")
-    ax.set_ylabel("Proportions")
+    ax.set_ylabel("Base frequency")
     ax.set_ylim((0, 1))
     fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
