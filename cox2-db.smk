@@ -58,6 +58,11 @@ rule all:
         expand("{src}/seq-filtered-removed.txt", src=sources),
         expand("{src}/alignment/msa.fasta", src=sources),
 
+        # Entropy plot
+        expand("{src}/output/msa-entropy.tsv", src=sources),
+        expand("{src}/output/msa-entropy.html", src=sources),
+        expand("{src}/output/msa-entropy.svg", src=sources),
+
 
 rule download:
     retries: 5
@@ -421,6 +426,22 @@ rule export_sintax:
     run:
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
         shell("python {input.script} {output.msa} {input.tax} {output.db}")
+
+rule msa_entropy:
+    input:
+        msa = rules.export_sintax.output.db,
+        script = "entropy.py"
+    output:
+        tsv  = "{src}/output/msa-entropy.tsv",
+        html = "{src}/output/msa-entropy.html",
+        svg  = "{src}/output/msa-entropy.svg",
+    threads: workflow.cores / 2
+    shell:
+        """
+        goalign compute entropy -g -i {input.msa} -t {threads} > {output.tsv}
+        python {input.script} {output.tsv} {output.html} {output.svg}
+        """
+
 
 rule plot:
     input:
