@@ -1,5 +1,6 @@
 import glob
 import os
+import re
 import asyncio
 from src import metadata, request, taxonomy, primer, database, mislabel_detection, genbank_parser
 from src.ncbi_taxonomy import download_and_build_db
@@ -182,6 +183,8 @@ if "outer_primer_f" in config or "outer_primer_r" in config:
 
 
 rule trim:
+    wildcard_constraints:
+        src = f"(?!{re.escape(db_prefix)}/round2$).+"
     input:
         fasta = lambda wildcards: (
             "{src}/primer-trim/nested.fasta"
@@ -214,8 +217,8 @@ rule trim:
 
 rule clean_db:
     input:
-        meta = rules.trim.output.meta,
-        fasta = rules.trim.output.fasta,
+        meta = "{src}/primer-trim/metadata.tsv",
+        fasta = "{src}/primer-trim/sequences.fasta",
         tax_db = rules.tax_db_download.output.tax_db,
         script = "db-clean.py"
     output:
@@ -288,7 +291,7 @@ rule trim_alignment:
     input:
         fasta = rules.sequence_quality_filter.output.fasta,
         meta = rules.sequence_quality_filter.output.meta,
-        cutadapt_info = rules.trim.output.info_out,
+        cutadapt_info = "{src}/primer-trim/cutadapt-info-parsed.tsv",
     output:
         msa = "{src}/alignment/msa.fasta",
         fasta = "{src}/alignment/sequences-trim.fasta",
@@ -422,7 +425,7 @@ rule export_sintax:
 rule plot:
     input:
         meta = rules.mislabel_detection.output.meta,
-        info = rules.trim.output.info_out,
+        info = "{src}/primer-trim/cutadapt-info-parsed.tsv",
     output:
         fasta_f = "{src}/primer-f.fasta",
         fasta_r = "{src}/primer-r.fasta",
@@ -441,6 +444,15 @@ rule plot:
 
 
 if config.get('find_missing_species', False):
+
+    # combine_sequences produces round2/primer-trim/ directly, bypassing cutadapt.
+    # Without this declaration Snakemake may prefer the wildcard 'trim' rule, which
+    # would run cutadapt on new sequences only — silently dropping round-1 sequences
+    # (already trimmed = no primers = discarded as untrimmed by cutadapt).
+    ruleorder: combine_sequences > trim
+    # parse_missing provides round2/sequences.fasta and round2/seq-meta.csv
+    # as concrete outputs; the wildcard parse_metadata rule must not run for round2.
+    ruleorder: parse_missing > parse_metadata
 
     rule round2_taxonomy:
         input:
