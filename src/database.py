@@ -104,7 +104,8 @@ def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Se
     subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta], check=True)
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame, remove_on_species: bool = True):
-    merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
+    cols_to_drop = [c for c in metadata.columns if c in clust_results.columns or c == 'cluster_id_x']
+    merged = metadata.drop(columns=cols_to_drop).merge(clust_results, how='left', left_on='accession', right_on='query_label')
     if remove_on_species:
         # Remove ON sequences from clusters that also contain non-ON sequences.
         is_on = merged['organism_name'] != merged['organism_name_sanitized']
