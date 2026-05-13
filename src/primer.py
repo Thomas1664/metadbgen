@@ -145,6 +145,7 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str
         ax.set_xlabel("Base positions")
     ax.set_ylabel("Base frequency")
     ax.set_ylim((0, 1))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0%}'))
     fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
 
