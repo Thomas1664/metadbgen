@@ -588,11 +588,11 @@ if config.get('find_missing_species', False):
         input:
             # Round-1 primer-trim data: metadata used as the wider duplicate filter,
             # FASTA and info used to extract base sequences at primer-trim level.
-            fasta_orig = f"{db_prefix}/primer-trim/sequences.fasta",
             meta_orig = f"{db_prefix}/primer-trim/metadata.tsv",
             info_orig = f"{db_prefix}/primer-trim/cutadapt-info-parsed.tsv",
             # Round-1 final database: defines which primer-trim sequences form the base.
             meta_final = f"{db_prefix}/output/{config['db_name']}-meta-clean.tsv",
+            fasta_final = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa",
             # Newly trimmed sequences for previously missing species.
             fasta_new = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
             meta_new = f"{db_prefix}/round2/primer-trim-new/metadata.tsv",
@@ -601,50 +601,39 @@ if config.get('find_missing_species', False):
             fasta = f"{db_prefix}/round2/primer-trim/sequences.fasta",
             meta = f"{db_prefix}/round2/primer-trim/metadata.tsv",
             info_out = f"{db_prefix}/round2/primer-trim/cutadapt-info-parsed.tsv",
-            info_tmp = f"{db_prefix}/round2/primer-trim/cutadapt-info-tmp.tsv",
             info = f"{db_prefix}/round2/primer-trim/cutadapt-info.tsv",
         run:
             os.makedirs(f"{db_prefix}/round2/primer-trim", exist_ok=True)
 
             # All accessions that were considered in round1 (survived primer trimming).
             # Used to discard any new sequence that was already processed in round1.
-            all_r1_processed = pd.read_csv(input.meta_orig, sep='\t')
-            all_r1_accessions = set(all_r1_processed['accession'])
+            meta_trim_r1 = pd.read_csv(input.meta_orig, sep='\t')
+            trim_r1_acc = meta_r1['accession']
 
             # Accessions in the round-1 final database — these form the base.
-            meta_final = pd.read_csv(input.meta_final, sep='\t')
-            final_accessions = set(meta_final['accession'])
+            meta_final_r1 = pd.read_csv(input.meta_final, sep='\t')
+            final_r1_acc = meta_final['accession']
 
-            # Base metadata: primer-trim rows restricted to the round-1 final sequences.
-            base_meta = all_r1_processed[all_r1_processed['accession'].isin(final_accessions)]
+            # accessions that were removed during round 1
+            acc_to_remove = meta_trim_r1[~trim_r1_acc.isin(final_r1_acc)]['accession']
 
-            # New sequences: discard anything previously considered in round1.
-            new_meta = pd.read_csv(input.meta_new, sep='\t') if os.path.getsize(input.meta_new) > 0 else pd.DataFrame(columns=base_meta.columns)
-            new_meta_filtered = new_meta[~new_meta['accession'].isin(all_r1_accessions)]
-            new_accessions = set(new_meta_filtered['accession'])
+            # filter new sequences
+            new_meta = pd.read_csv(input.meta_new, sep='\t')
+            new_meta_filtered = new_meta[~new_meta['accession'].isin(acc_to_remove)]
+            new_accessions = new_meta_filtered['accession']
 
-            pd.concat([base_meta, new_meta_filtered], ignore_index=True).to_csv(output.meta, sep='\t', index=False)
+            pd.concat([meta_final_r1, new_meta_filtered], ignore_index=True).to_csv(output.meta, sep='\t', index=False)
 
-            # Extract base FASTA: round-1 final sequences at primer-trim level.
-            base_acc_file = f"{db_prefix}/round2/primer-trim/.base_acc.txt"
-            with open(base_acc_file, 'w') as f:
-                f.write('\n'.join(final_accessions))
-            shell("seqkit grep -f " + base_acc_file + " {input.fasta_orig} > {output.fasta}")
-            os.remove(base_acc_file)
+            # copy fasta from end of round 1; append new accessions
+            shutil.copy2(input.fasta_final, output.fasta)
+            new_acc_file = f"{db_prefix}/round2/primer-trim-new/new_acc.txt"
+            with open(new_acc_file, 'w') as f:
+                f.write('\n'.join(new_accessions.values))
+            shell("seqkit grep -f " + new_acc_file + " {input.fasta_new} >> {output.fasta}")
 
-            if new_accessions:
-                acc_file = f"{db_prefix}/round2/primer-trim/.new_acc.txt"
-                with open(acc_file, 'w') as f:
-                    f.write('\n'.join(new_accessions))
-                shell("seqkit grep -f " + acc_file + " {input.fasta_new} >> {output.fasta}")
-                os.remove(acc_file)
-
-            # Cutadapt info: base restricted to round-1 final accessions, plus new.
+            # Cutadapt info: append new filtered accessions to cutadapt info from round 1
             orig_info = pd.read_csv(input.info_orig, sep='\t')
-            base_info = orig_info[orig_info['accession'].isin(final_accessions)]
-            new_info = pd.read_csv(input.info_new, sep='\t') if os.path.getsize(input.info_new) > 0 else pd.DataFrame(columns=orig_info.columns)
+            base_info = orig_info[orig_info['accession'].isin(final_r1_acc)]
+            new_info = pd.read_csv(input.info_new, sep='\t')
             new_info_filtered = new_info[new_info['accession'].isin(new_accessions)]
             pd.concat([base_info, new_info_filtered], ignore_index=True).to_csv(output.info_out, sep='\t', index=False)
-
-            shutil.copy2(output.info_out, output.info_tmp)
-            shutil.copy2(output.info_out, output.info)
