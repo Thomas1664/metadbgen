@@ -601,18 +601,17 @@ if config.get('find_missing_species', False):
             fasta = f"{db_prefix}/round2/primer-trim/sequences.fasta",
             meta = f"{db_prefix}/round2/primer-trim/metadata.tsv",
             info_out = f"{db_prefix}/round2/primer-trim/cutadapt-info-parsed.tsv",
-            info = f"{db_prefix}/round2/primer-trim/cutadapt-info.tsv",
         run:
             os.makedirs(f"{db_prefix}/round2/primer-trim", exist_ok=True)
 
             # All accessions that were considered in round1 (survived primer trimming).
             # Used to discard any new sequence that was already processed in round1.
             meta_trim_r1 = pd.read_csv(input.meta_orig, sep='\t')
-            trim_r1_acc = meta_r1['accession']
+            trim_r1_acc = meta_trim_r1['accession']
 
             # Accessions in the round-1 final database — these form the base.
             meta_final_r1 = pd.read_csv(input.meta_final, sep='\t')
-            final_r1_acc = meta_final['accession']
+            final_r1_acc = meta_final_r1['accession']
 
             # accessions that were removed during round 1
             acc_to_remove = meta_trim_r1[~trim_r1_acc.isin(final_r1_acc)]['accession']
