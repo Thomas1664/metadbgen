@@ -621,7 +621,7 @@ if config.get('find_missing_species', False):
             new_meta_filtered = new_meta[~new_meta['accession'].isin(acc_to_remove)]
             new_accessions = new_meta_filtered['accession']
 
-            pd.concat([meta_final_r1, new_meta_filtered], ignore_index=True).drop(columns=['cluster_id_x']).to_csv(output.meta, sep='\t', index=False)
+            pd.concat([meta_final_r1, new_meta_filtered], ignore_index=True).to_csv(output.meta, sep='\t', index=False)
 
             # copy fasta from end of round 1; append new accessions
             shutil.copy2(input.fasta_final, output.fasta)
