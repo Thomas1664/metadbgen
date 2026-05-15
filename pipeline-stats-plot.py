@@ -138,6 +138,20 @@ seq_totals = seq_mat.sum(axis=0)
 spe_totals = spe_mat.sum(axis=0)
 non_on_totals = non_on_mat.sum(axis=0)
 
+avg_seqs_per_species = np.where(spe_totals > 0, seq_totals / spe_totals, 0)
+
+fig.add_trace(go.Scatter(
+    name='Avg Seqs/Species',
+    x=[stage_names, ['Species'] * n_stages],
+    y=avg_seqs_per_species,
+    mode='lines+markers',
+    marker=dict(color='black', size=8, symbol='circle'),
+    line=dict(color='black', width=2),
+    yaxis='y2',
+    showlegend=True,
+    hovertemplate='<b>Avg Seqs/Species</b><br>Stage: %{x}<br>Value: %{y:.1f}<extra></extra>',
+))
+
 annotations = []
 for j, stage in enumerate(stage_names):
     annotations.append(dict(
@@ -168,11 +182,44 @@ for j, stage in enumerate(stage_names):
 fig.update_layout(
     barmode='stack',
     title=dict(text=f'Sequences, Species and Non-ON Species per {RANK.title()} across Pipeline Stages', font=dict(size=16)),
-    xaxis=dict(title='Pipeline Stage'),
-    yaxis=dict(title='Count'),
-    legend=dict(title=RANK.title(), traceorder='normal'),
-    height=650,
-    width=1300,
+    font=dict(size=16, color='black'),
+    xaxis=dict(
+        title='Pipeline Stage',
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        mirror=False,
+        ticks="outside",
+        tickcolor="black",
+        tickangle=90
+    ),
+    yaxis=dict(
+        title='Count',
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        mirror=False,
+        ticks="outside",
+        ticklen=5,
+        tickcolor="black",
+    ),
+    yaxis2=dict(
+        title='Avg Sequences per Species',
+        overlaying='y',
+        side='right',
+        showline=True,
+        linecolor='black',
+        linewidth=1,
+        mirror=False,
+        ticks='outside',
+        ticklen=5,
+        tickcolor='black',
+        showgrid=False,
+    ),
+    legend=dict(title=RANK.title(), traceorder='normal', x=1.08, xanchor='left', y=1, yanchor='top', font=dict(size=13)),
+    height=750,
+    width=1400,
+    margin=dict(r=300, b=220, t=60),
     annotations=annotations,
     plot_bgcolor='white',
     paper_bgcolor='white',
