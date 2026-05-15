@@ -417,7 +417,7 @@ rule mislabel_detection:
 rule export_sintax:
     input:
         fasta = rules.mislabel_detection.output.fasta,
-        tax = rules.mislabel_detection.output.tax,
+        tax = rules.mislabel_detection.output.meta,
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",

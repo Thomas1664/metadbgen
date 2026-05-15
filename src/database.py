@@ -144,14 +144,26 @@ def make_qiime_db(meta_df: pd.DataFrame, tax_out_path: str):
             print(f'{row["accession"]}\t{taxonomy}', file=tax_out)
 
 def export_sintax(msa_path: str, tax_path: str, out_db: str):
-    tax = pd.read_csv(tax_path, sep='\t', header=None)
-    tax[1] = tax[1].str.replace(';', ',')
-    tax[1] = tax[1].str.replace('__', ':') + ';'
+    rank_prefix = {'domain': 'd', 'kingdom': 'k', 'phylum': 'p', 'class': 'c',
+                   'order': 'o', 'family': 'f', 'genus': 'g', 'species': 's'}
+
+    tax = pd.read_csv(tax_path, sep='\t')
+    tax = tax.set_index('accession')
+
+    def build_tax_string(row):
+        parts = []
+        for col, prefix in rank_prefix.items():
+            val = row.get(col)
+            if pd.notna(val) and str(val).strip():
+                parts.append(f"{prefix}:{str(val).strip().replace(' ', '+')}")
+        return ','.join(parts) + ';'
+
+    tax['_sintax'] = tax.apply(build_tax_string, axis=1)
 
     records = SeqIO.parse(msa_path, 'fasta')
     with open(out_db, 'w') as fasta:
         for record in records:
-            print(f'>{record.id};tax={tax.loc[tax[0] == record.id][1].values[0]}', file=fasta)
+            print(f'>{record.id};tax={tax.loc[record.id, "_sintax"]}', file=fasta)
             print(str(record.seq).upper(), file=fasta)
 
 
