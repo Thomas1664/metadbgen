@@ -418,14 +418,13 @@ rule export_sintax:
     input:
         fasta = rules.mislabel_detection.output.fasta,
         tax = rules.mislabel_detection.output.tax,
-        script = "export-sintax.py"
     output:
         msa = f"{{src}}/{config['db_name']}-msa.fasta",
         db = f"{{src}}/output/{config['db_name']}-sintax.fasta",
     threads: workflow.cores / 2
     run:
         shell("muscle -super5 {input.fasta} -nt -threads {threads} -output {output.msa}")
-        shell("python {input.script} {output.msa} {input.tax} {output.db}")
+        database.export_sintax(output.msa, input.tax, output.db)
 
 rule msa_entropy:
     input:
