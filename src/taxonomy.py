@@ -202,6 +202,9 @@ def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
 
 
 def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | None=None) -> pd.DataFrame:
+    meta_df = meta_df.copy()
+    meta_df['tax_id'] = pd.to_numeric(meta_df['tax_id'], errors='coerce')
+    meta_df['tax_id'] = meta_df['tax_id'].astype(int)
     unique_tax_ids = meta_df['tax_id'].unique().tolist()
     with NCBITaxonomyDB(tax_db_path) as db:
         id_dict = {old_id: tax.tax_id for old_id, tax in db.resolve_tax_ids(unique_tax_ids).items()}
