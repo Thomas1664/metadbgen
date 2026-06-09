@@ -77,6 +77,14 @@ rule download:
             future = pool.submit(lambda: asyncio.run(request.fetch_sequences(query, output.gb_file)))
             future.result()
 
+
+rule tax_db_download:
+    output:
+        tax_db = f"{db_prefix}/taxonomy/tax_db.sqlite",
+    run:
+        download_and_build_db(db_path=output.tax_db, taxdump_dir=f"{db_prefix}/ncbi_tax_dump")
+
+
 rule primer_blast_outgroups:
     retries: 5
     input:
@@ -93,13 +101,6 @@ rule primer_blast_outgroups:
         with ThreadPoolExecutor() as pool:
             future = pool.submit(lambda: asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path, input.tax_db)))
             future.result()
-
-
-rule tax_db_download:
-    output:
-        tax_db = f"{db_prefix}/taxonomy/tax_db.sqlite",
-    run:
-        download_and_build_db(db_path=output.tax_db, taxdump_dir=f"{db_prefix}/ncbi_tax_dump")
 
 
 rule download_outgroups:
