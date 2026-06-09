@@ -357,10 +357,13 @@ class PrimerBlastJob():
         rows: list[PrimerBlastResult] = []
 
         for accession in res_accessions:
+            if accession.parent.name == 'pre':
+                continue
             try:
                 hit_pre = accession.find_next('pre').text
             except AttributeError as ex:
                 print(accession.text)
+                raise ex
             product_length = re.search(r"product length = (\d+)", hit_pre).group(1)
             lines = [parse_line(l) for l in hit_pre.splitlines() if l.strip() and "product length" not in l and "Features flanking this product" not in l and "bp at" not in l]
             parsed = [l for l in lines if l]
