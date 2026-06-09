@@ -506,4 +506,4 @@ async def get_outgroup_gb(input_path: str, output_path: str):
     uids = df['uid'].astype(int).astype(str)
     client = request.HttpClient()
     with open(output_path, 'w') as f:
-        await client.efetch_by_ids('core_nt', uids.to_list(), lambda x: f.write(x), ret_type='gb')
+        await client.efetch_by_ids('nuccore', uids.to_list(), lambda x: f.write(x), ret_type='gb')
