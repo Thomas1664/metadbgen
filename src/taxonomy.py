@@ -270,14 +270,11 @@ async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None
         id = int(bs.find('Id').string)
     return id
 
-async def by_taxids(tax_ids: list[str]):
+def by_taxids(tax_db_path: str, tax_ids: list[int]) -> list[TaxonData]:
     if len(tax_ids) == 0:
         raise AssertionError("No tax_ids were passed to by_taxids!")
-    client = request.NcbiApiClient()
-    response = await client.post('taxonomy', 'dataset_report', json={
-        "taxons": tax_ids
-    })
-    return response['reports']
+    with NCBITaxonomyDB(tax_db_path) as db:
+        return db.get_taxon_data_bulk(tax_ids)
 
 async def get_taxids_by_names(names: pd.Series, client: request.HttpClient) -> dict[str, int]:
     tax_ids = {}
@@ -301,21 +298,15 @@ async def from_organsim_names(tax_db_path: str, data: pd.Series, tax_file: str):
     tax_ids = [id for id in tax_ids.values() if id is not None]
     fetch_by_tax_ids(tax_db_path, tax_ids, tax_file)
 
-async def info_by_organism_name(organism_name: str):
-    client = request.HttpClient()
-    tax_id = await get_taxid_by_name(organism_name, client)
-    if tax_id is None:
-        raise ValueError(f'Taxon {tax_id} not found in NCBI taxonomny database')
-    tax_xml = await client.efetch_by_id('taxonomy', str(tax_id))
-    return parse_xml(tax_xml)[0]
+def info_by_organism_name(tax_db_path: str, organism_name: str) -> TaxonData:
+    with NCBITaxonomyDB(tax_db_path) as db:
+        tax_id = db.find_tax_id_by_name(organism_name)
+        if tax_id is None:
+            raise ValueError(f'Taxon {organism_name!r} not found in local taxonomy database')
+        return db.get_taxon_data(tax_id)
 
-def get_sisters(parent_data: dict, exclude_child: int) -> list[int]:
-    sisters = []
-    if len(parent_data) > 0:
-        sisters = parent_data['taxonomy']['children']
-        assert exclude_child in sisters
-        sisters.remove(exclude_child)
-    return sisters
+def get_sisters(children: list[Taxon], exclude_child_id: int) -> list[int]:
+    return [c.tax_id for c in children if c.tax_id != exclude_child_id]
 
 def load_tax_qiime(path: str) -> pd.DataFrame:
     tax_df = pd.read_csv(path, sep='\t', header=None)

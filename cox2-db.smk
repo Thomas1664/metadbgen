@@ -79,6 +79,8 @@ rule download:
 
 rule primer_blast_outgroups:
     retries: 5
+    input:
+        tax_db = rules.tax_db_download.output.tax_db
     output:
         out = f"{db_prefix}/outgroups/primer-blast.csv",
     params:
@@ -89,7 +91,7 @@ rule primer_blast_outgroups:
         cache_path = config['primer_blast']['cache_file'],
     run:
         with ThreadPoolExecutor() as pool:
-            future = pool.submit(lambda: asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path)))
+            future = pool.submit(lambda: asyncio.run(primer.find_off_targets(params.primer_f, params.primer_r, params.organism, output.out, params.use_cache, params.cache_path, input.tax_db)))
             future.result()
 
 

@@ -10,6 +10,7 @@ from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
 from src import request, taxonomy, database, cache
+from src.ncbi_taxonomy import NCBITaxonomyDB
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -432,7 +433,7 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     rate_limit = Semaphore(10)
     tasks = []
     client = primer_blast_client()
-    results: list[tuple[SisterTaxon, list[PrimerBlastResult]]] = []
+    results: list[tuple[SisterTaxon, list[PrimerBlastResult] | None]] = []
     async def rate_limited(item: SisterTaxon):
         async with rate_limit:
             await asyncio.sleep(random.uniform(5, 20))
@@ -447,27 +448,24 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     return results
 
 
-async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str):
+async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str, tax_db_path: str):
     if use_cache:
         print(f'Using cache at {cache_path}')
         cache.cache_var.set(cache.AsyncSQLiteCache(cache_path))
-    tax_info = await taxonomy.info_by_organism_name(target_organism)
+    tax_info = taxonomy.info_by_organism_name(tax_db_path, target_organism)
     # lineage is ordered from top to bottom, but we want to start from the bottom
     lineage = list(reversed(tax_info.lineage))
     lineage_dict = {taxon.tax_id: taxon for taxon in lineage}
     taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
 
-    parent_taxids = [str(tax.tax_id) for tax in lineage]
-    parents = await taxonomy.by_taxids(parent_taxids)
     sisters: list[SisterTaxon] = []
 
     # get sister tax ids
-    for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
-        parent_data = next((item for item in parents if item['query'][0] == str(parent.tax_id)), None)
-        if parent_data is None:
-            raise ValueError(f'Missing results for query {parent.tax_id}')
-        current_sisters = taxonomy.get_sisters(parent_data, exclude_child.tax_id)
-        sisters.extend([SisterTaxon(sister, lineage_dict[parent.tax_id]) for sister in current_sisters])
+    with NCBITaxonomyDB(tax_db_path) as db:
+        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
+            sibling_taxa = db.get_direct_children(parent.tax_id)
+            current_sisters = taxonomy.get_sisters(sibling_taxa, exclude_child.tax_id)
+            sisters.extend([SisterTaxon(sister, parent) for sister in current_sisters])
 
     # drop environmental samples (child of Eukaryota) and unclassified Eukaryotes
     sisters = list(filter(lambda x: x.tax_id != 61964 and x.tax_id != 42452, sisters))
@@ -490,14 +488,12 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
         children: list[SisterTaxon] = []
         if len(try_below) == 0:
             return # Nothing to do
-        for tax_data in await taxonomy.by_taxids([str(x.tax_id) for x in try_below]):
-            parent_data = next((item for item in try_below if str(item.tax_id) == tax_data['query'][0]), None)
-            if parent_data is None:
-                raise ValueError(f'Missing results for query {tax_data.tax_id}')
-            current_childs = tax_data['taxonomy']['children']
-            print(f"Taxid {tax_data['taxonomy']['tax_id']} has {len(current_childs)} kids")
-            for child in tax_data['taxonomy']['children']:
-                children.append(SisterTaxon(int(child), parent_data.parent))
+        with NCBITaxonomyDB(tax_db_path) as db:
+            for item in try_below:
+                child_taxa = db.get_direct_children(item.tax_id)
+                print(f"Taxid {item.tax_id} has {len(child_taxa)} kids")
+                for child in child_taxa:
+                    children.append(SisterTaxon(child.tax_id, item.parent))
 
         results = await _off_targets_in_sisters(children, primer_f, primer_r, csv_writer)
         for item, sister in results:
