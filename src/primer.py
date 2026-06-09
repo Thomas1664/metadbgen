@@ -134,19 +134,23 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
-    fig, ax = plt.subplots()
+    width_in = 4.8  # 340px at 96 CSS px/in (SVG web standard)
+    height_in = width_in * (4.8 / 6.4)  # preserve default matplotlib aspect ratio
+    fig, ax = plt.subplots(figsize=(width_in, height_in))
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
     if primer_seq:
         ax.set_xticks(range(len(primer_seq)))
-        ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace')
-        ax.set_xlabel("Reference primer")
+        ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace', fontsize=12)
+        ax.set_xlabel("Reference primer", fontsize=14)
     else:
         ax.set_xticks(range(1, np.max(lengths), 2))
-        ax.set_xlabel("Base positions")
-    ax.set_ylabel("Base frequency")
+        ax.set_xlabel("Base positions", fontsize=14)
+    ax.tick_params(axis='both', labelsize=12)
+    ax.set_ylabel("Base frequency", fontsize=14)
     ax.set_ylim((0, 1))
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0%}'))
-    fig.savefig(logo_path, format='svg', bbox_inches='tight')
+    with plt.rc_context({'svg.fonttype': 'none'}):
+        fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
 
 def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str, primer_seq: str = ''):
