@@ -231,7 +231,23 @@ def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | Non
             .drop(columns=['old', 'tax_id'])
             .rename(columns={'new': 'tax_id'})
     )
-    
+
+
+# When a species is being moved to a new genus, NCBI temporarily puts the old genus name in brackets
+# for the species, e.g. [Oldgenus] species, whereas the genus is laready the new genus.
+# I.e. Newgenus, [Oldgenus] species
+# To avoid confusion, we replace [Oldgenus] in the species name with Newgenus:
+# I.e. Newgenus, Newgenus species
+def update_species_name(tax_df: pd.DataFrame) -> pd.DataFrame:
+    tax_df = tax_df.copy()
+    has_bracketed_genus = tax_df['species'].str.match(r'^\[.*?\]')
+    tax_df.loc[has_bracketed_genus, 'species'] = tax_df.loc[has_bracketed_genus].apply(
+        lambda row: re.sub(r'^\[.*?\]', row['genus'], row['species']),
+        axis=1,
+    )
+    return tax_df
+
+
 async def filter_descendants(tax_db_path: str, meta_df: pd.DataFrame, ancestor_name: str):
     client = request.HttpClient()
     ancestor_tax_id = await get_taxid_by_name(ancestor_name, client)
