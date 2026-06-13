@@ -130,6 +130,8 @@ rule taxonomy:
         with open(output.tax, 'w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             taxonomy.to_csv(tax_data, csv_writer, header=True)
+        tax_df = pd.read_csv(output.tax)
+        taxonomy.update_species_name(tax_df).to_csv(output.tax, index=False)
 
 rule parse_metadata:
     wildcard_constraints:
@@ -170,6 +172,8 @@ if config['find_outgroups']:
             with open(output.tax, 'w', newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 taxonomy.to_csv(tax_data, csv_writer, header=True)
+            tax_df = pd.read_csv(output.tax)
+            taxonomy.update_species_name(tax_df).to_csv(output.tax, index=False)
 
 
 if "outer_primer_f" in config or "outer_primer_r" in config:
