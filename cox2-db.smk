@@ -145,11 +145,9 @@ rule parse_metadata:
         meta_csv = "{src}/seq-meta.csv",
         fasta_tmp = "{src}/sequences.fasta.tmp",
         fasta = "{src}/sequences.fasta",
-    shell:
-        """
-        python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}
-        seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
-        """
+    run:
+        shell("python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+        shell("seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}")
 
 
 if config['find_outgroups']:
@@ -241,22 +239,13 @@ rule clean_db:
         accessions = "{src}/seq-filtered.txt",
         accessions_removed = "{src}/seq-filtered-removed.txt",
     params:
-        organism = lambda wildcards: "" if wildcards.src == f"{db_prefix}/outgroups" else f"--organism '{config['organism']}'",
+        organism = lambda wildcards: "" if wildcards.src == f"{db_prefix}/outgroups" else f'--organism "{config['organism']}"',
         no_remove_on = "--no-remove-on-species" if not config.get('remove_on_species', True) else "",
         no_prefer_refseq = "--no-prefer-refseq" if not config.get('prefer_refseq', True) else "",
-    shell:
-        """
-        python {input.script} \\
-            --in-metadata {input.meta} \\
-            --in-fasta {input.fasta} \\
-            --out-metadata {output.meta} \\
-            --out-fasta {output.accessions} \\
-            --out-metadata-removed {output.meta_removed} \\
-            --out-fasta-removed {output.accessions_removed} \\
-            --tax-db {input.tax_db} {params.organism} {params.no_remove_on} {params.no_prefer_refseq}
-        seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}
-        seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}
-        """
+    run:
+        shell("python {input.script} --in-metadata {input.meta} --in-fasta {input.fasta} --out-metadata {output.meta} --out-fasta {output.accessions} --out-metadata-removed {output.meta_removed} --out-fasta-removed {output.accessions_removed}  --tax-db {input.tax_db} {params.organism} {params.no_remove_on} {params.no_prefer_refseq}")
+        shell("seqkit grep -f {output.accessions} -o {output.fasta} {input.fasta}")
+        shell("seqkit grep -f {output.accessions_removed} -o {output.fasta_removed} {input.fasta}")
 
 
 rule dereplicate:
@@ -271,11 +260,9 @@ rule dereplicate:
         fasta = "{src}/dereplicate/sequences.fasta",
     params:
         remove_on = str(config.get('remove_on_species', True)),
-    shell:
-        """
-        vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
-        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}
-        """
+    run:
+        shell("vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}")
+        shell("python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}")
 
 
 rule sequence_quality_filter:
@@ -329,11 +316,9 @@ rule dereplicate_alignment:
         fasta = "{src}/alignment/sequences.fasta",
     params:
         remove_on = str(config.get('remove_on_species', True)),
-    shell:
-        """
-        vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}
-        python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}
-        """
+    run:
+        shell("vsearch --cluster_fast {input.fasta} -id 1.0 --strand both --msaout {output.msa} --clusterout_id --uc {output.clust}")
+        shell("python {input.script} {input.meta} {input.fasta} {output.clust} {output.meta} {output.fasta} {params.remove_on}")
 
 rule gappiness:
     input:
@@ -386,7 +371,7 @@ rule tree:
     threads: workflow.cores / 2
     run: 
         shell("muscle -super5 {input} -nt -threads {threads} -output {output.msa}")
-        shell("iqtree -s {output.msa} -m 'GTR+G' --fast -n {params.max_iterations} -nt {threads} --redo")
+        shell('iqtree3 -s {output.msa} -m "GTR+G" --fast -n {params.max_iterations} -nt {threads} --redo')
         shell("gotree matrix -i {output.tree} -o {output.tree_dist} -t {threads}")
 
 
@@ -442,11 +427,9 @@ rule msa_entropy:
         html = "{src}/output/msa-entropy.html",
         svg  = "{src}/output/msa-entropy.svg",
     threads: workflow.cores / 2
-    shell:
-        """
-        goalign compute entropy -g -i {input.msa} -t {threads} > {output.tsv}
-        python {input.script} {output.tsv} {output.html} {output.svg}
-        """
+    run:
+        shell("goalign compute entropy -g -i {input.msa} -t {threads} > {output.tsv}")
+        shell("python {input.script} {output.tsv} {output.html} {output.svg}")
 
 
 rule plot:
@@ -557,11 +540,9 @@ if config.get('find_missing_species', False):
             meta_csv = f"{db_prefix}/round2/seq-meta.csv",
             fasta_tmp = f"{db_prefix}/round2/sequences.fasta.tmp",
             fasta = f"{db_prefix}/round2/sequences.fasta",
-        shell:
-            """
-            python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}
-            seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}
-            """
+        run:
+            shell("python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+            shell("seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}")
 
 
     rule trim_missing:
