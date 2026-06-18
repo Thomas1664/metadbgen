@@ -25,16 +25,7 @@ import json
 
 
 def parse_cutadapt_info(info_file: str, out_path: str):
-    try:
-        df = pd.read_csv(info_file, sep='\t', header=None)
-    except pd.errors.EmptyDataError:
-        _cols = ['accession', 'start_forward', 'end_forward', 'errors_forward', 'primer_size_forward',
-                 'primer_name_forward', 'primer_seq_forward', 'left_seq_forward', 'right_seq_forward',
-                 'start_reverse', 'end_reverse', 'primer_size_reverse', 'errors_reverse',
-                 'primer_name_reverse', 'primer_seq_reverse', 'left_seq_reverse', 'right_seq_reverse',
-                 'reverse_complement']
-        pd.DataFrame(columns=_cols).to_csv(out_path, sep='\t', index=False)
-        return
+    df = pd.read_csv(info_file, sep='\t', header=None)
     df = df.drop(columns=[8, 9, 10]) # Quality columns are empty
     df.columns = ['accession', 'errors', 'start', 'end', 'left_seq', 'primer_seq', 'right_seq', 'primer_name', 'reverse_complement']
     df = df[df['errors'] != -1] # Discard untrimmed sequences
