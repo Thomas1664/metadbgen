@@ -10,7 +10,6 @@ from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
 from src import request, taxonomy, database, cache
-from src.ncbi_taxonomy import NCBITaxonomyDB
 from src.taxonomy import SisterTaxon
 import matplotlib
 matplotlib.use("Agg")
@@ -441,30 +440,29 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
     print(sisters)
 
     with open(out_file, 'w') as fp:
+        # Write CSV header
         field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
         csv_writer = csv.DictWriter(fp, fieldnames=field_names)
         csv_writer.writeheader()
-        results = await _off_targets_in_sisters(sisters, primer_f, primer_r)
 
+        # Run Primer-BLAST on all sister taxa
+        results = await _off_targets_in_sisters(sisters, primer_f, primer_r)
         try_below: list[SisterTaxon] = []
         for item, sister in results:
             if sister is not None and len(sister) != 0:
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))
             else:
+                # Try one level below if we didn't get any results.
+                # This is a limitation of Primer-BLAST if it needs to go through many target sequences.
                 if item.parent.rank == 'domain':
                     print(f'Nothing found in {item.taxon.name}(taxid {item.taxon.tax_id}); trying one level below...')
                     try_below.append(item)
 
-        children: set[SisterTaxon] = set()
         if len(try_below) == 0:
             return # Nothing to do
-        with NCBITaxonomyDB(tax_db_path) as db:
-            for item in try_below:
-                child_taxa = db.get_direct_children(item.taxon.tax_id)
-                print(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
-                for child in child_taxa:
-                    children.add(SisterTaxon(child, item.parent))
 
+        # Run Primer-BLAST on children of sister taxa
+        children = taxonomy.get_sister_childs(tax_db_path, try_below)
         results = await _off_targets_in_sisters(children, primer_f, primer_r)
         for item, sister in results:
             if sister is not None and len(sister) != 0:

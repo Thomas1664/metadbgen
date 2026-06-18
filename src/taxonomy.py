@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pydantic import ValidationError
 from src import request, database
@@ -338,6 +338,11 @@ class SisterTaxon:
         return self.taxon.tax_id
 
 
+# drop environmental samples (child of Eukaryota) and unclassified taxa
+def filter_sisters(sisters: Iterable[SisterTaxon]):
+    return set(filter(lambda x: not x.taxon.name.startswith('environmental') and not x.taxon.name.startswith('unclassified') and x.taxon.name != 'other entries', sisters))
+
+
 def get_sister_taxa(tax_db_path: str, target_organism: str) -> set[SisterTaxon]:
     tax_info = info_by_organism_name(tax_db_path, target_organism)
 
@@ -352,10 +357,18 @@ def get_sister_taxa(tax_db_path: str, target_organism: str) -> set[SisterTaxon]:
             sibling_taxa = db.get_direct_children(parent.tax_id)
             current_sisters = [c for c in sibling_taxa if c.tax_id != exclude_child.tax_id]
             sisters.update([SisterTaxon(sister, parent) for sister in current_sisters])
+    return filter_sisters(sisters)
 
-    # drop environmental samples (child of Eukaryota) and unclassified taxa
-    sisters = set(filter(lambda x: not x.taxon.name.startswith('environmental') and not x.taxon.name.startswith('unclassified') and x.taxon.name != 'other entries', sisters))
-    return sisters
+
+def get_sister_childs(tax_db_path: str, sisters: list[SisterTaxon]) -> set[SisterTaxon]:
+    children: set[SisterTaxon] = set()
+    with NCBITaxonomyDB(tax_db_path) as db:
+        for item in sisters:
+            child_taxa = db.get_direct_children(item.taxon.tax_id)
+            print(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
+            for child in child_taxa:
+                children.add(SisterTaxon(child, item.parent))
+    return filter_sisters(children)
 
 
 def load_tax_qiime(path: str) -> pd.DataFrame:
