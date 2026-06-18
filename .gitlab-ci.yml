@@ -20,7 +20,10 @@ tests:
       - data/cox2_th
     exclude:
       - data/primer_blast_cache.sqlite
+      - data/cox2_th/taxonomy/tax_db.sqlite
       - data/cox2_th/round2/tmp/*.gb
+      - data/cox2_th/outgroups/primer-trim/cutadapt-info.tsv
+      - data/cox2_th/outgroups/primer-trim/cutadapt-info.tsv
   cache:
     key: "$CACHE_KEY"
     paths:
