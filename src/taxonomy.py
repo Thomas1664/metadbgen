@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from pydantic import ValidationError
 from src import request, database
 from src.ncbi_taxonomy import NCBITaxonomyDB, TaxonData, Taxon
@@ -324,8 +325,38 @@ def info_by_organism_name(tax_db_path: str, organism_name: str) -> TaxonData:
             raise ValueError(f'Taxon {organism_name!r} not found in local taxonomy database')
         return db.get_taxon_data(tax_id)
 
-def get_sisters(children: list[Taxon], exclude_child_id: int) -> list[int]:
-    return [c.tax_id for c in children if c.tax_id != exclude_child_id]
+
+@dataclass(frozen=True)
+class SisterTaxon:
+    taxon: Taxon
+    parent: Taxon
+
+    def __eq__(self, value: object) -> bool:
+        return self.taxon.tax_id == value.taxon.tax_id
+
+    def __hash__(self) -> int:
+        return self.taxon.tax_id
+
+
+def get_sister_taxa(tax_db_path: str, target_organism: str) -> set[SisterTaxon]:
+    tax_info = info_by_organism_name(tax_db_path, target_organism)
+
+    # lineage is ordered from top to bottom, but we want to start from the bottom
+    lineage = list(reversed(tax_info.lineage))
+    taxon = Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
+    sisters: set[SisterTaxon] = set()
+
+    # get sister tax ids
+    with NCBITaxonomyDB(tax_db_path) as db:
+        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
+            sibling_taxa = db.get_direct_children(parent.tax_id)
+            current_sisters = [c for c in sibling_taxa if c.tax_id != exclude_child.tax_id]
+            sisters.update([SisterTaxon(sister, parent) for sister in current_sisters])
+
+    # drop environmental samples (child of Eukaryota) and unclassified taxa
+    sisters = set(filter(lambda x: not x.taxon.name.startswith('environmental') and not x.taxon.name.startswith('unclassified') and x.taxon.name != 'other entries', sisters))
+    return sisters
+
 
 def load_tax_qiime(path: str) -> pd.DataFrame:
     tax_df = pd.read_csv(path, sep='\t', header=None)

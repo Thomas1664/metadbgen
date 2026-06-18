@@ -11,6 +11,7 @@ from Bio.Seq import Seq
 from bs4 import BeautifulSoup
 from src import request, taxonomy, database, cache
 from src.ncbi_taxonomy import NCBITaxonomyDB
+from src.taxonomy import SisterTaxon
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -368,7 +369,7 @@ class PrimerBlastJob():
                 base_label = entry["label"].replace(" ", "_").lower()
                 label_counter[base_label] += 1
                 label = f"{base_label}_{label_counter[base_label]}"  # make unique
-                    
+
                 row[f"{label}_start"] = entry["start"]
                 row[f"{label}_seq"] = entry["sequence"]
                 row[f"{label}_end"] = entry["end"]
@@ -411,15 +412,8 @@ async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: s
         return
     return await job.get_results(15)
 
-@dataclass
-class SisterTaxon:
-    tax_id: int
-    parent: taxonomy.Taxon
 
-async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, primer_r: str, csv_writer):
-    sister_tax_ids = pd.Series([sister.tax_id for sister in sisters])
-    if not sister_tax_ids.is_unique:
-        raise ValueError("Values in sisters are not unique.")
+async def _off_targets_in_sisters(sisters: set[SisterTaxon], primer_f: str, primer_r: str):
     # Allow max 10 concurrent jobs
     rate_limit = Semaphore(10)
     tasks = []
@@ -428,7 +422,7 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     async def rate_limited(item: SisterTaxon):
         async with rate_limit:
             await asyncio.sleep(random.uniform(5, 20))
-            return (item, await run_primer_blast(client, primer_f, primer_r, item.tax_id))
+            return (item, await run_primer_blast(client, primer_f, primer_r, item.taxon.tax_id))
 
     tasks = [asyncio.create_task(rate_limited(sister)) for sister in sisters]
     try:
@@ -443,29 +437,14 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
     if use_cache:
         print(f'Using cache at {cache_path}')
         cache.cache_var.set(cache.AsyncSQLiteCache(cache_path))
-    tax_info = taxonomy.info_by_organism_name(tax_db_path, target_organism)
-    # lineage is ordered from top to bottom, but we want to start from the bottom
-    lineage = list(reversed(tax_info.lineage))
-    lineage_dict = {taxon.tax_id: taxon for taxon in lineage}
-    taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
-
-    sisters: list[SisterTaxon] = []
-
-    # get sister tax ids
-    with NCBITaxonomyDB(tax_db_path) as db:
-        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
-            sibling_taxa = db.get_direct_children(parent.tax_id)
-            current_sisters = taxonomy.get_sisters(sibling_taxa, exclude_child.tax_id)
-            sisters.extend([SisterTaxon(sister, parent) for sister in current_sisters])
-
-    # drop environmental samples (child of Eukaryota) and unclassified Eukaryotes
-    sisters = list(filter(lambda x: x.tax_id != 61964 and x.tax_id != 42452, sisters))
+    sisters = taxonomy.get_sister_taxa(tax_db_path, target_organism)
     print(sisters)
+
     with open(out_file, 'w') as fp:
         field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
         csv_writer = csv.DictWriter(fp, fieldnames=field_names)
         csv_writer.writeheader()
-        results = await _off_targets_in_sisters(sisters, primer_f, primer_r, csv_writer)
+        results = await _off_targets_in_sisters(sisters, primer_f, primer_r)
 
         try_below: list[SisterTaxon] = []
         for item, sister in results:
@@ -473,20 +452,20 @@ async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, o
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))
             else:
                 if item.parent.rank == 'domain':
-                    print(f'Nothing found in {item.tax_id}; trying one level below...')
+                    print(f'Nothing found in {item.taxon.name}(taxid {item.taxon.tax_id}); trying one level below...')
                     try_below.append(item)
 
-        children: list[SisterTaxon] = []
+        children: set[SisterTaxon] = set()
         if len(try_below) == 0:
             return # Nothing to do
         with NCBITaxonomyDB(tax_db_path) as db:
             for item in try_below:
-                child_taxa = db.get_direct_children(item.tax_id)
-                print(f"Taxid {item.tax_id} has {len(child_taxa)} kids")
+                child_taxa = db.get_direct_children(item.taxon.tax_id)
+                print(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
                 for child in child_taxa:
-                    children.append(SisterTaxon(child.tax_id, item.parent))
+                    children.add(SisterTaxon(child, item.parent))
 
-        results = await _off_targets_in_sisters(children, primer_f, primer_r, csv_writer)
+        results = await _off_targets_in_sisters(children, primer_f, primer_r)
         for item, sister in results:
             if sister is not None and len(sister) != 0:
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))
