@@ -8,6 +8,9 @@ import subprocess
 import re
 
 
+def build_organism_query(organism: str):
+    return f'"{organism}"[organism] AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
+
 def build_search_query(keywords: list[str], organism: str):
     keywords = [f'"{keyword}"' for keyword in keywords]
     joined_keywords = ' OR '.join(keywords)
@@ -101,7 +104,8 @@ def write_fasta(in_fasta: str, out_fasta: str, accessions: Iterable[str] | pd.Se
     subprocess.run(['seqkit', 'grep', '-f', acc_list_file, '-o', out_fasta, in_fasta], check=True)
 
 def dereplicate(clust_results: pd.DataFrame, metadata: pd.DataFrame, remove_on_species: bool = True):
-    merged = metadata.merge(clust_results, how='left', left_on='accession', right_on='query_label', suffixes=('_x', ''))
+    cols_to_drop = [c for c in metadata.columns if c in clust_results.columns or c == 'cluster_id_x']
+    merged = metadata.drop(columns=cols_to_drop).merge(clust_results, how='left', left_on='accession', right_on='query_label')
     if remove_on_species:
         # Remove ON sequences from clusters that also contain non-ON sequences.
         is_on = merged['organism_name'] != merged['organism_name_sanitized']
@@ -140,14 +144,26 @@ def make_qiime_db(meta_df: pd.DataFrame, tax_out_path: str):
             print(f'{row["accession"]}\t{taxonomy}', file=tax_out)
 
 def export_sintax(msa_path: str, tax_path: str, out_db: str):
-    tax = pd.read_csv(tax_path, sep='\t', header=None)
-    tax[1] = tax[1].str.replace(';', ',')
-    tax[1] = tax[1].str.replace('__', ':') + ';'
+    rank_prefix = {'domain': 'd', 'kingdom': 'k', 'phylum': 'p', 'class': 'c',
+                   'order': 'o', 'family': 'f', 'genus': 'g', 'species': 's'}
+
+    tax = pd.read_csv(tax_path, sep='\t')
+    tax = tax.set_index('accession')
+
+    def build_tax_string(row):
+        parts = []
+        for col, prefix in rank_prefix.items():
+            val = row.get(col)
+            if pd.notna(val) and str(val).strip():
+                parts.append(f"{prefix}:{str(val).strip().replace(' ', '+')}")
+        return ','.join(parts) + ';'
+
+    tax['_sintax'] = tax.apply(build_tax_string, axis=1)
 
     records = SeqIO.parse(msa_path, 'fasta')
     with open(out_db, 'w') as fasta:
         for record in records:
-            print(f'>{record.id};tax={tax.loc[tax[0] == record.id][1].values[0]}', file=fasta)
+            print(f'>{record.id};tax={tax.loc[record.id, "_sintax"]}', file=fasta)
             print(str(record.seq).upper(), file=fasta)
 
 

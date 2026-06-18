@@ -37,7 +37,7 @@ class HttpClient:
         )
 
     @retry(
-        retry=retry_if_exception_type(RuntimeError),
+        retry=retry_if_exception_type((RuntimeError, httpx.HTTPStatusError)),
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True
@@ -108,6 +108,12 @@ class HttpClient:
 
     # ids: list of ids obtained from esearch; make sure there are no None values
     # out_file_pattern: format string that allows insertion of a integer representing each batch
+    @retry(
+        retry=retry_if_exception_type(httpx.RemoteProtocolError),
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=5, max=60),
+        reraise=True
+    )
     async def efetch_by_ids(self, db: str, ids: list[str], callback: Callable, batch_size=100, ret_type='xml') -> list[str]:
         outputs = []
         for i in range(0, len(ids), batch_size):

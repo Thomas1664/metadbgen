@@ -450,6 +450,29 @@ class NCBITaxonomyDB:
             return []
         return self.get_taxon_data_bulk(descendant_ids)
 
+    def get_direct_children(self, tax_id: int) -> list[Taxon]:
+        """Return immediate children of tax_id (one level only)."""
+        rows = self.conn.execute(
+            "SELECT taxid, spname, rank FROM tax_meta WHERE parent = ? AND taxid != ?",
+            (tax_id, tax_id),
+        ).fetchall()
+        return [
+            Taxon.model_validate({"TaxId": r["taxid"], "ScientificName": r["spname"], "Rank": r["rank"]})
+            for r in rows
+        ]
+
+    def find_tax_id_by_name(self, name: str) -> int | None:
+        """Look up a tax ID by scientific name or synonym (case-insensitive)."""
+        row = self.conn.execute(
+            "SELECT taxid FROM tax_meta WHERE spname = ? LIMIT 1", (name,)
+        ).fetchone()
+        if row:
+            return row["taxid"]
+        row = self.conn.execute(
+            "SELECT taxid FROM synonym WHERE spname = ? LIMIT 1", (name,)
+        ).fetchone()
+        return row["taxid"] if row else None
+
     def filter_descendants(self, tax_ids: list[int], ancestor_tax_id: int) -> list[int]:
         """
         Return the subset of tax_ids that are descendants of ancestor_tax_id

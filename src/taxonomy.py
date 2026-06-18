@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
+from dataclasses import dataclass
 from pydantic import ValidationError
 from src import request, database
 from src.ncbi_taxonomy import NCBITaxonomyDB, TaxonData, Taxon
@@ -202,6 +203,9 @@ def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
 
 
 def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | None=None) -> pd.DataFrame:
+    meta_df = meta_df.copy()
+    meta_df['tax_id'] = pd.to_numeric(meta_df['tax_id'], errors='coerce')
+    meta_df['tax_id'] = meta_df['tax_id'].astype(int)
     unique_tax_ids = meta_df['tax_id'].unique().tolist()
     with NCBITaxonomyDB(tax_db_path) as db:
         id_dict = {old_id: tax.tax_id for old_id, tax in db.resolve_tax_ids(unique_tax_ids).items()}
@@ -228,7 +232,23 @@ def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | Non
             .drop(columns=['old', 'tax_id'])
             .rename(columns={'new': 'tax_id'})
     )
-    
+
+
+# When a species is being moved to a new genus, NCBI temporarily puts the old genus name in brackets
+# for the species, e.g. [Oldgenus] species, whereas the genus is laready the new genus.
+# I.e. Newgenus, [Oldgenus] species
+# To avoid confusion, we replace [Oldgenus] in the species name with Newgenus:
+# I.e. Newgenus, Newgenus species
+def update_species_name(tax_df: pd.DataFrame) -> pd.DataFrame:
+    tax_df = tax_df.copy()
+    has_bracketed_genus = tax_df['species'].str.match(r'^\[.*?\]')
+    tax_df.loc[has_bracketed_genus, 'species'] = tax_df.loc[has_bracketed_genus].apply(
+        lambda row: re.sub(r'^\[.*?\]', row['genus'], row['species']),
+        axis=1,
+    )
+    return tax_df
+
+
 async def filter_descendants(tax_db_path: str, meta_df: pd.DataFrame, ancestor_name: str):
     client = request.HttpClient()
     ancestor_tax_id = await get_taxid_by_name(ancestor_name, client)
@@ -270,14 +290,11 @@ async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None
         id = int(bs.find('Id').string)
     return id
 
-async def by_taxids(tax_ids: list[str]):
+def by_taxids(tax_db_path: str, tax_ids: list[int]) -> list[TaxonData]:
     if len(tax_ids) == 0:
         raise AssertionError("No tax_ids were passed to by_taxids!")
-    client = request.NcbiApiClient()
-    response = await client.post('taxonomy', 'dataset_report', json={
-        "taxons": tax_ids
-    })
-    return response['reports']
+    with NCBITaxonomyDB(tax_db_path) as db:
+        return db.get_taxon_data_bulk(tax_ids)
 
 async def get_taxids_by_names(names: pd.Series, client: request.HttpClient) -> dict[str, int]:
     tax_ids = {}
@@ -301,21 +318,58 @@ async def from_organsim_names(tax_db_path: str, data: pd.Series, tax_file: str):
     tax_ids = [id for id in tax_ids.values() if id is not None]
     fetch_by_tax_ids(tax_db_path, tax_ids, tax_file)
 
-async def info_by_organism_name(organism_name: str):
-    client = request.HttpClient()
-    tax_id = await get_taxid_by_name(organism_name, client)
-    if tax_id is None:
-        raise ValueError(f'Taxon {tax_id} not found in NCBI taxonomny database')
-    tax_xml = await client.efetch_by_id('taxonomy', str(tax_id))
-    return parse_xml(tax_xml)[0]
+def info_by_organism_name(tax_db_path: str, organism_name: str) -> TaxonData:
+    with NCBITaxonomyDB(tax_db_path) as db:
+        tax_id = db.find_tax_id_by_name(organism_name)
+        if tax_id is None:
+            raise ValueError(f'Taxon {organism_name!r} not found in local taxonomy database')
+        return db.get_taxon_data(tax_id)
 
-def get_sisters(parent_data: dict, exclude_child: int) -> list[int]:
-    sisters = []
-    if len(parent_data) > 0:
-        sisters = parent_data['taxonomy']['children']
-        assert exclude_child in sisters
-        sisters.remove(exclude_child)
-    return sisters
+
+@dataclass(frozen=True)
+class SisterTaxon:
+    taxon: Taxon
+    parent: Taxon
+
+    def __eq__(self, value: object) -> bool:
+        return self.taxon.tax_id == value.taxon.tax_id
+
+    def __hash__(self) -> int:
+        return self.taxon.tax_id
+
+
+# drop environmental samples (child of Eukaryota) and unclassified taxa
+def filter_sisters(sisters: Iterable[SisterTaxon]):
+    return set(filter(lambda x: not x.taxon.name.startswith('environmental') and not x.taxon.name.startswith('unclassified') and x.taxon.name != 'other entries', sisters))
+
+
+def get_sister_taxa(tax_db_path: str, target_organism: str) -> set[SisterTaxon]:
+    tax_info = info_by_organism_name(tax_db_path, target_organism)
+
+    # lineage is ordered from top to bottom, but we want to start from the bottom
+    lineage = list(reversed(tax_info.lineage))
+    taxon = Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
+    sisters: set[SisterTaxon] = set()
+
+    # get sister tax ids
+    with NCBITaxonomyDB(tax_db_path) as db:
+        for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
+            sibling_taxa = db.get_direct_children(parent.tax_id)
+            current_sisters = [c for c in sibling_taxa if c.tax_id != exclude_child.tax_id]
+            sisters.update([SisterTaxon(sister, parent) for sister in current_sisters])
+    return filter_sisters(sisters)
+
+
+def get_sister_childs(tax_db_path: str, sisters: list[SisterTaxon]) -> set[SisterTaxon]:
+    children: set[SisterTaxon] = set()
+    with NCBITaxonomyDB(tax_db_path) as db:
+        for item in sisters:
+            child_taxa = db.get_direct_children(item.taxon.tax_id)
+            print(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
+            for child in child_taxa:
+                children.add(SisterTaxon(child, item.parent))
+    return filter_sisters(children)
+
 
 def load_tax_qiime(path: str) -> pd.DataFrame:
     tax_df = pd.read_csv(path, sep='\t', header=None)

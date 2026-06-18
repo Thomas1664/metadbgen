@@ -34,12 +34,12 @@ OUT = args.out if args.out is not None else f'{BASE}/pipeline-stats'
 
 stage_files = {
     'Download': f'{BASE}/seq-meta.csv',
-    'Trim': f'{BASE}/primer-trim/metadata.tsv',
-    'Clean DB': f'{BASE}/seq-meta-filtered.tsv',
+    'in-silico PCR': f'{BASE}/primer-trim/metadata.tsv',
+    'Metadata<br>Filter': f'{BASE}/seq-meta-filtered.tsv',
     'Dereplicate': f'{BASE}/dereplicate/metadata.tsv',
     'Quality Filter': f'{BASE}/quality-filter/metadata.tsv',
-    'Trim<br>(Alignment)': f'{BASE}/alignment/metadata-trim.tsv',
-    'Dereplicate<br>(Alignment)': f'{BASE}/alignment/metadata.tsv',
+    'Trim<br>Alignment': f'{BASE}/alignment/metadata-trim.tsv',
+    'Dereplicate<br>Alignment': f'{BASE}/alignment/metadata.tsv',
     'Gappiness': f'{BASE}/gappiness/metadata.tsv',
     'Mislabel<br>Detection': f'{BASE}/output/cox2_th-meta-clean.tsv',
 }
@@ -48,14 +48,7 @@ dfs = {}
 for stage, path in stage_files.items():
     sep = '\t' if path.endswith('.tsv') else ','
     df = pd.read_csv(path, sep=sep)
-    for _, row in df.iterrows():
-        df["family"] = df["family"].fillna(df["genus"])
-        df["order"] = df["order"].fillna(df["family"])
-        df["class"] = df["class"].fillna(df["order"])
-        df["phylum"] = df["phylum"].fillna(df["class"])
-        df["kingdom"] = df["kingdom"].fillna(df["phylum"])
-        for col in ["genus", "family", "order", "class", "phylum", "kingdom"]:
-            df[col] = df[col].fillna("Unknown")
+    df[RANK] = df[RANK].fillna("Unknown")
     dfs[stage] = df
 
 stage_names = list(stage_files.keys())
@@ -82,7 +75,13 @@ for j, stage in enumerate(stage_names):
         df['organism_name_sanitized'] = df['organism_name'].apply(sanitize_org_name)
     seq_grp = df.groupby(RANK).size()
     spe_grp = df.groupby(RANK)['tax_id'].nunique()
-    non_on_grp = df[df['organism_name'] == df['organism_name_sanitized']].groupby(RANK)['tax_id'].nunique()
+    is_binomial = (
+        (df['organism_name'] == df['organism_name_sanitized']) &
+        ~df['organism_name'].str.lower().str.startswith('uncultured') &
+        ~df['organism_name'].str.lower().str.endswith('sp.') &
+        df['genus'].notna()
+    )
+    non_on_grp = df[is_binomial].groupby(RANK)['tax_id'].nunique()
     for i, fam in enumerate(all_families):
         seq_mat[i, j] = seq_grp.get(fam, 0)
         spe_mat[i, j] = spe_grp.get(fam, 0)
@@ -115,7 +114,7 @@ for i, (fam, color) in enumerate(zip(all_families, colors)):
     # Species bar (middle bar in each stage group)
     fig.add_trace(go.Bar(
         name=fam,
-        x=[stage_names, ['Species'] * n_stages],
+        x=[stage_names, ['All Species'] * n_stages],
         y=spe_mat[i],
         marker_color=color,
         legendgroup=fam,
@@ -125,12 +124,12 @@ for i, (fam, color) in enumerate(zip(all_families, colors)):
     # Non-ON species bar (right bar in each stage group)
     fig.add_trace(go.Bar(
         name=fam,
-        x=[stage_names, ['Non-ON Species'] * n_stages],
+        x=[stage_names, ['Binomial Species'] * n_stages],
         y=non_on_mat[i],
         marker_color=color,
         legendgroup=fam,
         showlegend=False,
-        hovertemplate=f'<b>{fam}</b><br>Stage: %{{x}}<br>Non-ON Species: %{{y}}<extra></extra>',
+        hovertemplate=f'<b>{fam}</b><br>Stage: %{{x}}<br>Binomial Species: %{{y}}<extra></extra>',
     ))
 
 # Annotate totals above each bar
@@ -146,33 +145,52 @@ for j, stage in enumerate(stage_names):
         text=str(seq_totals[j]),
         showarrow=False,
         yanchor='bottom',
-        font=dict(size=11),
+        font=dict(size=13, color='black'),
     ))
     annotations.append(dict(
-        x=[stage, 'Species'],
+        x=[stage, 'All Species'],
         y=spe_totals[j],
         text=str(spe_totals[j]),
         showarrow=False,
         yanchor='bottom',
-        font=dict(size=11),
+        font=dict(size=13, color='black'),
     ))
     annotations.append(dict(
-        x=[stage, 'Non-ON Species'],
+        x=[stage, 'Binomial Species'],
         y=non_on_totals[j],
         text=str(non_on_totals[j]),
         showarrow=False,
         yanchor='bottom',
-        font=dict(size=11),
+        font=dict(size=13, color='black'),
     ))
 
 fig.update_layout(
     barmode='stack',
     title=dict(text=f'Sequences, Species and Non-ON Species per {RANK.title()} across Pipeline Stages', font=dict(size=16)),
-    xaxis=dict(title='Pipeline Stage'),
-    yaxis=dict(title='Count'),
-    legend=dict(title=RANK.title(), traceorder='normal'),
-    height=650,
-    width=1300,
+    font=dict(color='black', size=15),
+    xaxis=dict(
+        title='Pipeline Stage',
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        mirror=False,
+        ticks="outside",
+        tickcolor="black",
+        tickangle=90
+    ),
+    yaxis=dict(
+        title='Count',
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        mirror=False,
+        ticks="outside",
+        ticklen=5,
+        tickcolor="black",
+    ),
+    legend=dict(title=RANK.title(), traceorder='reversed', x=1.02, xanchor='left', y=1, yanchor='top', font=dict(size=16)),
+    height=600,
+    width=1200,
     annotations=annotations,
     plot_bgcolor='white',
     paper_bgcolor='white',

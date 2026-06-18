@@ -10,6 +10,7 @@ from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
 from src import request, taxonomy, database, cache
+from src.taxonomy import SisterTaxon
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -121,23 +122,33 @@ def _align_primers(fasta: str, tmp_out_file: str):
     subprocess.run(['muscle', '-super5', fasta, '-output', tmp_out_file, '-nt'], check=True, text=True)
     return [str(record.seq).upper() for record in SeqIO.parse(tmp_out_file, 'fasta')]
 
-def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int):
+def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str = ''):
     lengths = [len(seq) for seq in seqs]
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
-    fig, ax = plt.subplots()
+    width_in = 4.8  # 340px at 96 CSS px/in (SVG web standard)
+    height_in = width_in * (4.8 / 6.4)  # preserve default matplotlib aspect ratio
+    fig, ax = plt.subplots(figsize=(width_in, height_in))
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
-    ax.set_xticks(range(1, np.max(lengths), 2))
-    ax.set_xlabel("Base positions")
-    ax.set_ylabel("Proportions")
+    if primer_seq:
+        ax.set_xticks(range(len(primer_seq)))
+        ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace', fontsize=12)
+        ax.set_xlabel("Reference primer", fontsize=14)
+    else:
+        ax.set_xticks(range(1, np.max(lengths), 2))
+        ax.set_xlabel("Base positions", fontsize=14)
+    ax.tick_params(axis='both', labelsize=12)
+    ax.set_ylabel("Base frequency", fontsize=14)
     ax.set_ylim((0, 1))
-    fig.savefig(logo_path, format='svg', bbox_inches='tight')
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0%}'))
+    with plt.rc_context({'svg.fonttype': 'none'}):
+        fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
 
-def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str):
+def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str, primer_seq: str = ''):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
     seqs = _align_primers(fasta_path, f'{fasta_path}.tmp')
-    _draw_logo(seqs, logo_path, total_seqs)
+    _draw_logo(seqs, logo_path, total_seqs, primer_seq)
 
 
 @dataclass
@@ -338,7 +349,13 @@ class PrimerBlastJob():
         rows: list[PrimerBlastResult] = []
 
         for accession in res_accessions:
-            hit_pre = accession.find_next('pre').text
+            if accession.parent.name == 'pre':
+                continue
+            try:
+                hit_pre = accession.find_next('pre').text
+            except AttributeError as ex:
+                print(accession.text)
+                raise ex
             product_length = re.search(r"product length = (\d+)", hit_pre).group(1)
             lines = [parse_line(l) for l in hit_pre.splitlines() if l.strip() and "product length" not in l and "Features flanking this product" not in l and "bp at" not in l]
             parsed = [l for l in lines if l]
@@ -351,7 +368,7 @@ class PrimerBlastJob():
                 base_label = entry["label"].replace(" ", "_").lower()
                 label_counter[base_label] += 1
                 label = f"{base_label}_{label_counter[base_label]}"  # make unique
-                    
+
                 row[f"{label}_start"] = entry["start"]
                 row[f"{label}_seq"] = entry["sequence"]
                 row[f"{label}_end"] = entry["end"]
@@ -394,24 +411,17 @@ async def run_primer_blast(client: httpx.AsyncClient, primer_f: str, primer_r: s
         return
     return await job.get_results(15)
 
-@dataclass
-class SisterTaxon:
-    tax_id: int
-    parent: taxonomy.Taxon
 
-async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, primer_r: str, csv_writer):
-    sister_tax_ids = pd.Series([sister.tax_id for sister in sisters])
-    if not sister_tax_ids.is_unique:
-        raise ValueError("Values in sisters are not unique.")
+async def _off_targets_in_sisters(sisters: set[SisterTaxon], primer_f: str, primer_r: str):
     # Allow max 10 concurrent jobs
     rate_limit = Semaphore(10)
     tasks = []
     client = primer_blast_client()
-    results: list[tuple[SisterTaxon, list[PrimerBlastResult]]] = []
+    results: list[tuple[SisterTaxon, list[PrimerBlastResult] | None]] = []
     async def rate_limited(item: SisterTaxon):
         async with rate_limit:
             await asyncio.sleep(random.uniform(5, 20))
-            return (item, await run_primer_blast(client, primer_f, primer_r, item.tax_id))
+            return (item, await run_primer_blast(client, primer_f, primer_r, item.taxon.tax_id))
 
     tasks = [asyncio.create_task(rate_limited(sister)) for sister in sisters]
     try:
@@ -422,59 +432,38 @@ async def _off_targets_in_sisters(sisters: list[SisterTaxon], primer_f: str, pri
     return results
 
 
-async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str):
+async def find_off_targets(primer_f: str, primer_r: str, target_organism: str, out_file: str, use_cache: bool, cache_path: str, tax_db_path: str):
     if use_cache:
         print(f'Using cache at {cache_path}')
         cache.cache_var.set(cache.AsyncSQLiteCache(cache_path))
-    tax_info = await taxonomy.info_by_organism_name(target_organism)
-    # lineage is ordered from top to bottom, but we want to start from the bottom
-    lineage = list(reversed(tax_info.lineage))
-    lineage_dict = {taxon.tax_id: taxon for taxon in lineage}
-    taxon = taxonomy.Taxon(TaxId=tax_info.tax_id, ScientificName=tax_info.name, Rank=tax_info.rank)
-
-    parent_taxids = [str(tax.tax_id) for tax in lineage]
-    parents = await taxonomy.by_taxids(parent_taxids)
-    sisters: list[SisterTaxon] = []
-
-    # get sister tax ids
-    for parent, exclude_child in zip(lineage, [taxon, *lineage[:-1]]):
-        parent_data = next((item for item in parents if item['query'][0] == str(parent.tax_id)), None)
-        if parent_data is None:
-            raise ValueError(f'Missing results for query {parent.tax_id}')
-        current_sisters = taxonomy.get_sisters(parent_data, exclude_child.tax_id)
-        sisters.extend([SisterTaxon(sister, lineage_dict[parent.tax_id]) for sister in current_sisters])
-
-    # drop environmental samples (child of Eukaryota) and unclassified Eukaryotes
-    sisters = list(filter(lambda x: x.tax_id != 61964 and x.tax_id != 42452, sisters))
+    sisters = taxonomy.get_sister_taxa(tax_db_path, target_organism)
     print(sisters)
+
     with open(out_file, 'w') as fp:
+        # Write CSV header
         field_names = list(PrimerBlastResult.model_json_schema(by_alias=False)['properties'].keys())
         csv_writer = csv.DictWriter(fp, fieldnames=field_names)
         csv_writer.writeheader()
-        results = await _off_targets_in_sisters(sisters, primer_f, primer_r, csv_writer)
 
+        # Run Primer-BLAST on all sister taxa
+        results = await _off_targets_in_sisters(sisters, primer_f, primer_r)
         try_below: list[SisterTaxon] = []
         for item, sister in results:
             if sister is not None and len(sister) != 0:
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))
             else:
+                # Try one level below if we didn't get any results.
+                # This is a limitation of Primer-BLAST if it needs to go through many target sequences.
                 if item.parent.rank == 'domain':
-                    print(f'Nothing found in {item.tax_id}; trying one level below...')
+                    print(f'Nothing found in {item.taxon.name}(taxid {item.taxon.tax_id}); trying one level below...')
                     try_below.append(item)
 
-        children: list[SisterTaxon] = []
         if len(try_below) == 0:
             return # Nothing to do
-        for tax_data in await taxonomy.by_taxids([str(x.tax_id) for x in try_below]):
-            parent_data = next((item for item in try_below if str(item.tax_id) == tax_data['query'][0]), None)
-            if parent_data is None:
-                raise ValueError(f'Missing results for query {tax_data.tax_id}')
-            current_childs = tax_data['taxonomy']['children']
-            print(f"Taxid {tax_data['taxonomy']['tax_id']} has {len(current_childs)} kids")
-            for child in tax_data['taxonomy']['children']:
-                children.append(SisterTaxon(int(child), parent_data.parent))
 
-        results = await _off_targets_in_sisters(children, primer_f, primer_r, csv_writer)
+        # Run Primer-BLAST on children of sister taxa
+        children = taxonomy.get_sister_childs(tax_db_path, try_below)
+        results = await _off_targets_in_sisters(children, primer_f, primer_r)
         for item, sister in results:
             if sister is not None and len(sister) != 0:
                 csv_writer.writerows(map(lambda x: x.model_dump(), sister))

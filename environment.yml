@@ -15,5 +15,6 @@ dependencies:
   - seqkit
   - iqtree
   - gotree=0.5.1
+  - goalign=0.4.0
   - pip:
       - -r requirements.txt

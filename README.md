@@ -1,4 +1,6 @@
-# Metabarcoding Auto Updater
+# MetaDbGen
+
+**Meta**barcoding **D**ata**b**ase **Gen**erator (MetaDbGen), an automated workflow for the curation of high-quality and reproducible reference sequence databases for metabarcoding applications.
 
 ## Installation
 
@@ -9,8 +11,6 @@ This application uses a Conda environment for dependency management. Please [ins
 Linux, macOS, and Windows are supported on x64 architecture; macOS is also supported on ARM (aarch64).
 
 ### Creating a Conda Environment
-
-We use a conda environment to install all required dependencies. In this section, you learn how to initialize your conda environment before using the workflow.
 
 After downloading the source code, open a terminal in the directory that contains the source code.
 
@@ -30,9 +30,9 @@ conda activate [ENV_NAME]
 
 ## Usage
 
-The workflow is implemented using the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/v7.32.3/). Snakemake takes care of efficiently running the steps of the workflow.
+The workflow is implemented using the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/v9.16.3/). Snakemake takes care of efficiently running the steps of the workflow.
 
-Modify our example [config.yml](./config.yml) to configure the workflow for your barcoding locus and taxonomic group of interest.
+Modify our example [config.yml](./config.yml) file to configure the workflow for your barcoding locus and taxonomic group of interest.
 
 You can execute the workflow from within your conda environment using this command:
 
@@ -40,7 +40,7 @@ You can execute the workflow from within your conda environment using this comma
 snakemake -s cox2-db.smk --configfile config.yml --cores 8
 ```
 
-The flag `--cores` sets the maximum number of cores snakemake will use. Please see the [Snakemake documentation](https://snakemake.readthedocs.io/en/v7.32.3/executing/cli.html) for additional command line parameters.
+The flag `--cores` sets the maximum number of cores snakemake will use. Please see the [Snakemake documentation](https://snakemake.readthedocs.io/en/v9.16.3/executing/cli.html) for additional command line parameters.
 
 ## Suggestions for a good README
 

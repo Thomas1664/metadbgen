@@ -20,6 +20,7 @@ tests:
       - data/cox2_th
     exclude:
       - data/primer_blast_cache.sqlite
+      - data/cox2_th/round2/tmp/*.gb
   cache:
     key: "$CACHE_KEY"
     paths:
