@@ -22,7 +22,12 @@ FILES_TO_TEST = [
     ('primer-trim/sequences.fasta', 'primer-trim/metadata.tsv'),
     ('dereplicate/sequences.fasta', 'dereplicate/metadata.tsv'),
     ('quality-filter/sequences.fasta', 'quality-filter/metadata.tsv'),
-    ('output/{db}-qiime.fa', 'output/{db}-meta.tsv')
+    ('alignment/sequences-trim.fasta', 'alignment/metadata-trim.tsv'),
+    ('alignment/sequences.fasta', 'alignment/metadata.tsv'),
+    ('gappiness/sequences.fasta', 'gappiness/metadata.tsv'),
+    ('output/{db}-qiime.fa', 'output/{db}-meta.tsv'),
+    ('output/{db}-qiime-clean.fa', 'output/{db}-meta-clean.tsv'),
+    ('output/{db}-sintax.fasta', 'output/{db}-meta-clean.tsv')
 ]
 
 @pytest.mark.parametrize("fasta_t, meta_t", FILES_TO_TEST)

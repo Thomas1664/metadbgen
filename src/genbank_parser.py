@@ -1,8 +1,14 @@
 from dataclasses import dataclass
+import asyncio
+from io import StringIO
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import json
+try:
+    from .request import HttpClient
+except ImportError:
+    from request import HttpClient
 
 
 @dataclass
@@ -44,12 +50,48 @@ def parse_references(record: SeqRecord):
             pubmed_id = ref.pubmed_id 
     return pubmed_id
 
+
+async def _fetch_fasta_by_accession(accession: str) -> str | None:
+    client = HttpClient()
+    try:
+        responses = await client.efetch_by_ids(
+            db='nuccore',
+            ids=[accession],
+            callback=lambda text: text,
+            batch_size=1,
+            ret_type='fasta'
+        )
+    finally:
+        await client._client.aclose()
+
+    if not responses:
+        return None
+    fasta_response = responses[0].strip()
+    if not fasta_response:
+        return None
+
+    parsed = list(SeqIO.parse(StringIO(fasta_response), 'fasta'))
+    if not parsed:
+        return None
+    return str(parsed[0].seq)
+
+
+def fetch_fasta_by_accession(accession: str) -> str | None:
+    return asyncio.run(_fetch_fasta_by_accession(accession))
+
 def parse_record(record: SeqRecord):
-    # some accessions have no sequence
-    if not record.seq.defined:
+    accession: str = record.id
+
+    # Some records only contain a contig annotation and no sequence body.
+    if (record.seq is None or len(record.seq) == 0 or not record.seq.defined) and record.annotations.get('contig'):
+        fetched_sequence = fetch_fasta_by_accession(accession)
+        if fetched_sequence:
+            record.seq = Seq(fetched_sequence)
+
+    if record.seq is None or not record.seq.defined:
         return None
     return ParsedRecord(
-        accession = record.id,
+        accession = accession,
         creation_date = record.annotations.get("date", "N/A"),
         authors = record.annotations.get("references", [])[0].authors if record.annotations.get("references") else "N/A",
         sequence = str(record.seq),

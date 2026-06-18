@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 import asyncio
+from tqdm import tqdm
 
 
 @dataclass
@@ -36,7 +37,7 @@ class HttpClient:
         )
 
     @retry(
-        retry=retry_if_exception_type(RuntimeError),
+        retry=retry_if_exception_type((RuntimeError, httpx.HTTPStatusError)),
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True
@@ -67,7 +68,7 @@ class HttpClient:
         # Can only fetch 10K entries per request!
         MAX_ENTRIES = 10000
         path = Path(out_file)
-        for start in range(0, esearch_result.result_count, MAX_ENTRIES):
+        for start in tqdm(range(0, esearch_result.result_count, MAX_ENTRIES)):
             current_out_file = Path(f'{path.parent}/{path.stem}_{start}{path.suffix}')
             # Avoid downloading the same records again
             if rettype == 'gb' and current_out_file.exists():
@@ -77,6 +78,7 @@ class HttpClient:
                     with open(current_out_file, 'r') as f:
                         record_count =  sum(1 for line in f if line.strip() == '//')
                         if record_count == MAX_ENTRIES - 1:
+                            out_files.add(current_out_file)
                             continue
 
             params = {
@@ -106,6 +108,12 @@ class HttpClient:
 
     # ids: list of ids obtained from esearch; make sure there are no None values
     # out_file_pattern: format string that allows insertion of a integer representing each batch
+    @retry(
+        retry=retry_if_exception_type(httpx.RemoteProtocolError),
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=5, max=60),
+        reraise=True
+    )
     async def efetch_by_ids(self, db: str, ids: list[str], callback: Callable, batch_size=100, ret_type='xml') -> list[str]:
         outputs = []
         for i in range(0, len(ids), batch_size):

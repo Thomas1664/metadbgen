@@ -8,13 +8,13 @@ def metadata(df: pd.DataFrame):
     assert df['accession'].is_unique, "Metadata contains duplicate accessions."
 
 def fasta(file_name: str):
-    records = {record.id: str(record.seq) for record in SeqIO.parse(file_name, 'fasta')}
+    records = {str(record.id).split(';', 1)[0]: str(record.seq) for record in SeqIO.parse(file_name, 'fasta')}
     accessions = pd.Series(records.keys())
     assert not accessions.empty, f"Fasta file {file_name} is empty."
     assert accessions.is_unique, f"Fasta file {file_name} contains duplicate accessions."
 
 def fasta_and_metadata(fasta: str, meta_file: str):
-    records = {record.id: str(record.seq) for record in SeqIO.parse(fasta, 'fasta')}
+    records = {str(record.id).split(';', 1)[0]: str(record.seq) for record in SeqIO.parse(fasta, 'fasta')}
     if meta_file.endswith('.csv'):
         df = pd.read_csv(meta_file)
     else:

@@ -25,6 +25,12 @@ organism: Oomycota
 keywords:
   - cytochrome c oxidase subunit 2
   - cytochrome c oxidase subunit ii
+  - cytochrome oxidase subunit 2
+  - cytochrome oxidase subunit ii
+  - cytochrome c oxidase 2
+  - cytochrome c oxidase ii
+  - cytochrome oxidase 2
+  - cytochrome oxidase ii
   - cox2
   - coxII
   - co2
@@ -33,19 +39,16 @@ keywords:
 # Primers
 # The primer sequences must only contain the uppercase bases A, T, G, C, and the letter N
 # for any degenerate sites.
-# min_len:
-#   The minimum length of the primers in bases.
-#   The minimum length specifies during primer trimming how large a partial hit for one primer
-#   needs to be in order to find also parts of the primer.
-#   We recommend using at least 2/3 of the actual primer length to avoid false positives.
-primer_f:
-  # Hud2-F (Peronosporomycete forward) Hudspeth et al. (2000) https://doi.org/10.1080/00275514.2000.12061208
-  seq: GGCAAATGGGTTTTCAAGATCC
-  min_len: 18
-primer_r:
-  # cox2_233D8r, Sapp et al. (2019) https://doi.org/10.1002/ece3.5577
-  seq: GAATATTCATANNTCCANTACC
-  min_len: 20
+# Hud2-F (Peronosporomycete forward) Hudspeth et al. (2000) https://doi.org/10.1080/00275514.2000.12061208
+primer_f: GGCAAATGGGTTTTCAAGATCC
+# cox2_233D8r, Sapp et al. (2019) https://doi.org/10.1002/ece3.5577
+primer_r: GAATATTCATANNTCCANTACC
+
+# The minimum length of the primers in bases.
+# The minimum length specifies during primer trimming how large a partial hit for one primer
+# needs to be in order to find also parts of the primer.
+# We recommend using at least 2/3 of the actual primer length to avoid false positives.
+min_primer_overlap: 18
 
 # TODO: Nested PCR
 
@@ -57,7 +60,7 @@ min_seq_len: 200
 # Maximum sequence length after trimming, excluding primers.
 # This is used to avoid any false-positive sequences that only contain one of the primers.
 # We recommend this value to be at most 50% larger than the desired amplicon length.
-max_seq_len: 450
+max_seq_len: 400
 
 # Users can decide whether to search for amplicons outside of the specified taxon
 # of interest using Primer-BLAST.
@@ -66,6 +69,12 @@ max_seq_len: 450
 # When enabled, the data for the outgroups can be found in the `{db_name}/outgroups``
 # subfolder.
 find_outgroups: true
+
+# Whether to search for sequences of species that are present in the taxonomy
+# but have no sequences in the final database after mislabel detection.
+# When enabled, a second pass (round2) downloads sequences for missing species,
+# runs in-silico PCR, and re-runs the full pipeline on the combined sequence set.
+find_missing_species: false
 
 primer_blast:
   # Whether to use a local cache when retrieving results from Primer BLAST.
@@ -86,6 +95,17 @@ primer_blast:
 # gappiness report in the `{db_name}/` subdirectory.
 # Gappiness is a value between 0 and 1; the larger the value, the more gaps this sequence causes.
 gappiness_threshold: 0.090
+
+# Whether to remove open nomenclature (ON) species from the database.
+# ON species are sequences where the organism name contains qualifiers like "aff.", "cf.", "sp.", etc.
+# When enabled, ON sequences are removed if a sequence with the sanitized name already exists in the database.
+# Disable this to study the effect of including ON species.
+remove_on_species: true
+
+# Whether to prefer RefSeq sequences if available for a given species.
+# When enabled, only RefSeq sequences of a species are preserved, while all other sequences of this species are removed.
+# This does not affect species without RefSeq sequences, which would still be included in the database.
+prefer_refseq: true
 
 # Maximum number of ambiguous bases (i.e. anything except A, T, G, C) that are allowed
 # in a sequence after trimming.
