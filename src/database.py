@@ -33,13 +33,6 @@ def sanitize_org_name(org_name: str) -> str:
 
     return ' '.join(words[:2])
 
-def fix_tax_id(row: pd.Series, trimmed: pd.DataFrame):
-    if row['organism_name_sanitized'] == row['organism_name']:
-        return row['tax_id']
-    if row['organism_name_sanitized'] in trimmed['organism_name'].unique():
-        new_tax_id = trimmed.loc[trimmed['organism_name'] == row['organism_name_sanitized']]['tax_id'].iloc[0]
-        return new_tax_id
-    return row['tax_id']
 
 def prefer_refseq(trimmed: pd.DataFrame):
     # does this row’s group contain ANY refseq?
