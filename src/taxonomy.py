@@ -105,11 +105,6 @@ def write_csv_header(csv_writer):
     """Writes the header row. WARNING: Pay attention to the format when writing data"""
     csv_writer.writerow(['tax_id', 'species', 'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus'])
 
-def sanitize_org_name(org_name: str):
-    org_name_arr = org_name.split(' ')
-    if org_name_arr[1] == 'sp.': return False
-    return True
-
 
 def parse_col_tree(col_path: str, out_path: str):
     def build_lineage_dict(taxon_id):
