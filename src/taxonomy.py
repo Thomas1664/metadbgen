@@ -136,34 +136,6 @@ def parse_col_tree(col_path: str, out_path: str):
     result = result.reindex(columns=rank_order)
     result.to_csv(out_path, index=False)
 
-def fill_taxonomic_blanks(row, backup, ranks):
-    # Determine which ranks are missing
-    missing_ranks = [r for r in ranks if pd.isna(row[r])]
-    
-    # For non-missing ranks, filter df2 rows where they match
-    filter_mask = pd.Series(True, index=backup.index)
-    for rank in ranks:
-        if rank not in missing_ranks:
-            filter_mask &= (backup[rank] == row[rank])
-    
-    # If a match exists, fill missing ranks
-    if filter_mask.any():
-        match = backup.loc[filter_mask].iloc[0]
-        for rank in missing_ranks:
-            if rank in backup.columns:
-                row[rank] = match[rank]
-    
-    # For any remaining missing ranks, append 'incertae sedis' to the next higher rank
-    ranks = ['class', 'order', 'family', 'genus']
-    for i, rank in enumerate(ranks):
-        if pd.isna(row[rank]):
-            if rank == 'genus':
-                # Extract genus from species name (first word)
-                row[rank] = row['species'].split(' ')[0]
-            else:
-                row[rank] = None
-    return row
-
 
 def _check_taxonomy_complete(meta: pd.DataFrame, tax: pd.DataFrame):
     missing_tax = meta[~meta['tax_id'].isin(tax['tax_id'])]
