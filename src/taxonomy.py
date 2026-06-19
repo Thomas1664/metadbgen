@@ -242,11 +242,6 @@ async def get_taxid_by_name(name: str, client: request.HttpClient) -> int | None
         id = int(bs.find('Id').string)
     return id
 
-def by_taxids(tax_db_path: str, tax_ids: list[int]) -> list[TaxonData]:
-    if len(tax_ids) == 0:
-        raise AssertionError("No tax_ids were passed to by_taxids!")
-    with NCBITaxonomyDB(tax_db_path) as db:
-        return db.get_taxon_data_bulk(tax_ids)
 
 async def get_taxids_by_names(names: pd.Series, client: request.HttpClient) -> dict[str, int]:
     tax_ids = {}
