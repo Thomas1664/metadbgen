@@ -1,27 +1,12 @@
 from bs4 import BeautifulSoup
 from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from pydantic import ValidationError
 from src import request, database
 from src.ncbi_taxonomy import NCBITaxonomyDB, TaxonData, Taxon
 import pandas as pd
 import csv
 import re
 import time
-import xmltodict
-
-
-def parse_xml(xml_str: str):
-    parsed = xmltodict.parse(xml_str)
-    taxa = parsed['TaxaSet']['Taxon']
-    if isinstance(taxa, dict):
-        taxa = [taxa]
-    try:
-        result = [TaxonData(**taxon) for taxon in taxa]
-    except ValidationError:
-        print(taxa)
-        raise
-    return result
 
 
 async def download_taxonomy(organism: str, db_path: str):

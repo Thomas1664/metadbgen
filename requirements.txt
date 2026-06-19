@@ -21,6 +21,5 @@ logomaker
 pycountry
 httpx-retries
 pydantic
-xmltodict==0.15.1
 tenacity
 tqdm
