@@ -30,6 +30,7 @@ build-image:
         - Dockerfile
         - environment.yml
         - requirements.txt
+        - .gitlab-ci.yml
 
 tests:
   stage: test
