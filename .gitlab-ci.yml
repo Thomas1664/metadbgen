@@ -35,8 +35,8 @@ build-image:
 
 tests:
   stage: test
-  needs: [compute-hash]
   dependencies:
+    - compute-hash
     - build-image
   image: ${CI_REGISTRY_IMAGE}/conda-env:${ENV_HASH}
   variables:
