@@ -209,6 +209,7 @@ rule trim:
         info_tmp = "{src}/primer-trim/cutadapt-info-tmp.tsv",
         info = "{src}/primer-trim/cutadapt-info.tsv",
         info_out = "{src}/primer-trim/cutadapt-info-parsed.tsv",
+        info_untrimmed = "{src}/primer-trim/cutadapt-info-untrimmed.tsv",
     params:
         primer_f_seq = config['primer_f'],
         primer_r_seq = str(Seq(config['primer_r']).reverse_complement()),
@@ -221,7 +222,7 @@ rule trim:
         max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.fasta}", read=True)), sep='\t')['max_len'][0]
         buffer_size = max(max_seq_len * 2, 1048576)
         shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.min_primer_overlap} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
-        shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
+        shell("python filter_cutadapt_info.py {output.info_tmp} {output.info} {output.info_untrimmed}")
         shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
