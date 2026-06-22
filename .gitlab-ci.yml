@@ -20,12 +20,11 @@ build-image:
     - docker:dind
   variables:
     DOCKER_DRIVER: overlay
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build -t "${CI_REGISTRY_IMAGE}/conda-env:${ENV_HASH}" .
-    - docker push "${CI_REGISTRY_IMAGE}/conda-env:${ENV_HASH}"
-    - docker push conda-env:latest
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - export IMAGE_TAG=$IMAGE_NAME
+    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_COMMIT_TAG" --pull -f Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_COMMIT_TAG
   rules:
     - changes:
         - Dockerfile
