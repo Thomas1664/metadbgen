@@ -1,13 +1,45 @@
-image: continuumio/miniconda3:latest
+stages:
+  - prepare
+  - build-image
+  - test
 
-variables:
-  SQLITE_DB: data/primer_blast_cache.sqlite
-  CACHE_KEY: "sqlite-$CI_COMMIT_REF_SLUG"
+compute-hash:
+  stage: prepare
+  script:
+    - export ENV_HASH=$(cat Dockerfile environment.yml requirements.txt | sha256sum | cut -c1-12)
+    - echo "ENV_HASH=${ENV_HASH}" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+build-image:
+  stage: build-image
+  needs: [compute-hash]
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [""]
+  script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > ~/.docker/config.json
+    - buildctl-daemonless.sh build
+      --frontend dockerfile.v0
+      --local context="${CI_PROJECT_DIR}"
+      --local dockerfile="${CI_PROJECT_DIR}"
+      --output type=image,name="${CI_REGISTRY_IMAGE}/conda-env:${ENV_HASH}",push=true
+  rules:
+    - changes:
+        - Dockerfile
+        - environment.yml
+        - requirements.txt
 
 tests:
   stage: test
+  needs: [compute-hash]
+  image: ${CI_REGISTRY_IMAGE}/conda-env:${ENV_HASH}
+  variables:
+    SQLITE_DB: data/primer_blast_cache.sqlite
+    CACHE_KEY: "sqlite-$CI_COMMIT_REF_SLUG"
   script:
-    - conda env create -f environment.yml
     - source activate cox2-db
     - snakemake -s cox2-db.smk -c 8 --configfile config.yml --keep-incomplete
     - python ./parse_snakemake_log.py --output data/cox2_th/workflow-stats.json
@@ -38,8 +70,6 @@ tests:
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-stages:
-- test
 sast:
   stage: test
 include:
