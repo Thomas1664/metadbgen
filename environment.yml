@@ -15,5 +15,6 @@ dependencies:
   - iqtree
   - gotree=0.5.1
   - goalign=0.4.0
+  - hmmer
   - pip:
       - -r requirements.txt

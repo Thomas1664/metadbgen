@@ -19,4 +19,4 @@ with open(input_path, "r") as in_file, open(output_path, "w") as out_file, open(
             # Write only rows for sequences where at least one of the primers was cut
             out_file.write(f'{line}\n')
         else:
-            untrimmed_file.write(f'{line}\n')
+            untrimmed_file.write(line)

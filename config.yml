@@ -148,3 +148,9 @@ mislabel_detection:
   # Generally, we don't recommend using species because this can lead to numerous false-positives,
   # especially for species with unclear species boundaries and cryptic species.
   rank_level: genus
+
+
+# HMM filter settings
+error_margin: 15
+hmm_score_margin: 10
+
