@@ -1,4 +1,4 @@
-FROM anaconda/miniconda:latest
+FROM condaforge/miniforge3:latest
 
 COPY environment.yml requirements.txt /tmp/conda-tmp/
 RUN conda env create -f /tmp/conda-tmp/environment.yml && conda clean -afy && rm -rf /tmp/conda-tmp
