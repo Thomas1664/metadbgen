@@ -1,6 +1,5 @@
 name: cox2-db
 channels:
-  - defaults
   - conda-forge
   - bioconda
   - biowindows
