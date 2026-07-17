@@ -168,7 +168,6 @@ cython_debug/
 data/*.gb
 .conda
 .snakemake
-data/download
-data/cox2_th
+data/
 .DS_Store
 *.sqlite
