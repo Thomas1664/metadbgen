@@ -546,9 +546,25 @@ if config.get('find_missing_species', False):
             shell("seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}")
 
 
+    # alignment.smk is a reusable HMM-scoring component keyed by {src}; it writes
+    # its results to {src}/hmm/. Score the newly parsed round2 candidates against
+    # round-1's already-finalized reference set (a fixed path, not {src}-based,
+    # since round2's own reference doesn't exist yet — it's built downstream of
+    # trim_missing), so trim_missing only runs cutadapt on sequences that
+    # plausibly belong. Requesting a target under {db_prefix}/round2/hmm/ is what
+    # makes Snakemake resolve {src} to {db_prefix}/round2 for this instantiation.
+    config['alignment_ref_fasta'] = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
+    config['alignment_query_fasta'] = f"{db_prefix}/round2/sequences.fasta"
+
+    module alignment:
+        snakefile: "alignment.smk"
+        config: config
+
+    use rule msa, hmm_profile, score_db_seq, score_seqs, filter_by_score from alignment
+
     rule trim_missing:
         input:
-            fasta = f"{db_prefix}/round2/sequences.fasta",
+            fasta = f"{db_prefix}/round2/hmm/sequences-hmm-filter.fasta",
             meta = f"{db_prefix}/round2/seq-meta.csv",
             script = "trim.py",
         output:
