@@ -589,7 +589,7 @@ if config.get('find_missing_species', False):
                 seq_max_len = 0
             buffer_size = max(seq_max_len * 2, 1048576)
             shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.min_primer_overlap} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
-            shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
+            shell("python filter_cutadapt_info.py {output.info_tmp} {output.info} /dev/null")
             shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
