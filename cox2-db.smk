@@ -11,14 +11,17 @@ import csv
 import io
 import shutil
 from concurrent.futures import ThreadPoolExecutor
+from itertools import batched
 
 
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
+find_missing_species = config.get('find_missing_species', False)
+find_no_primers = config.get('find_no_primers', False)
 
 sources = [db_prefix]
 if config['find_outgroups']:
     sources.append(f'{db_prefix}/outgroups')
-if config.get('find_missing_species', False):
+if find_missing_species or find_no_primers:
     sources.append(f'{db_prefix}/round2')
 
 rule all:
@@ -62,6 +65,9 @@ rule all:
         expand("{src}/output/msa-entropy.tsv", src=sources),
         expand("{src}/output/msa-entropy.html", src=sources),
         expand("{src}/output/msa-entropy.svg", src=sources),
+
+        f"{db_prefix}/round2/untrimmed/hmm/sequences-hmm-filter.fasta",
+        f"{db_prefix}/untrimmed/hmm/sequences-hmm-filter.fasta",
 
 
 rule download:
@@ -454,8 +460,24 @@ rule plot:
         metadata.plot_country_heatmap(meta, output.geo_html, output.geo_svg)
 
 
-if config.get('find_missing_species', False):
+if find_missing_species or find_no_primers:
+    # alignment.smk builds an HMM once from round-1's already-finalized
+    # reference set (round2's own reference doesn't exist yet — it's built
+    # downstream of trim_missing). hmm-query-filter.smk then scores the newly
+    # parsed round2 candidates against that HMM and keeps only the sequences
+    # (and metadata rows) that plausibly belong, so trim_missing only runs
+    # cutadapt on those. Both modules are scoped to {db_prefix}/round2 via
+    # prefix:, reproducing the same {db_prefix}/round2/hmm/... layout as
+    # before.
+    module alignment:
+        snakefile: "alignment.smk"
+        config: {**config, 'ref_fasta': f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"}
+        prefix: f"{db_prefix}/round2"
 
+    use rule * from alignment as alignment_*
+
+
+if find_missing_species:
     # combine_sequences produces round2/primer-trim/ directly, bypassing cutadapt.
     # Without this declaration Snakemake may prefer the wildcard 'trim' rule, which
     # would run cutadapt on new sequences only — silently dropping round-1 sequences
@@ -464,14 +486,6 @@ if config.get('find_missing_species', False):
     # parse_missing provides round2/sequences.fasta and round2/seq-meta.csv
     # as concrete outputs; the wildcard parse_metadata rule must not run for round2.
     ruleorder: parse_missing > parse_metadata
-
-    rule round2_taxonomy:
-        input:
-            f"{db_prefix}/taxonomy/parsed.csv",
-        output:
-            f"{db_prefix}/round2/taxonomy/parsed.csv",
-        shell:
-            "cp {input} {output}"
 
     rule find_missing_species:
         input:
@@ -498,28 +512,28 @@ if config.get('find_missing_species', False):
             missing = f"{db_prefix}/round2/missing-species.csv",
         output:
             gb_file = f"{db_prefix}/round2/input-sequences.gb",
+        params:
+            keywords = config["keywords"]
         run:
             missing_df = pd.read_csv(input.missing)
             tmp_dir = f"{db_prefix}/round2/tmp"
+            
+            def build_query(organisms: list[str], exclude_keywords: list[str]):
+                exclude = " NOT ".join([f'"{keyword}"' for keyword in exclude_keywords])
+                q_organisms = " OR ".join([f'"{organism}"[organism]' for organism in organisms])
+                return f'({q_organisms}) NOT {exclude} AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
 
             async def download_all():
                 client = request.HttpClient()
                 os.makedirs(tmp_dir, exist_ok=True)
-                skipped, downloaded = [], []
-                for _, row in missing_df.iterrows():
-                    query = database.build_organism_query(row['species'])
+                for batch, species in enumerate(batched(missing_df["species"].tolist(), 10)):
+                    query = build_query(species, params.keywords)
                     res = await client.esearch(query)
                     if res.result_count == 0:
-                        skipped.append(row['species'])
                         continue
-                    downloaded.append(row['species'])
-                    await client.efetch_all(res, f'{tmp_dir}/{row["tax_id"]}.gb')
-                    for split_file in glob.glob(f'{tmp_dir}/{row["tax_id"]}_*.gb'):
+                    await client.efetch_all(res, f'{tmp_dir}/{batch}.gb')
+                    for split_file in glob.glob(f'{tmp_dir}/{batch}_*.gb'):
                         os.remove(split_file)
-                print(f"download_missing: {len(downloaded)} species downloaded, "
-                      f"{len(skipped)} skipped (no NCBI results)")
-                if skipped:
-                    print(f"  Skipped: {', '.join(skipped)}")
                 gb_files = sorted(glob.glob(f'{tmp_dir}/*.gb'))
                 with open(output.gb_file, 'w') as out_f:
                     for gb_file in gb_files:
@@ -533,38 +547,79 @@ if config.get('find_missing_species', False):
 
     rule parse_missing:
         input:
+            r1_meta = f"{db_prefix}/seq-meta.csv",
             gb_file = f"{db_prefix}/round2/input-sequences.gb",
             tax_db = rules.tax_db_download.output.tax_db,
             tax = f"{db_prefix}/taxonomy/parsed.csv",
             script = "parse-gb.py",
         output:
             meta_csv = f"{db_prefix}/round2/seq-meta.csv",
+            r1_accs = f"{db_prefix}/round2/round1_accs.txt",
             fasta_tmp = f"{db_prefix}/round2/sequences.fasta.tmp",
             fasta = f"{db_prefix}/round2/sequences.fasta",
         run:
-            shell("python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
-            shell("seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}")
+            shell("python -m cProfile -o parse-gb.prof {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+            pd.read_csv(input.r1_meta)['accession'].to_csv(output.r1_accs, header=False, index=False)
+            shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
 
 
-    # alignment.smk is a reusable HMM-scoring component keyed by {src}; it writes
-    # its results to {src}/hmm/. Score the newly parsed round2 candidates against
-    # round-1's already-finalized reference set (a fixed path, not {src}-based,
-    # since round2's own reference doesn't exist yet — it's built downstream of
-    # trim_missing), so trim_missing only runs cutadapt on sequences that
-    # plausibly belong. Requesting a target under {db_prefix}/round2/hmm/ is what
-    # makes Snakemake resolve {src} to {db_prefix}/round2 for this instantiation.
-    config['alignment_ref_fasta'] = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
-    config['alignment_query_fasta'] = f"{db_prefix}/round2/sequences.fasta"
+if find_no_primers:
+    rule filter_no_primers:
+        input:
+            cutadapt_untrimmed = f"{db_prefix}/primer-trim/cutadapt-info-untrimmed.tsv",
+            r1_meta = f"{db_prefix}/seq-meta.csv",
+            r1_fasta = f"{db_prefix}/sequences.fasta",
+            r1_final_fasta = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
+        output:
+            accessions = f'{db_prefix}/untrimmed/sequences.txt',
+            fasta = f'{db_prefix}/untrimmed/sequences.fasta',
+            meta = f'{db_prefix}/untrimmed/metadata.tsv',
+            surviving_acc = f'{db_prefix}/untrimmed/sequences-surviving.txt',
+        params:
+            err_margin = config['error_margin'],
+            min_seq_len = config['min_seq_len'],
+        run:
+            os.makedirs(f"{db_prefix}/untrimmed", exist_ok=True)
+            untrimmed = pd.read_csv(input.cutadapt_untrimmed, sep='\t', header=None)
+            untrimmed[0].to_csv(output.accessions, header=False, index=False)
+            # get max length of sequences in final DB
+            max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.r1_final_fasta}", read=True)), sep='\t')['max_len'][0]
+            shell(f"seqkit grep -f {{output.accessions}} {{input.r1_fasta}} | seqkit seq -m {params.min_seq_len} -M {max_seq_len + params.err_margin} -o {{output.fasta}}")
+            shell("seqkit seq --name --only-id {output.fasta} -o {output.surviving_acc}")
 
-    module alignment:
-        snakefile: "alignment.smk"
-        config: config
+            accs = pd.read_csv(output.surviving_acc, header=None)[0]
+            meta_df = pd.read_csv(input.r1_meta)
+            meta_df = meta_df[meta_df['accession'].isin(accs)]
+            meta_df.to_csv(output.meta, sep='\t', index=False)
 
-    use rule msa, hmm_profile, score_db_seq, score_seqs, filter_by_score from alignment
 
-    rule trim_missing:
+    module hmm_filter_no_primers:
+        snakefile: "hmm-query-filter.smk"
+        config:
+            {**config,
+             'hmm': rules.alignment_hmm_profile.output[0],
+             'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
+             'query_fasta': rules.filter_no_primers.output.fasta,
+             'query_meta': rules.filter_no_primers.output.meta}
+        prefix: f"{db_prefix}/untrimmed"
+
+    use rule * from hmm_filter_no_primers as hmm_filter_no_primers*
+
+    """
+    rule discover_keywords:
         input:
             fasta = f"{db_prefix}/round2/hmm/sequences-hmm-filter.fasta",
+            genbank = rules.download_missing.output.gb_file
+        output: 
+            f"{db_prefix}/round2/hmm/keywords.txt"
+        run:
+    """
+
+
+if find_missing_species:
+    rule trim_missing:
+        input:
+            fasta = f"{db_prefix}/round2/sequences.fasta",
             meta = f"{db_prefix}/round2/seq-meta.csv",
             script = "trim.py",
         output:
@@ -573,6 +628,7 @@ if config.get('find_missing_species', False):
             info_tmp = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-tmp.tsv",
             info = f"{db_prefix}/round2/primer-trim-new/cutadapt-info.tsv",
             info_out = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv",
+            info_untrimmed = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-untrimmed.tsv",
         params:
             primer_f_seq = config['primer_f'],
             primer_r_seq = str(Seq(config['primer_r']).reverse_complement()),
@@ -589,10 +645,55 @@ if config.get('find_missing_species', False):
                 seq_max_len = 0
             buffer_size = max(seq_max_len * 2, 1048576)
             shell("cutadapt -a {params.primer_f_seq}...{params.primer_r_seq} --revcomp --no-indel --overlap {params.min_primer_overlap} -e 0.2 --discard-untrimmed --minimum-length {params.min_seq_len} --maximum-length {params.max_seq_len} --info-file {output.info_tmp} -o {output.fasta} --cores {threads} --buffer-size " + str(buffer_size) + " {input.fasta}")
-            shell("python filter_cutadapt_info.py {output.info_tmp} {output.info}")
+            shell("python filter_cutadapt_info.py {output.info_tmp} {output.info} {output.info_untrimmed}")
             shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
+    rule filter_no_primers_r2:
+        input:
+            cutadapt_untrimmed = rules.trim_missing.output.info_untrimmed,
+            meta = rules.trim_missing.output.meta,
+            fasta = rules.trim_missing.output.fasta,
+            r1_final_fasta = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
+        output:
+            accessions = f'{db_prefix}/round2/untrimmed/sequences.txt',
+            fasta = f'{db_prefix}/round2/untrimmed/sequences.fasta',
+            meta = f'{db_prefix}/round2/untrimmed/metadata.tsv',
+            surviving_acc = f'{db_prefix}/round2/untrimmed/sequences-surviving.txt',
+        params:
+            err_margin = config['error_margin'],
+            min_seq_len = config['min_seq_len'],
+        run:
+            os.makedirs(f"{db_prefix}/round2/untrimmed", exist_ok=True)
+            untrimmed = pd.read_csv(input.cutadapt_untrimmed, sep='\t', header=None)
+            untrimmed[0].to_csv(output.accessions, header=False, index=False)
+            # get max length of sequences in final DB
+            max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.r1_final_fasta}", read=True)), sep='\t')['max_len'][0]
+            shell(f"seqkit grep -f {{output.accessions}} {{input.fasta}} | seqkit seq -m {params.min_seq_len} -M {max_seq_len + params.err_margin} -o {{output.fasta}}")
+            shell("seqkit seq --name --only-id {output.fasta} -o {output.surviving_acc}")
+            try:
+                accs = pd.read_csv(output.surviving_acc, header=None)[0]
+                meta_df = pd.read_csv(input.meta)
+                meta_df = meta_df[meta_df['accession'].isin(accs)]
+                meta_df.to_csv(output.meta, sep='\t', index=False)
+            except pd.errors.EmptyDataError:
+                shell("touch {output.meta}")
+
+
+    module hmm_filter_no_primers_r2:
+        snakefile: "hmm-query-filter.smk"
+        config:
+            {**config,
+             'hmm': rules.alignment_hmm_profile.output[0],
+             'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
+             'query_fasta': rules.filter_no_primers_r2.output.fasta,
+             'query_meta': rules.filter_no_primers_r2.output.meta}
+        prefix: f"{db_prefix}/round2/untrimmed"
+
+    use rule * from hmm_filter_no_primers_r2 as hmm_filter_no_primers_r2*
+
+
+if find_missing_species or find_no_primers:
     rule combine_sequences:
         """
         Builds round2/primer-trim/ as the starting point for the second pass.
@@ -611,17 +712,20 @@ if config.get('find_missing_species', False):
         when building the round2 source tree.
         """
         input:
-            # Round-1 primer-trim data: metadata used as the wider duplicate filter,
-            # FASTA and info used to extract base sequences at primer-trim level.
-            meta_orig = f"{db_prefix}/primer-trim/metadata.tsv",
             info_orig = f"{db_prefix}/primer-trim/cutadapt-info-parsed.tsv",
             # Round-1 final database: defines which primer-trim sequences form the base.
             meta_final = f"{db_prefix}/output/{config['db_name']}-meta-clean.tsv",
             fasta_final = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa",
-            # Newly trimmed sequences for previously missing species.
-            fasta_new = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
-            meta_new = f"{db_prefix}/round2/primer-trim-new/metadata.tsv",
-            info_new = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv",
+            # Newly trimmed sequences for previously missing species (trim_missing).
+            fasta_new = f"{db_prefix}/round2/primer-trim-new/sequences.fasta" if find_missing_species else [],
+            meta_new = f"{db_prefix}/round2/primer-trim-new/metadata.tsv" if find_missing_species else [],
+            info_new = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv" if find_missing_species else [],
+            # Missing-species candidates recovered without primer matches (hmm_filter_no_primers_r2).
+            fasta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/sequences-hmm-filter.fasta" if find_missing_species else [],
+            meta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/metadata-hmm-filter.tsv" if find_missing_species else [],
+            # Round-1 candidates recovered without primer matches (hmm_filter_no_primers).
+            fasta_hmm_r1 = f"{db_prefix}/untrimmed/hmm/sequences-hmm-filter.fasta" if find_no_primers else [],
+            meta_hmm_r1 = f"{db_prefix}/untrimmed/hmm/metadata-hmm-filter.tsv" if find_no_primers else [],
         output:
             fasta = f"{db_prefix}/round2/primer-trim/sequences.fasta",
             meta = f"{db_prefix}/round2/primer-trim/metadata.tsv",
@@ -629,35 +733,34 @@ if config.get('find_missing_species', False):
         run:
             os.makedirs(f"{db_prefix}/round2/primer-trim", exist_ok=True)
 
-            # All accessions that were considered in round1 (survived primer trimming).
-            # Used to discard any new sequence that was already processed in round1.
-            meta_trim_r1 = pd.read_csv(input.meta_orig, sep='\t')
-            trim_r1_acc = meta_trim_r1['accession']
-
-            # Accessions in the round-1 final database — these form the base.
+            # Round-1 final database forms the base; no overlap with any of the new sources below.
             meta_final_r1 = pd.read_csv(input.meta_final, sep='\t')
-            final_r1_acc = meta_final_r1['accession']
+            meta_parts = [meta_final_r1]
 
-            # accessions that were removed during round 1
-            acc_to_remove = meta_trim_r1[~trim_r1_acc.isin(final_r1_acc)]['accession']
-
-            # filter new sequences
-            new_meta = pd.read_csv(input.meta_new, sep='\t')
-            new_meta_filtered = new_meta[~new_meta['accession'].isin(acc_to_remove)]
-            new_accessions = new_meta_filtered['accession']
-
-            pd.concat([meta_final_r1, new_meta_filtered], ignore_index=True).to_csv(output.meta, sep='\t', index=False)
-
-            # copy fasta from end of round 1; append new accessions
-            shutil.copy2(input.fasta_final, output.fasta)
-            new_acc_file = f"{db_prefix}/round2/primer-trim-new/new_acc.txt"
-            with open(new_acc_file, 'w') as f:
-                f.write('\n'.join(new_accessions.values))
-            shell("seqkit grep -f " + new_acc_file + " {input.fasta_new} >> {output.fasta}")
-
-            # Cutadapt info: append new filtered accessions to cutadapt info from round 1
             orig_info = pd.read_csv(input.info_orig, sep='\t')
-            base_info = orig_info[orig_info['accession'].isin(final_r1_acc)]
-            new_info = pd.read_csv(input.info_new, sep='\t')
-            new_info_filtered = new_info[new_info['accession'].isin(new_accessions)]
-            pd.concat([base_info, new_info_filtered], ignore_index=True).to_csv(output.info_out, sep='\t', index=False)
+            info_parts = [orig_info[orig_info['accession'].isin(meta_final_r1['accession'])]]
+
+            shutil.copy2(input.fasta_final, output.fasta)
+
+            if find_missing_species:
+                new_meta = pd.read_csv(input.meta_new, sep='\t')
+                meta_parts.append(new_meta)
+
+                new_acc_file = f"{db_prefix}/round2/primer-trim-new/new_acc.txt"
+                new_meta['accession'].to_csv(new_acc_file, header=False, index=False)
+                shell("seqkit grep -f " + new_acc_file + " {input.fasta_new} >> {output.fasta}")
+
+                new_info = pd.read_csv(input.info_new, sep='\t')
+                info_parts.append(new_info[new_info['accession'].isin(new_meta['accession'])])
+
+                # No cutadapt trim coordinates for these (recovered without a primer match);
+                # they're simply not used as MSA-trim references downstream (see primer.trim_msa).
+                meta_parts.append(pd.read_csv(input.meta_hmm_r2, sep='\t'))
+                shell("cat {input.fasta_hmm_r2} >> {output.fasta}")
+
+            if find_no_primers:
+                meta_parts.append(pd.read_csv(input.meta_hmm_r1, sep='\t'))
+                shell("cat {input.fasta_hmm_r1} >> {output.fasta}")
+
+            pd.concat(meta_parts, ignore_index=True).to_csv(output.meta, sep='\t', index=False)
+            pd.concat(info_parts, ignore_index=True).to_csv(output.info_out, sep='\t', index=False)

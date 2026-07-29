@@ -171,13 +171,3 @@ def seq_base_composition(seq: str):
     counts['other'] = int(seq_arr.size - counts_arr.sum())
     counts['seq_len'] = seq_arr.size
     return counts
-
-
-def parse_hmm_tblout(path: str):
-    cols = [
-        "target_name", "target_accession", "query_name", "query_accession",
-        "hmm_from", "hmm_to", "ali_from", "ali_to", "env_from", "env_to",
-        "sq_len", "strand", "e_value", "score", "bias", "description",
-    ]
-    df = pd.read_csv(path, sep=r'\s+', comment='#', header=None, engine='python', names=cols)
-    return df.sort_values('score', ascending=False).drop_duplicates(subset=['target_name'], keep='first')

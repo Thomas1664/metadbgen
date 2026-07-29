@@ -76,6 +76,8 @@ find_outgroups: true
 # runs in-silico PCR, and re-runs the full pipeline on the combined sequence set.
 find_missing_species: false
 
+find_no_primers: true
+
 primer_blast:
   # Whether to use a local cache when retrieving results from Primer BLAST.
   # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
