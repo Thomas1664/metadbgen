@@ -66,9 +66,6 @@ rule all:
         expand("{src}/output/msa-entropy.html", src=sources),
         expand("{src}/output/msa-entropy.svg", src=sources),
 
-        f"{db_prefix}/round2/untrimmed/hmm/sequences-hmm-filter.fasta",
-        f"{db_prefix}/untrimmed/hmm/sequences-hmm-filter.fasta",
-
 
 rule download:
     retries: 5
