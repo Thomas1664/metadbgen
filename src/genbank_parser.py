@@ -3,6 +3,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import json
+from itertools import filterfalse
 try:
     from .request import HttpClient
 except ImportError:
@@ -115,10 +116,8 @@ def parse_record(record: SeqRecord, sequence_lookup: dict[str, str] | None = Non
 
 def parse_genbank_file(gb_path: str, csv_writer, fasta_file, sequence_lookup: dict[str, str] | None = None):
     seqs = SeqIO.parse(gb_path, 'genbank')
-    for seq in seqs:
-        record = parse_record(seq, sequence_lookup)
-        if record is None:
-            continue
+    records = map(lambda seq: parse_record(seq, sequence_lookup), seqs)
+    for record in filterfalse(lambda record: record is None, records):
         SeqIO.write(SeqRecord(id=record.accession, seq=Seq(record.sequence), description=''), fasta_file, 'fasta')
         record.sequence = None
         dataclass_to_csv_row(csv_writer, record)
