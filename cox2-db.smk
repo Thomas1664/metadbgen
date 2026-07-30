@@ -2,7 +2,7 @@ import glob
 import os
 import re
 import asyncio
-from src import metadata, request, taxonomy, primer, database, mislabel_detection, genbank_parser
+from src import metadata, request, taxonomy, primer, database, mislabel_detection, genbank_parser, hmm
 from src.ncbi_taxonomy import download_and_build_db
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -65,6 +65,7 @@ rule all:
         expand("{src}/output/msa-entropy.tsv", src=sources),
         expand("{src}/output/msa-entropy.html", src=sources),
         expand("{src}/output/msa-entropy.svg", src=sources),
+        f"{db_prefix}/round2/new-keywords/sequences.fasta",
 
 
 rule download:
@@ -588,6 +589,76 @@ if find_missing_species:
             shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
 
 
+    if config.get('autofetch_additional_keywords', False):
+        module hmm_filter_new_keywords:
+            snakefile: "hmm-query-filter.smk"
+            config:
+                {**config,
+                'hmm': rules.alignment_hmm_profile.output[0],
+                'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
+                'query_fasta': rules.parse_missing.output.fasta,
+                'query_meta': rules.parse_missing.output.meta_csv}
+            prefix: f"{db_prefix}/round2/new-keywords/r2-hits"
+        use rule * from hmm_filter_new_keywords as hmm_filter_new_keywords*
+        
+        rule download_new_keywords:
+            retries: 5
+            input:
+                gb_file = f"{db_prefix}/round2/input-sequences.gb",
+                hmm_res = f"{db_prefix}/round2/new-keywords/r2-hits/hmm/sequence-scores.tsv",
+                hmm_meta = f"{db_prefix}/round2/new-keywords/r2-hits/hmm/metadata-hmm-filter.tsv",
+            output:
+                gb_file = f"{db_prefix}/round2/new-keywords/input-sequences.gb",
+            params:
+                orig_keywords = config["keywords"],
+                organism = config["organism"]
+            run:
+                tmp_dir = f"{db_prefix}/round2/new-keywords"
+                os.makedirs(tmp_dir, exist_ok=True)
+                meta_df = hmm.read_metadata(input.hmm_meta)
+                hmm_hits = hmm.parse_hmm_tblout(input.hmm_res)
+                hmm_hits = hmm_hits[hmm_hits['target_name'].isin(meta_df['accession'])]
+                
+                gb_records = SeqIO.parse(input.gb_file, format='genbank')
+                new_keywords = hmm.find_additional_keywords(hmm_hits, gb_records, params.orig_keywords)
+                new_query = hmm.build_query_additional_keywords(new_keywords, params.orig_keywords, params.organism)
+
+                with ThreadPoolExecutor() as pool:
+                    future = pool.submit(lambda: asyncio.run(hmm.download_additional_keywords(new_query, tmp_dir)))
+                    future.result()
+
+
+        rule fetch_missing_sequences_new_keywords:
+            retries: 5
+            input:
+                gb_file = rules.download_new_keywords.output.gb_file,
+            output:
+                fasta = f"{db_prefix}/round2/new-keywords/missing-sequences.fasta",
+            run:
+                with ThreadPoolExecutor() as pool:
+                    future = pool.submit(lambda: asyncio.run(genbank_parser.fetch_missing_sequences(input.gb_file, output.fasta)))
+                    future.result()
+
+
+        rule parse_new_keywords:
+            input:
+                r1_meta = f"{db_prefix}/seq-meta.csv",
+                gb_file = f"{db_prefix}/round2/new-keywords/input-sequences.gb",
+                missing_seqs = f"{db_prefix}/round2/new-keywords/missing-sequences.fasta",
+                tax_db = rules.tax_db_download.output.tax_db,
+                tax = f"{db_prefix}/taxonomy/parsed.csv",
+                script = "parse-gb.py",
+            output:
+                meta_csv = f"{db_prefix}/round2/new-keywords/seq-meta.csv",
+                r1_accs = f"{db_prefix}/round2/new-keywords/round1_accs.txt",
+                fasta_tmp = f"{db_prefix}/round2/new-keywords/sequences.fasta.tmp",
+                fasta = f"{db_prefix}/round2/new-keywords/sequences.fasta",
+            run:
+                shell("python {input.script} {input.gb_file} {input.missing_seqs} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+                pd.read_csv(input.r1_meta)['accession'].to_csv(output.r1_accs, header=False, index=False)
+                shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
+
+
 if find_no_primers:
     rule filter_no_primers:
         input:
@@ -646,6 +717,8 @@ if find_missing_species:
         input:
             fasta = f"{db_prefix}/round2/sequences.fasta",
             meta = f"{db_prefix}/round2/seq-meta.csv",
+            new_kw_fasta = f"{db_prefix}/round2/new-keywords/sequences.fasta",
+            new_kw_meta = f"{db_prefix}/round2/new-keywords/seq-meta.csv",
             script = "trim.py",
         output:
             fasta = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
