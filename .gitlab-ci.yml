@@ -1,3 +1,10 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
 stages:
   - prepare
   - build-image
@@ -5,6 +12,8 @@ stages:
 
 compute-hash:
   stage: prepare
+  rules:
+    - when: on_success
   script:
     - export ENV_HASH=$(cat Dockerfile environment.yml requirements.txt | sha256sum | cut -c1-12)
     - echo "ENV_HASH=${ENV_HASH}" >> build.env
@@ -34,6 +43,8 @@ build-image:
 
 tests:
   stage: test
+  rules:
+    - when: on_success
   dependencies:
     - compute-hash
     - build-image
