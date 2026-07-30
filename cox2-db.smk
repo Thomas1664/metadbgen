@@ -17,6 +17,7 @@ from itertools import batched
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
 find_missing_species = config.get('find_missing_species', False)
 find_no_primers = config.get('find_no_primers', False)
+autofetch_additional_keywords = config.get('autofetch_additional_keywords', False)
 
 sources = [db_prefix]
 if config['find_outgroups']:
@@ -65,7 +66,6 @@ rule all:
         expand("{src}/output/msa-entropy.tsv", src=sources),
         expand("{src}/output/msa-entropy.html", src=sources),
         expand("{src}/output/msa-entropy.svg", src=sources),
-        f"{db_prefix}/round2/new-keywords/sequences.fasta",
 
 
 rule download:
@@ -139,8 +139,6 @@ rule taxonomy:
 
 rule fetch_missing_sequences:
     retries: 5
-    wildcard_constraints:
-        src = f"(?!{db_prefix}/round2$).*",
     input:
         gb_file = "{src}/input-sequences.gb",
     output:
@@ -153,7 +151,7 @@ rule fetch_missing_sequences:
 
 rule parse_metadata:
     wildcard_constraints:
-        src = f"(?!{db_prefix}/round2$).*",
+        src = f"(?!{db_prefix}/round2(/new-keywords)?$).*",
     input:
         gb_file = "{src}/input-sequences.gb",
         missing_seqs = "{src}/missing-sequences.fasta",
@@ -496,8 +494,9 @@ if find_missing_species:
     # would run cutadapt on new sequences only — silently dropping round-1 sequences
     # (already trimmed = no primers = discarded as untrimmed by cutadapt).
     ruleorder: combine_sequences > trim
-    # parse_missing provides round2/sequences.fasta and round2/seq-meta.csv
-    # as concrete outputs; the wildcard parse_metadata rule must not run for round2.
+    # parse_missing handles round2 and round2/new-keywords (via its own {src}
+    # wildcard_constraints); the more general parse_metadata rule must not run
+    # for those paths, hence the explicit ordering as a backstop.
     ruleorder: parse_missing > parse_metadata
 
     rule find_missing_species:
@@ -558,46 +557,36 @@ if find_missing_species:
                 future.result()
 
 
-    rule fetch_missing_sequences_round2:
-        retries: 5
-        input:
-            gb_file = f"{db_prefix}/round2/input-sequences.gb",
-        output:
-            fasta = f"{db_prefix}/round2/missing-sequences.fasta",
-        run:
-            with ThreadPoolExecutor() as pool:
-                future = pool.submit(lambda: asyncio.run(genbank_parser.fetch_missing_sequences(input.gb_file, output.fasta)))
-                future.result()
-
-
     rule parse_missing:
+        wildcard_constraints:
+            src = f"{db_prefix}/round2(/new-keywords)?",
         input:
             r1_meta = f"{db_prefix}/seq-meta.csv",
-            gb_file = f"{db_prefix}/round2/input-sequences.gb",
-            missing_seqs = f"{db_prefix}/round2/missing-sequences.fasta",
+            gb_file = "{src}/input-sequences.gb",
+            missing_seqs = "{src}/missing-sequences.fasta",
             tax_db = rules.tax_db_download.output.tax_db,
             tax = f"{db_prefix}/taxonomy/parsed.csv",
             script = "parse-gb.py",
         output:
-            meta_csv = f"{db_prefix}/round2/seq-meta.csv",
-            r1_accs = f"{db_prefix}/round2/round1_accs.txt",
-            fasta_tmp = f"{db_prefix}/round2/sequences.fasta.tmp",
-            fasta = f"{db_prefix}/round2/sequences.fasta",
+            meta_csv = "{src}/seq-meta.csv",
+            r1_accs = "{src}/round1_accs.txt",
+            fasta_tmp = "{src}/sequences.fasta.tmp",
+            fasta = "{src}/sequences.fasta",
         run:
             shell("python {input.script} {input.gb_file} {input.missing_seqs} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
             pd.read_csv(input.r1_meta)['accession'].to_csv(output.r1_accs, header=False, index=False)
             shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
 
 
-    if config.get('autofetch_additional_keywords', False):
+    if autofetch_additional_keywords:
         module hmm_filter_new_keywords:
             snakefile: "hmm-query-filter.smk"
             config:
                 {**config,
                 'hmm': rules.alignment_hmm_profile.output[0],
                 'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
-                'query_fasta': rules.parse_missing.output.fasta,
-                'query_meta': rules.parse_missing.output.meta_csv}
+                'query_fasta': f"{db_prefix}/round2/sequences.fasta",
+                'query_meta': f"{db_prefix}/round2/seq-meta.csv"}
             prefix: f"{db_prefix}/round2/new-keywords/r2-hits"
         use rule * from hmm_filter_new_keywords as hmm_filter_new_keywords*
         
@@ -628,35 +617,20 @@ if find_missing_species:
                     future.result()
 
 
-        rule fetch_missing_sequences_new_keywords:
-            retries: 5
+        rule merge_new_keywords:
             input:
-                gb_file = rules.download_new_keywords.output.gb_file,
+                fasta = f"{db_prefix}/round2/sequences.fasta",
+                meta = f"{db_prefix}/round2/seq-meta.csv",
+                new_kw_fasta = f"{db_prefix}/round2/new-keywords/sequences.fasta",
+                new_kw_meta = f"{db_prefix}/round2/new-keywords/seq-meta.csv",
             output:
-                fasta = f"{db_prefix}/round2/new-keywords/missing-sequences.fasta",
+                fasta = f"{db_prefix}/round2/merged/sequences.fasta",
+                meta = f"{db_prefix}/round2/merged/seq-meta.csv",
             run:
-                with ThreadPoolExecutor() as pool:
-                    future = pool.submit(lambda: asyncio.run(genbank_parser.fetch_missing_sequences(input.gb_file, output.fasta)))
-                    future.result()
-
-
-        rule parse_new_keywords:
-            input:
-                r1_meta = f"{db_prefix}/seq-meta.csv",
-                gb_file = f"{db_prefix}/round2/new-keywords/input-sequences.gb",
-                missing_seqs = f"{db_prefix}/round2/new-keywords/missing-sequences.fasta",
-                tax_db = rules.tax_db_download.output.tax_db,
-                tax = f"{db_prefix}/taxonomy/parsed.csv",
-                script = "parse-gb.py",
-            output:
-                meta_csv = f"{db_prefix}/round2/new-keywords/seq-meta.csv",
-                r1_accs = f"{db_prefix}/round2/new-keywords/round1_accs.txt",
-                fasta_tmp = f"{db_prefix}/round2/new-keywords/sequences.fasta.tmp",
-                fasta = f"{db_prefix}/round2/new-keywords/sequences.fasta",
-            run:
-                shell("python {input.script} {input.gb_file} {input.missing_seqs} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
-                pd.read_csv(input.r1_meta)['accession'].to_csv(output.r1_accs, header=False, index=False)
-                shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
+                os.makedirs(f"{db_prefix}/round2/merged", exist_ok=True)
+                meta = pd.concat([pd.read_csv(input.meta), pd.read_csv(input.new_kw_meta)], ignore_index=True)
+                meta.drop_duplicates(subset='accession').to_csv(output.meta, index=False)
+                shell("cat {input.fasta} {input.new_kw_fasta} | seqkit rmdup -n -o {output.fasta}")
 
 
 if find_no_primers:
@@ -701,24 +675,20 @@ if find_no_primers:
 
     use rule * from hmm_filter_no_primers as hmm_filter_no_primers*
 
-    """
-    rule discover_keywords:
-        input:
-            fasta = f"{db_prefix}/round2/hmm/sequences-hmm-filter.fasta",
-            genbank = rules.download_missing.output.gb_file
-        output: 
-            f"{db_prefix}/round2/hmm/keywords.txt"
-        run:
-    """
-
 
 if find_missing_species:
     rule trim_missing:
         input:
-            fasta = f"{db_prefix}/round2/sequences.fasta",
-            meta = f"{db_prefix}/round2/seq-meta.csv",
-            new_kw_fasta = f"{db_prefix}/round2/new-keywords/sequences.fasta",
-            new_kw_meta = f"{db_prefix}/round2/new-keywords/seq-meta.csv",
+            fasta = (
+                f"{db_prefix}/round2/merged/sequences.fasta"
+                if autofetch_additional_keywords
+                else f"{db_prefix}/round2/sequences.fasta"
+            ),
+            meta = (
+                f"{db_prefix}/round2/merged/seq-meta.csv"
+                if autofetch_additional_keywords
+                else f"{db_prefix}/round2/seq-meta.csv"
+            ),
             script = "trim.py",
         output:
             fasta = f"{db_prefix}/round2/primer-trim-new/sequences.fasta",
