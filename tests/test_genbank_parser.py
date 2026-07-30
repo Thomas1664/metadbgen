@@ -33,6 +33,7 @@ def test_parse_record_returns_none_for_empty_contig_record_without_lookup():
     assert parse_record(record, sequence_lookup={}) is None
 
 
+@pytest.mark.asyncio
 async def test_fetch_missing_sequences_fetches_fasta_for_empty_contig_record(tmp_path):
     load_dotenv()
     if not os.getenv("NCBI_API_KEY"):
