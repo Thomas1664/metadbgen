@@ -136,11 +136,26 @@ rule taxonomy:
         tax_df = pd.read_csv(output.tax)
         taxonomy.update_species_name(tax_df).to_csv(output.tax, index=False)
 
+rule fetch_missing_sequences:
+    retries: 5
+    wildcard_constraints:
+        src = f"(?!{db_prefix}/round2$).*",
+    input:
+        gb_file = "{src}/input-sequences.gb",
+    output:
+        fasta = "{src}/missing-sequences.fasta",
+    run:
+        with ThreadPoolExecutor() as pool:
+            future = pool.submit(lambda: asyncio.run(genbank_parser.fetch_missing_sequences(input.gb_file, output.fasta)))
+            future.result()
+
+
 rule parse_metadata:
     wildcard_constraints:
         src = f"(?!{db_prefix}/round2$).*",
     input:
-        gb_file = f"{{src}}/input-sequences.gb",
+        gb_file = "{src}/input-sequences.gb",
+        missing_seqs = "{src}/missing-sequences.fasta",
         tax_db = rules.tax_db_download.output.tax_db,
         tax = "{src}/taxonomy/parsed.csv",
         script = "parse-gb.py"
@@ -149,7 +164,7 @@ rule parse_metadata:
         fasta_tmp = "{src}/sequences.fasta.tmp",
         fasta = "{src}/sequences.fasta",
     run:
-        shell("python {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+        shell("python {input.script} {input.gb_file} {input.missing_seqs} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
         shell("seqkit rmdup -n -o {output.fasta} {output.fasta_tmp}")
 
 
@@ -391,9 +406,9 @@ rule mislabel_detection:
         meta = f"{{src}}/output/{config['db_name']}-meta-clean.tsv",
         tax = f"{{src}}/output/{config['db_name']}-qiime-clean.tsv",
         fasta = f"{{src}}/output/{config['db_name']}-qiime-clean.fa",
-        mislabel = f"{{src}}/mislabel-detection.csv",
+        mislabel = "{src}/mislabel-detection.csv",
         accessions = f"{{src}}/output/{config['db_name']}-accessions.txt",
-        removed = f"{{src}}/mislabeled-sequences.fasta",
+        removed = "{src}/mislabeled-sequences.fasta",
     run:
         tax_df = taxonomy.load_tax_qiime(input.tax).rename_axis('seq_id').reset_index()
         mislabel_df = mislabel_detection.validate_at_rank(tax_df, input.tree_dist, **params.mislabel)
@@ -542,10 +557,23 @@ if find_missing_species:
                 future.result()
 
 
+    rule fetch_missing_sequences_round2:
+        retries: 5
+        input:
+            gb_file = f"{db_prefix}/round2/input-sequences.gb",
+        output:
+            fasta = f"{db_prefix}/round2/missing-sequences.fasta",
+        run:
+            with ThreadPoolExecutor() as pool:
+                future = pool.submit(lambda: asyncio.run(genbank_parser.fetch_missing_sequences(input.gb_file, output.fasta)))
+                future.result()
+
+
     rule parse_missing:
         input:
             r1_meta = f"{db_prefix}/seq-meta.csv",
             gb_file = f"{db_prefix}/round2/input-sequences.gb",
+            missing_seqs = f"{db_prefix}/round2/missing-sequences.fasta",
             tax_db = rules.tax_db_download.output.tax_db,
             tax = f"{db_prefix}/taxonomy/parsed.csv",
             script = "parse-gb.py",
@@ -555,7 +583,7 @@ if find_missing_species:
             fasta_tmp = f"{db_prefix}/round2/sequences.fasta.tmp",
             fasta = f"{db_prefix}/round2/sequences.fasta",
         run:
-            shell("python -m cProfile -o parse-gb.prof {input.script} {input.gb_file} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
+            shell("python {input.script} {input.gb_file} {input.missing_seqs} {input.tax_db} {input.tax} {output.meta_csv} {output.fasta_tmp}")
             pd.read_csv(input.r1_meta)['accession'].to_csv(output.r1_accs, header=False, index=False)
             shell("seqkit rmdup -n {output.fasta_tmp} | seqkit grep -v -f {output.r1_accs} -o {output.fasta}")
 

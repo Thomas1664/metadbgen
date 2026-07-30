@@ -4,12 +4,14 @@ from src import genbank_parser, taxonomy
 import pandas as pd
 import json
 
-gb_dir, tax_db, tax_data, out_file, fasta_out = sys.argv[1:]
+gb_dir, missing_seqs, tax_db, tax_data, out_file, fasta_out = sys.argv[1:]
+
+sequence_lookup = genbank_parser.load_sequence_lookup(missing_seqs)
 
 with open(f"{out_file}.tmp", 'w', newline='') as csv_file, open(fasta_out, 'w') as fasta_file:
     csv_writer = csv.writer(csv_file)
     genbank_parser.dataclass_to_csv_header(csv_writer, genbank_parser.ParsedRecord)
-    genbank_parser.parse_genbank_file(gb_dir, csv_writer, fasta_file)
+    genbank_parser.parse_genbank_file(gb_dir, csv_writer, fasta_file, sequence_lookup=sequence_lookup)
 
 print("done parsing gb")
 df = pd.read_csv(f"{out_file}.tmp", index_col='accession')
