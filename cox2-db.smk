@@ -640,32 +640,50 @@ if find_missing_species:
 
 if find_no_primers:
     rule filter_no_primers:
+        """
+        Recovers sequences cutadapt discarded as untrimmed (no primer match) by
+        salvaging them from the pre-trim source and length-filtering them.
+        Handles both round 1 (round="") and, when find_missing_species is also
+        enabled, round 2 (round="round2/", sourced from trim_missing's input/output).
+        """
+        wildcard_constraints:
+            round = "|round2/"
         input:
-            cutadapt_untrimmed = f"{db_prefix}/primer-trim/cutadapt-info-untrimmed.tsv",
-            r1_meta = f"{db_prefix}/seq-meta.csv",
-            r1_fasta = f"{db_prefix}/sequences.fasta",
+            cutadapt_untrimmed = lambda wildcards: (
+                f"{db_prefix}/primer-trim/cutadapt-info-untrimmed.tsv" if wildcards.round == ""
+                else rules.trim_missing.output.info_untrimmed
+            ),
+            source_meta = lambda wildcards: (
+                f"{db_prefix}/seq-meta.csv" if wildcards.round == "" else rules.trim_missing.input.meta
+            ),
+            source_fasta = lambda wildcards: (
+                f"{db_prefix}/sequences.fasta" if wildcards.round == "" else rules.trim_missing.input.fasta
+            ),
             r1_final_fasta = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
         output:
-            accessions = f'{db_prefix}/untrimmed/sequences.txt',
-            fasta = f'{db_prefix}/untrimmed/sequences.fasta',
-            meta = f'{db_prefix}/untrimmed/metadata.tsv',
-            surviving_acc = f'{db_prefix}/untrimmed/sequences-surviving.txt',
+            accessions = f'{db_prefix}/{{round}}untrimmed/sequences.txt',
+            fasta = f'{db_prefix}/{{round}}untrimmed/sequences.fasta',
+            meta = f'{db_prefix}/{{round}}untrimmed/metadata.tsv',
+            surviving_acc = f'{db_prefix}/{{round}}untrimmed/sequences-surviving.txt',
         params:
             err_margin = config['error_margin'],
             min_seq_len = config['min_seq_len'],
         run:
-            os.makedirs(f"{db_prefix}/untrimmed", exist_ok=True)
+            os.makedirs(f"{db_prefix}/{wildcards.round}untrimmed", exist_ok=True)
             untrimmed = pd.read_csv(input.cutadapt_untrimmed, sep='\t', header=None)
             untrimmed[0].to_csv(output.accessions, header=False, index=False)
             # get max length of sequences in final DB
             max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.r1_final_fasta}", read=True)), sep='\t')['max_len'][0]
-            shell(f"seqkit grep -f {{output.accessions}} {{input.r1_fasta}} | seqkit seq -m {params.min_seq_len} -M {max_seq_len + params.err_margin} -o {{output.fasta}}")
+            shell(f"seqkit grep -f {{output.accessions}} {{input.source_fasta}} | seqkit seq -m {params.min_seq_len} -M {max_seq_len + params.err_margin} -o {{output.fasta}}")
             shell("seqkit seq --name --only-id {output.fasta} -o {output.surviving_acc}")
 
-            accs = pd.read_csv(output.surviving_acc, header=None)[0]
-            meta_df = pd.read_csv(input.r1_meta)
-            meta_df = meta_df[meta_df['accession'].isin(accs)]
-            meta_df.to_csv(output.meta, sep='\t', index=False)
+            try:
+                accs = pd.read_csv(output.surviving_acc, header=None)[0]
+                meta_df = pd.read_csv(input.source_meta)
+                meta_df = meta_df[meta_df['accession'].isin(accs)]
+                meta_df.to_csv(output.meta, sep='\t', index=False)
+            except pd.errors.EmptyDataError:
+                shell("touch {output.meta}")
 
 
     module hmm_filter_no_primers:
@@ -674,8 +692,8 @@ if find_no_primers:
             {**config,
              'hmm': rules.alignment_hmm_profile.output[0],
              'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
-             'query_fasta': rules.filter_no_primers.output.fasta,
-             'query_meta': rules.filter_no_primers.output.meta}
+             'query_fasta': rules.filter_no_primers.output.fasta.format(round=""),
+             'query_meta': rules.filter_no_primers.output.meta.format(round="")}
         prefix: f"{db_prefix}/untrimmed"
 
     use rule * from hmm_filter_no_primers as hmm_filter_no_primers*
@@ -722,65 +740,24 @@ if find_missing_species:
             shell("python {input.script} {input.meta} {output.fasta} {output.meta} {output.info} {output.info_out}")
 
 
-    rule filter_no_primers_r2:
-        input:
-            cutadapt_untrimmed = rules.trim_missing.output.info_untrimmed,
-            meta = rules.trim_missing.output.meta,
-            fasta = rules.trim_missing.output.fasta,
-            r1_final_fasta = f"{db_prefix}/output/{config['db_name']}-qiime-clean.fa"
-        output:
-            accessions = f'{db_prefix}/round2/untrimmed/sequences.txt',
-            fasta = f'{db_prefix}/round2/untrimmed/sequences.fasta',
-            meta = f'{db_prefix}/round2/untrimmed/metadata.tsv',
-            surviving_acc = f'{db_prefix}/round2/untrimmed/sequences-surviving.txt',
-        params:
-            err_margin = config['error_margin'],
-            min_seq_len = config['min_seq_len'],
-        run:
-            os.makedirs(f"{db_prefix}/round2/untrimmed", exist_ok=True)
-            untrimmed = pd.read_csv(input.cutadapt_untrimmed, sep='\t', header=None)
-            untrimmed[0].to_csv(output.accessions, header=False, index=False)
-            # get max length of sequences in final DB
-            max_seq_len = pd.read_csv(io.StringIO(shell("seqkit stats -T {input.r1_final_fasta}", read=True)), sep='\t')['max_len'][0]
-            shell(f"seqkit grep -f {{output.accessions}} {{input.fasta}} | seqkit seq -m {params.min_seq_len} -M {max_seq_len + params.err_margin} -o {{output.fasta}}")
-            shell("seqkit seq --name --only-id {output.fasta} -o {output.surviving_acc}")
-            try:
-                accs = pd.read_csv(output.surviving_acc, header=None)[0]
-                meta_df = pd.read_csv(input.meta)
-                meta_df = meta_df[meta_df['accession'].isin(accs)]
-                meta_df.to_csv(output.meta, sep='\t', index=False)
-            except pd.errors.EmptyDataError:
-                shell("touch {output.meta}")
+    if find_no_primers:
+        module hmm_filter_no_primers_r2:
+            snakefile: "hmm-query-filter.smk"
+            config:
+                {**config,
+                 'hmm': rules.alignment_hmm_profile.output[0],
+                 'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
+                 'query_fasta': rules.filter_no_primers.output.fasta.format(round="round2/"),
+                 'query_meta': rules.filter_no_primers.output.meta.format(round="round2/")}
+            prefix: f"{db_prefix}/round2/untrimmed"
 
-
-    module hmm_filter_no_primers_r2:
-        snakefile: "hmm-query-filter.smk"
-        config:
-            {**config,
-             'hmm': rules.alignment_hmm_profile.output[0],
-             'threshold_file': rules.alignment_score_db_seq.output.threshold_file,
-             'query_fasta': rules.filter_no_primers_r2.output.fasta,
-             'query_meta': rules.filter_no_primers_r2.output.meta}
-        prefix: f"{db_prefix}/round2/untrimmed"
-
-    use rule * from hmm_filter_no_primers_r2 as hmm_filter_no_primers_r2*
+        use rule * from hmm_filter_no_primers_r2 as hmm_filter_no_primers_r2*
 
 
 if find_missing_species or find_no_primers:
     rule combine_sequences:
         """
         Builds round2/primer-trim/ as the starting point for the second pass.
-
-        Base  = sequences from the round-1 final database (output/{db_name}-meta-clean.tsv),
-                extracted at primer-trim level so the format matches what all downstream
-                wildcard rules expect.  Sequences that were removed between primer-trim and
-                the final database (by clean_db / quality-filter / gappiness / mislabel
-                detection) are intentionally NOT carried into round2.
-
-        New   = missing-species sequences from trim_missing, with any accession that was
-                previously considered for the database (primer-trim/metadata.tsv) removed
-                right away.
-
         Concrete output paths let Snakemake prefer this rule over the 'trim' wildcard rule
         when building the round2 source tree.
         """
@@ -794,8 +771,8 @@ if find_missing_species or find_no_primers:
             meta_new = f"{db_prefix}/round2/primer-trim-new/metadata.tsv" if find_missing_species else [],
             info_new = f"{db_prefix}/round2/primer-trim-new/cutadapt-info-parsed.tsv" if find_missing_species else [],
             # Missing-species candidates recovered without primer matches (hmm_filter_no_primers_r2).
-            fasta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/sequences-hmm-filter.fasta" if find_missing_species else [],
-            meta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/metadata-hmm-filter.tsv" if find_missing_species else [],
+            fasta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/sequences-hmm-filter.fasta" if (find_missing_species and find_no_primers) else [],
+            meta_hmm_r2 = f"{db_prefix}/round2/untrimmed/hmm/metadata-hmm-filter.tsv" if (find_missing_species and find_no_primers) else [],
             # Round-1 candidates recovered without primer matches (hmm_filter_no_primers).
             fasta_hmm_r1 = f"{db_prefix}/untrimmed/hmm/sequences-hmm-filter.fasta" if find_no_primers else [],
             meta_hmm_r1 = f"{db_prefix}/untrimmed/hmm/metadata-hmm-filter.tsv" if find_no_primers else [],
@@ -826,6 +803,7 @@ if find_missing_species or find_no_primers:
                 new_info = pd.read_csv(input.info_new, sep='\t')
                 info_parts.append(new_info[new_info['accession'].isin(new_meta['accession'])])
 
+            if find_missing_species and find_no_primers:
                 # No cutadapt trim coordinates for these (recovered without a primer match);
                 # they're simply not used as MSA-trim references downstream (see primer.trim_msa).
                 meta_parts.append(pd.read_csv(input.meta_hmm_r2, sep='\t'))
