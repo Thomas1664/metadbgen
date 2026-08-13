@@ -182,7 +182,9 @@ if config['find_outgroups']:
             })
             with taxonomy.NCBITaxonomyDB(input.tax_db) as db:
                 resolved = db.resolve_tax_ids(raw_tax_ids)
-                tax_ids = list({t.tax_id for t in resolved.values()})
+                resolved_ids = list({t.tax_id for t in resolved.values()})
+                species_tax = db.find_parent_at_rank(tax_ids=resolved_ids, rank='species')
+                tax_ids = list({t.tax_id for t in species_tax.values() if t is not None})
                 tax_data = db.get_taxon_data_bulk(tax_ids)
             with open(output.tax, 'w', newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
