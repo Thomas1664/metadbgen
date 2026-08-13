@@ -12,6 +12,7 @@ import io
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 from itertools import batched
+from snakemake.logging import logger
 
 
 db_prefix = f"{config['base_dir']}/{config['db_name']}"
@@ -590,7 +591,7 @@ if find_missing_species:
                 'query_fasta': f"{db_prefix}/round2/sequences.fasta",
                 'query_meta': f"{db_prefix}/round2/seq-meta.csv"}
             prefix: f"{db_prefix}/round2/new-keywords/r2-hits"
-        use rule * from hmm_filter_new_keywords as hmm_filter_new_keywords*
+        use rule * from hmm_filter_new_keywords as hmm_filter_new_keywords_*
         
         rule download_new_keywords:
             retries: 5
@@ -614,7 +615,7 @@ if find_missing_species:
                 new_keywords = hmm.find_additional_keywords(hmm_hits, gb_records, params.orig_keywords)
 
                 if not new_keywords:
-                    print('No additional keywords found, skipping download.')
+                    logger.warning('No additional keywords found, skipping download.')
                     with open(output.gb_file, 'w') as f:
                         f.write('')
                 else:
@@ -698,7 +699,7 @@ if find_no_primers:
              'query_meta': rules.filter_no_primers.output.meta.format(round="")}
         prefix: f"{db_prefix}/untrimmed"
 
-    use rule * from hmm_filter_no_primers as hmm_filter_no_primers*
+    use rule * from hmm_filter_no_primers as hmm_filter_no_primers_*
 
 
 if find_missing_species:
@@ -753,7 +754,7 @@ if find_missing_species:
                  'query_meta': rules.filter_no_primers.output.meta.format(round="round2/")}
             prefix: f"{db_prefix}/round2/untrimmed"
 
-        use rule * from hmm_filter_no_primers_r2 as hmm_filter_no_primers_r2*
+        use rule * from hmm_filter_no_primers_r2 as hmm_filter_no_primers_r2_*
 
 
 if find_missing_species or find_no_primers:
