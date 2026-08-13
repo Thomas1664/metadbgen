@@ -76,9 +76,10 @@ def _is_hit_in_feature(hit: pd.Series, feature: SeqFeature) -> bool:
 def find_additional_keywords(hmm_hits: pd.DataFrame, gb_records: Sequence[SeqRecord], existing_keywords: Sequence[str]) -> set[str]:
     existing_keywords = list(map(lambda kw: kw.lower(), existing_keywords))
     keywords: set[str] = set()
-    for record in filter(lambda record: record.id in hmm_hits['target_name'].values, gb_records):
+    hits_by_target = hmm_hits.set_index('target_name')
+    for record in filter(lambda record: record.id in hits_by_target.index, gb_records):
         # Find HMM hit location
-        hit: pd.Series = hmm_hits.loc[hmm_hits['target_name'] == record.id].iloc[0]
+        hit: pd.Series = hits_by_target.loc[record.id]
         features_in_hit = filter(
             lambda feature: feature.type in GENBANK_FEATURES.keys() and _is_hit_in_feature(hit, feature),
             record.features
