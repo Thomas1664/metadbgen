@@ -33,10 +33,6 @@ def write_tblout(path, rows):
             f.write(' '.join(str(merged[c]) for c in TBLOUT_COLUMNS) + '\n')
 
 
-# ---------------------------------------------------------------------------
-# parse_hmm_tblout
-# ---------------------------------------------------------------------------
-
 def test_parse_hmm_tblout_keeps_best_score_per_target(tmp_path):
     """A target hit on both strands should be reduced to its single best-scoring row."""
     path = tmp_path / 'scores.tsv'
@@ -53,10 +49,6 @@ def test_parse_hmm_tblout_keeps_best_score_per_target(tmp_path):
     assert row['score'] == 55.0
     assert row['strand'] == '+'
 
-
-# ---------------------------------------------------------------------------
-# compute_score_threshold / threshold file round-trip
-# ---------------------------------------------------------------------------
 
 def test_compute_score_threshold(tmp_path):
     path = tmp_path / 'refseq-scores.tsv'
@@ -79,10 +71,6 @@ def test_threshold_file_roundtrip(tmp_path):
     assert read_threshold_file(str(path)) == 42.5
 
 
-# ---------------------------------------------------------------------------
-# passing_hits
-# ---------------------------------------------------------------------------
-
 def test_passing_hits_filters_by_threshold(tmp_path):
     path = tmp_path / 'query-scores.tsv'
     write_tblout(path, [
@@ -96,10 +84,6 @@ def test_passing_hits_filters_by_threshold(tmp_path):
     assert sorted(good['target_name']) == ['good1', 'good2']
 
 
-# ---------------------------------------------------------------------------
-# split_by_strand
-# ---------------------------------------------------------------------------
-
 def test_split_by_strand():
     hits = pd.DataFrame({
         'target_name': ['a', 'b', 'c'],
@@ -111,10 +95,6 @@ def test_split_by_strand():
     assert sorted(plus) == ['a', 'c']
     assert sorted(minus) == ['b']
 
-
-# ---------------------------------------------------------------------------
-# read_metadata
-# ---------------------------------------------------------------------------
 
 def test_read_metadata_detects_csv_separator(tmp_path):
     path = tmp_path / 'meta.csv'
@@ -133,10 +113,6 @@ def test_read_metadata_detects_tsv_separator(tmp_path):
 
     assert list(df['accession']) == ['ACC1', 'ACC2']
 
-
-# ---------------------------------------------------------------------------
-# filter_metadata_by_accession
-# ---------------------------------------------------------------------------
 
 def test_filter_metadata_by_accession():
     meta_df = pd.DataFrame({'accession': ['ACC1', 'ACC2', 'ACC3'], 'value': [1, 2, 3]})
