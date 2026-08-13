@@ -610,11 +610,16 @@ if find_missing_species:
                 
                 gb_records = SeqIO.parse(input.gb_file, format='genbank')
                 new_keywords = hmm.find_additional_keywords(hmm_hits, gb_records, params.orig_keywords)
-                new_query = hmm.build_query_additional_keywords(new_keywords, params.orig_keywords, params.organism)
 
-                with ThreadPoolExecutor() as pool:
-                    future = pool.submit(lambda: asyncio.run(hmm.download_additional_keywords(new_query, tmp_dir)))
-                    future.result()
+                if not new_keywords:
+                    print('No additional keywords found, skipping download.')
+                    with open(output.gb_file, 'w') as f:
+                        f.write('')
+                else:
+                    new_query = hmm.build_query_additional_keywords(new_keywords, params.orig_keywords, params.organism)
+                    with ThreadPoolExecutor() as pool:
+                        future = pool.submit(lambda: asyncio.run(hmm.download_additional_keywords(new_query, tmp_dir)))
+                        future.result()
 
 
         rule merge_new_keywords:

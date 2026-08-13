@@ -92,6 +92,8 @@ def find_additional_keywords(hmm_hits: pd.DataFrame, gb_records: Sequence[SeqRec
 
 
 def build_query_additional_keywords(new_kw: Sequence[str], exclude_kw: Sequence[str], organism: str):
+    if not new_kw:
+        raise ValueError("new_kw must not be empty")
     exclude = " NOT ".join([f'"{keyword}"' for keyword in exclude_kw])
     q_new_kw = " OR ".join([f'"{keyword}"' for keyword in new_kw])
     return f'({q_new_kw}) NOT {exclude} AND "{organism}"[Organism] AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
