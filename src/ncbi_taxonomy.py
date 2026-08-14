@@ -2,7 +2,7 @@ import os
 import sqlite3
 import tarfile
 from hashlib import md5
-from itertools import batched
+from itertools import batched, filterfalse
 from urllib.request import urlretrieve
 from pydantic import BaseModel, Field, model_validator
 
@@ -128,10 +128,7 @@ def _compute_tracks(parent_map: dict[int, int]) -> dict[int, str]:
     """
     tracks: dict[int, str] = {}
 
-    for start in parent_map:
-        if start in tracks:
-            continue
-
+    for start in filterfalse(lambda start: start in tracks, parent_map):
         # Walk up until we reach a node whose track is already known
         path: list[int] = []
         current = start

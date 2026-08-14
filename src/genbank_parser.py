@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-import asyncio
-from io import StringIO
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import json
+from itertools import filterfalse
 try:
     from .request import HttpClient
 except ImportError:
@@ -51,40 +50,52 @@ def parse_references(record: SeqRecord):
     return pubmed_id
 
 
-async def _fetch_fasta_by_accession(accession: str) -> str | None:
+def _needs_fetched_sequence(record: SeqRecord) -> bool:
+    """True for records that only carry a CONTIG annotation and no inline sequence."""
+    is_empty = record.seq is None or len(record.seq) == 0 or not record.seq.defined
+    return is_empty and bool(record.annotations.get('contig'))
+
+
+def find_missing_sequence_ids(gb_path: str) -> list[str]:
+    """Accessions of records in gb_path that need a separate FASTA fetch to fill their sequence."""
+    return [record.id for record in SeqIO.parse(gb_path, 'genbank') if _needs_fetched_sequence(record)]
+
+
+async def _fetch_missing_sequences(accessions: list[str], out_fasta_path: str, batch_size: int) -> None:
     client = HttpClient()
     try:
-        responses = await client.efetch_by_ids(
-            db='nuccore',
-            ids=[accession],
-            callback=lambda text: text,
-            batch_size=1,
-            ret_type='fasta'
-        )
+        with open(out_fasta_path, 'w') as fasta_file:
+            await client.efetch_by_ids(
+                db='nuccore',
+                ids=accessions,
+                callback=lambda x: fasta_file.write(x),
+                batch_size=batch_size,
+                ret_type='fasta',
+            )
     finally:
         await client._client.aclose()
 
-    if not responses:
-        return None
-    fasta_response = responses[0].strip()
-    if not fasta_response:
-        return None
 
-    parsed = list(SeqIO.parse(StringIO(fasta_response), 'fasta'))
-    if not parsed:
-        return None
-    return str(parsed[0].seq)
+async def fetch_missing_sequences(gb_path: str, out_fasta_path: str, batch_size: int = 100) -> None:
+    """Scan gb_path for records that need a fetched sequence and batch-fetch them from NCBI."""
+    accessions = find_missing_sequence_ids(gb_path)
+    if not accessions:
+        open(out_fasta_path, 'w').close()
+        return
+    await _fetch_missing_sequences(accessions, out_fasta_path, batch_size)
 
 
-def fetch_fasta_by_accession(accession: str) -> str | None:
-    return asyncio.run(_fetch_fasta_by_accession(accession))
+def load_sequence_lookup(fasta_path: str) -> dict[str, str]:
+    """Load a FASTA file written by fetch_missing_sequences into an {accession: sequence} dict."""
+    return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, 'fasta')}
 
-def parse_record(record: SeqRecord):
+
+def parse_record(record: SeqRecord, sequence_lookup: dict[str, str] | None = None):
     accession: str = record.id
 
     # Some records only contain a contig annotation and no sequence body.
-    if (record.seq is None or len(record.seq) == 0 or not record.seq.defined) and record.annotations.get('contig'):
-        fetched_sequence = fetch_fasta_by_accession(accession)
+    if _needs_fetched_sequence(record) and sequence_lookup is not None:
+        fetched_sequence = sequence_lookup.get(accession)
         if fetched_sequence:
             record.seq = Seq(fetched_sequence)
 
@@ -103,12 +114,10 @@ def parse_record(record: SeqRecord):
         pubmed=parse_references(record)
     )
 
-def parse_genbank_file(gb_path: str, csv_writer, fasta_file):
+def parse_genbank_file(gb_path: str, csv_writer, fasta_file, sequence_lookup: dict[str, str] | None = None):
     seqs = SeqIO.parse(gb_path, 'genbank')
-    for seq in seqs:
-        record = parse_record(seq)
-        if record is None:
-            continue
+    records = map(lambda seq: parse_record(seq, sequence_lookup), seqs)
+    for record in filterfalse(lambda record: record is None, records):
         SeqIO.write(SeqRecord(id=record.accession, seq=Seq(record.sequence), description=''), fasta_file, 'fasta')
         record.sequence = None
         dataclass_to_csv_row(csv_writer, record)

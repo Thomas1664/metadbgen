@@ -76,6 +76,17 @@ find_outgroups: true
 # runs in-silico PCR, and re-runs the full pipeline on the combined sequence set.
 find_missing_species: false
 
+# Whether to search for sequences without primers.
+# Enabeling this allows inclusion of sequences that don't include any of the primers
+# because they are too short. This should not be an issue for amplicons <300bp, but can
+# be relevant for longer amplicons.
+find_no_primers: true
+
+# Whether to search for additional keywords based on feature annotations of additional
+# sequences retrieved during sequence similarity search. Requires `find_missing_species: true`.
+# This will result in an extra keyword-based search with the identified new keywords.
+autofetch_additional_keywords: true
+
 primer_blast:
   # Whether to use a local cache when retrieving results from Primer BLAST.
   # The step of finding outgroup sequences using Primer BLAST takes about 10-20 min.
@@ -148,3 +159,13 @@ mislabel_detection:
   # Generally, we don't recommend using species because this can lead to numerous false-positives,
   # especially for species with unclear species boundaries and cryptic species.
   rank_level: genus
+
+
+# Sequence length in bp that are added to the typical amplicon size for sequences without primers.
+# Only relevant if `find_no_primers: true`.
+error_margin: 15
+
+# Value to be subtracted from the minimum threshold HMM score for sequences to be included in the database.
+# The minimum threshold is calculated by scoring the database sequences at the end of the keyowrd-search
+# pipeline run. Only relevant if `find_no_primers: true`.
+hmm_score_margin: 10

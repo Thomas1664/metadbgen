@@ -2,6 +2,7 @@ from asyncio import Semaphore
 import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
+from itertools import filterfalse
 import random
 from httpx_retries import Retry, RetryTransport
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -348,9 +349,7 @@ class PrimerBlastJob():
 
         rows: list[PrimerBlastResult] = []
 
-        for accession in res_accessions:
-            if accession.parent.name == 'pre':
-                continue
+        for accession in filterfalse(lambda accession: accession.parent.name == 'pre', res_accessions):
             try:
                 hit_pre = accession.find_next('pre').text
             except AttributeError as ex:
