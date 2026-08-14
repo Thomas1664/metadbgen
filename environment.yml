@@ -12,7 +12,7 @@ dependencies:
   - snakemake-minimal~=9.16.3
   - muscle
   - seqkit
-  - iqtree
+  - iqtree=3.1.2
   - gotree=0.5.1
   - goalign=0.4.0
   - hmmer
