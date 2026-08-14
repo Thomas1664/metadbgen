@@ -182,7 +182,7 @@ if config['find_outgroups']:
                 if genbank_parser.parse_taxid(r.features) is not None
             })
             with taxonomy.NCBITaxonomyDB(input.tax_db) as db:
-                resolved = db.resolve_tax_ids(raw_tax_ids)
+                resolved = db.resolve_tax_ids(raw_tax_ids, strict=False)
                 resolved_ids = list({t.tax_id for t in resolved.values()})
                 species_tax = db.find_parent_at_rank(tax_ids=resolved_ids, rank='species')
                 tax_ids = list({t.tax_id for t in species_tax.values() if t is not None})

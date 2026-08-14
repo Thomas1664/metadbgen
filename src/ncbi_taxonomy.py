@@ -1,3 +1,4 @@
+import logging
 import os
 import sqlite3
 import tarfile
@@ -5,6 +6,8 @@ from hashlib import md5
 from itertools import batched, filterfalse
 from urllib.request import urlretrieve
 from pydantic import BaseModel, Field, model_validator
+
+log = logging.getLogger(__name__)
 
 
 __all__ = ["NCBITaxonomyDB", "download_and_build_db"]
@@ -54,12 +57,11 @@ def _download_taxdump(taxdump_dir: str) -> str:
         with open(targz_path, "rb") as f:
             actual_md5 = md5(f.read()).hexdigest()
         if actual_md5 == expected_md5:
-            print(f"taxdump.tar.gz is up-to-date at {targz_path}")
+            log.info(f"taxdump.tar.gz is up-to-date at {targz_path}")
             return targz_path
 
-    print(f"Downloading taxdump.tar.gz to {targz_path}...")
+    log.info(f"Downloading taxdump.tar.gz to {targz_path}...")
     urlretrieve(TAXDUMP_URL, targz_path)
-    print("Download complete.")
     return targz_path
 
 
@@ -192,8 +194,6 @@ def _build_sqlite(
     """)
 
     conn.execute("INSERT INTO stats (version) VALUES (?)", (DB_VERSION,))
-
-    print("Inserting species rows...")
     species_rows = [
         (
             tid,
@@ -209,13 +209,8 @@ def _build_sqlite(
         "INSERT INTO tax_meta (taxid, parent, spname, common, rank, track) VALUES (?,?,?,?,?,?)",
         species_rows,
     )
-
-    print("Inserting synonym rows...")
     conn.executemany("INSERT OR IGNORE INTO synonym (taxid, spname) VALUES (?,?)", synonyms)
-
-    print("Inserting merged rows...")
     conn.executemany("INSERT INTO merged (taxid_old, taxid_new) VALUES (?,?)", merged)
-
     conn.commit()
     conn.close()
 
@@ -243,28 +238,21 @@ def download_and_build_db(
             row = conn.execute("SELECT version FROM stats").fetchone()
             conn.close()
             if row and row[0] == DB_VERSION:
-                print(f"Database at {db_path} is already up-to-date.")
                 return
         except sqlite3.OperationalError:
             pass
 
     targz_path = _download_taxdump(taxdump_dir)
-
-    print("Parsing taxdump archive...")
     with tarfile.open(targz_path, "r:gz") as tar:
         sci_names, common_names, synonyms = _parse_names(tar)
         nodes = _parse_nodes(tar)
         merged = _parse_merged(tar)
 
-    print(f"  {len(sci_names):,} names  |  {len(nodes):,} nodes  |  {len(synonyms):,} synonyms")
+    log.info(f"  {len(sci_names):,} names  |  {len(nodes):,} nodes  |  {len(synonyms):,} synonyms")
 
-    print("Computing lineage tracks...")
     parent_map = {tid: parent for tid, (parent, _) in nodes.items()}
     tracks = _compute_tracks(parent_map)
-
-    print(f"Writing database to {db_path}...")
     _build_sqlite(db_path, sci_names, common_names, nodes, synonyms, merged, tracks)
-    print("Done.")
 
 
 class NCBITaxonomyDB:
@@ -319,13 +307,16 @@ class NCBITaxonomyDB:
         return rows
 
 
-    def resolve_tax_ids(self, tax_ids: list[int]) -> dict[int, Taxon]:
+    def resolve_tax_ids(self, tax_ids: list[int], strict: bool = True) -> dict[int, Taxon]:
         """
         Map a list of (possibly deprecated) tax IDs to their current equivalents.
 
         Returns a dict keyed by the original input IDs. IDs that are already
-        current map to themselves. Raises ValueError for any ID not found after
-        resolution.
+        current map to themselves.
+
+        If strict is True (default), raises ValueError for any ID not found
+        after resolution. If strict is False, unresolvable IDs are logged as a
+        warning and omitted from the returned dict instead.
         """
         merged: dict[int, int] = {}
         for chunk in batched(tax_ids, SQLITE_MAX_VARS):
@@ -351,7 +342,14 @@ class NCBITaxonomyDB:
 
         missing = [current_id for current_id in resolved.values() if current_id not in species_rows]
         if missing:
-            raise ValueError(f"Resolved tax IDs not found in database: {missing}")
+            if strict:
+                raise ValueError(f"Resolved tax IDs not found in database: {missing}")
+            log.warning("Resolved tax IDs not found in database, skipping: %s", missing)
+            resolved = {
+                original_id: current_id
+                for original_id, current_id in resolved.items()
+                if current_id in species_rows
+            }
 
         return {
             original_id: Taxon.model_validate({

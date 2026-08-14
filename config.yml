@@ -160,7 +160,6 @@ mislabel_detection:
   # especially for species with unclear species boundaries and cryptic species.
   rank_level: genus
 
-
 # Sequence length in bp that are added to the typical amplicon size for sequences without primers.
 # Only relevant if `find_no_primers: true`.
 error_margin: 15

@@ -3,10 +3,13 @@ from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from src import request, database
 from src.ncbi_taxonomy import NCBITaxonomyDB, TaxonData, Taxon
+import logging
 import pandas as pd
 import csv
 import re
 import time
+
+log = logging.getLogger(__name__)
 
 
 async def download_taxonomy(organism: str, db_path: str):
@@ -140,8 +143,8 @@ def parse_col_tree(col_path: str, out_path: str):
 def _check_taxonomy_complete(meta: pd.DataFrame, tax: pd.DataFrame):
     missing_tax = meta[~meta['tax_id'].isin(tax['tax_id'])]
     if not missing_tax.empty:
-        print('Warning: No taxonomy information found for the following accessions:')
-        print(missing_tax)
+        log.warning('No taxonomy information found for the following accessions:')
+        log.warning(missing_tax)
     return missing_tax.empty
 
 def filter_taxonomy(meta_path: str, input_tax: str, output_tax: str):
@@ -160,14 +163,20 @@ def update_tax_ids(tax_db_path: str, meta_df: pd.DataFrame, index_col: str | Non
     meta_df['tax_id'] = meta_df['tax_id'].astype(int)
     unique_tax_ids = meta_df['tax_id'].unique().tolist()
     with NCBITaxonomyDB(tax_db_path) as db:
-        id_dict = {old_id: tax.tax_id for old_id, tax in db.resolve_tax_ids(unique_tax_ids).items()}
+        id_dict = {old_id: tax.tax_id for old_id, tax in db.resolve_tax_ids(unique_tax_ids, strict=False).items()}
         id_df = pd.DataFrame({'old': id_dict.keys(), 'new': id_dict.values()})
-        assert not id_df['new'].isna().any()
     if index_col is not None:
         meta_df.insert(loc=0, column=index_col, value=meta_df.index)
     # replace deprecated tax ids with the correct tax id
-    merged = (meta_df
-            .merge(id_df, how='left', left_on='tax_id', right_on='old')
+    merged = meta_df.merge(id_df, how='left', left_on='tax_id', right_on='old')
+    unresolved = merged[merged['new'].isna()]
+    if not unresolved.empty:
+        log.warning(
+            "Dropping %d record(s) with tax IDs not found in the taxonomy database. Accessions: %s",
+            len(unresolved), unresolved['accession'].tolist(),
+        )
+    merged = (merged
+            .dropna(subset=['new'])
             .drop(columns=['old', 'tax_id'])
             .rename(columns={'new': 'tax_id'})
     )
@@ -312,7 +321,7 @@ def get_sister_childs(tax_db_path: str, sisters: list[SisterTaxon]) -> set[Siste
     with NCBITaxonomyDB(tax_db_path) as db:
         for item in sisters:
             child_taxa = db.get_direct_children(item.taxon.tax_id)
-            print(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
+            log.info(f"Taxon {item.taxon.name}({item.taxon.tax_id}) has {len(child_taxa)} kids")
             for child in child_taxa:
                 children.add(SisterTaxon(child, item.parent))
     return filter_sisters(children)
