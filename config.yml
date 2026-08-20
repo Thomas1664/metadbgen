@@ -80,7 +80,7 @@ find_missing_species: false
 # Enabeling this allows inclusion of sequences that don't include any of the primers
 # because they are too short. This should not be an issue for amplicons <300bp, but can
 # be relevant for longer amplicons.
-find_no_primers: true
+find_no_primers: false
 
 # Whether to search for additional keywords based on feature annotations of additional
 # sequences retrieved during sequence similarity search. Requires `find_missing_species: true`.
