@@ -11,7 +11,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-gb_dir, missing_seqs, missing_seqs, tax_db, tax_data, out_file, fasta_out = sys.argv[1:]
+gb_dir, missing_seqs, tax_db, tax_data, out_file, fasta_out = sys.argv[1:]
 
 sequence_lookup = genbank_parser.load_sequence_lookup(missing_seqs)
 
