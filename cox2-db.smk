@@ -528,36 +528,9 @@ if find_missing_species:
         output:
             gb_file = f"{db_prefix}/round2/input-sequences.gb",
         params:
-            keywords = config["keywords"]
-        run:
-            missing_df = pd.read_csv(input.missing)
+            keywords = config["keywords"],
             tmp_dir = f"{db_prefix}/round2/tmp"
-            
-            def build_query(organisms: list[str], exclude_keywords: list[str]):
-                exclude = " NOT ".join([f'"{keyword}"' for keyword in exclude_keywords])
-                q_organisms = " OR ".join([f'"{organism}"[organism]' for organism in organisms])
-                return f'({q_organisms}) NOT {exclude} AND ("0001/01/01"[PDAT] : "2026/04/15"[PDAT])'
-
-            async def download_all():
-                client = request.HttpClient()
-                os.makedirs(tmp_dir, exist_ok=True)
-                for batch, species in enumerate(batched(missing_df["species"].tolist(), 10)):
-                    query = build_query(species, params.keywords)
-                    res = await client.esearch(query)
-                    if res.result_count == 0:
-                        continue
-                    await client.efetch_all(res, f'{tmp_dir}/{batch}.gb')
-                    for split_file in glob.glob(f'{tmp_dir}/{batch}_*.gb'):
-                        os.remove(split_file)
-                gb_files = sorted(glob.glob(f'{tmp_dir}/*.gb'))
-                with open(output.gb_file, 'w') as out_f:
-                    for gb_file in gb_files:
-                        with open(gb_file) as f:
-                            out_f.write(f.read())
-
-            with ThreadPoolExecutor() as pool:
-                future = pool.submit(lambda: asyncio.run(download_all()))
-                future.result()
+        script: "download-missing.py"            
 
 
     rule parse_missing:

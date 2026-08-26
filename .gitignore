@@ -171,3 +171,8 @@ data/*.gb
 data/
 .DS_Store
 *.sqlite
+data
+cox2_th_final_out
+mislabel_benchmark
+pipeline_export
+taxdump

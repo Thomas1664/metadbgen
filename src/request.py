@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from pathlib import Path
+import shutil
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 import asyncio
 from tqdm import tqdm
@@ -59,14 +60,14 @@ class HttpClient:
 
     @retry(
         retry=retry_if_exception_type(httpx.RemoteProtocolError),
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(1),
         wait=wait_exponential(multiplier=1, min=5, max=30),
         reraise=True
     )
-    async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb'):
+    async def efetch_all(self, esearch_result: ESearchResult, out_file: str | Path, db='nuccore', rettype: str='gb', batch_size=10000):
         out_files: set[str] = set()
         # Can only fetch 10K entries per request!
-        MAX_ENTRIES = 10000
+        MAX_ENTRIES = batch_size
         path = Path(out_file)
         for start in tqdm(range(0, esearch_result.result_count, MAX_ENTRIES)):
             current_out_file = Path(f'{path.parent}/{path.stem}_{start}{path.suffix}')
@@ -75,8 +76,9 @@ class HttpClient:
                 # check last modified date
                 last_modified = datetime.fromtimestamp(current_out_file.stat().st_mtime)
                 if (datetime.now() - last_modified).days < 7:
-                    with open(current_out_file, 'r') as f:
-                        record_count =  sum(1 for line in f if line.strip() == '//')
+                    # Read as bytes: some GenBank records contain non-UTF-8 bytes
+                    with open(current_out_file, 'rb') as f:
+                        record_count =  sum(1 for line in f if line.strip() == b'//')
                         if record_count == MAX_ENTRIES - 1:
                             out_files.add(current_out_file)
                             continue
@@ -99,10 +101,13 @@ class HttpClient:
         # Merge GenBank files back into one file.
         # This is required because output file is tracked by snakemake.
         if rettype == 'gb':
-            with open(out_file, 'w') as single_output:
+            # Some GenBank records contain stray non-UTF-8 bytes (e.g. in author
+            # names). Replace them here so the merged file is valid UTF-8 and
+            # can be read by downstream parsers.
+            with open(out_file, 'w', encoding='utf-8') as single_output:
                 for file in out_files:
-                    with open(file, 'r') as part_f:
-                        single_output.write(part_f.read())
+                    with open(file, 'r', encoding='utf-8', errors='replace') as part_f:
+                        shutil.copyfileobj(part_f, single_output)
             return out_file
         return out_files
 
