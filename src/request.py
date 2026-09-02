@@ -151,7 +151,7 @@ class HttpClient:
 async def fetch_sequences(query_str: str, file_prefix: str):
     client = HttpClient()
     response = await client.esearch(query_str)
-    await client.efetch_all(response, file_prefix)
+    await client.efetch_all(response, file_prefix, batch_size=5000)
 
 class NcbiApiClient:
     def __init__(self) -> None:
