@@ -148,7 +148,7 @@ def export_sintax(msa_path: str, tax_path: str, out_db: str):
         for col, prefix in rank_prefix.items():
             val = row.get(col)
             if pd.notna(val) and str(val).strip():
-                parts.append(f"{prefix}:{str(val).strip().replace(' ', '+')}")
+                parts.append(f"{prefix}:{str(val).strip().replace(' ', '+').replace(';', '').replace(',', '')}")
         return ','.join(parts) + ';'
 
     tax['_sintax'] = tax.apply(build_tax_string, axis=1)
