@@ -468,8 +468,8 @@ rule plot:
         primer_f = config['primer_f'],
         primer_r = config['primer_r'],
     run:
-        primer.logo_plot(input.info, input.meta, output.fasta_f, len(params.primer_f), output.plot_f, 'forward', params.primer_f)
-        primer.logo_plot(input.info, input.meta, output.fasta_r, len(params.primer_r), output.plot_r, 'reverse', params.primer_r)
+        primer.logo_plot(input.info, input.meta, output.fasta_f, len(params.primer_f), output.plot_f, primer.PrimerDirection.FORWARD, params.primer_f)
+        primer.logo_plot(input.info, input.meta, output.fasta_r, len(params.primer_r), output.plot_r, primer.PrimerDirection.REVERSE, params.primer_r)
         meta = pd.read_csv(input.meta, sep='\t')
         metadata.plot_country_heatmap(meta, output.geo_html, output.geo_svg)
 
