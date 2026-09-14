@@ -10,6 +10,7 @@ from pydantic import AliasChoices, BaseModel, Field
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from bs4 import BeautifulSoup
+from enum import Enum
 from src import request, taxonomy, database, cache
 from src.taxonomy import SisterTaxon
 import matplotlib
@@ -23,6 +24,11 @@ import httpx
 import re
 import subprocess
 import json
+
+
+class PrimerDirection(Enum):
+    FORWARD = 'forward'
+    REVERSE = 'reverse'
 
 
 def parse_cutadapt_info(info_file: str, out_path: str):
@@ -101,20 +107,20 @@ def trim_msa(cutadapt_path: str, meta_path: str, msa_path: str, fasta_out: str, 
     meta.to_csv(meta_out, sep='\t', index=False)
 
 
-def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_size: int, direction: str):
+def _write_primer_fasta(info_path: str, meta_path: str, fasta_path: str, primer_size: int, direction: PrimerDirection):
     info = pd.read_csv(info_path, sep='\t')
     meta = pd.read_csv(meta_path, sep='\t')
     cut_filtered = info[info['accession'].isin(meta['accession'])]
 
     with open(fasta_path, 'w') as out:
         for _, row in cut_filtered.iterrows():
-            if pd.isna(row[f'primer_size_{direction}']):
+            if pd.isna(row[f'primer_size_{direction.value}']):
                 continue
-            if row[f'primer_size_{direction}'] > primer_size:
+            if row[f'primer_size_{direction.value}'] > primer_size:
                 continue
-            seq = str(row[f'primer_seq_{direction}']).upper()
+            seq = str(row[f'primer_seq_{direction.value}']).upper()
             # make reverse primer reverse complement because cutadapt returns sequence in direction of amplicon
-            if direction == 'reverse':
+            if direction == PrimerDirection.REVERSE:
                 seq = str(Seq(seq).reverse_complement())
             database.write_seq(out, row['accession'], seq)
     return meta.shape[0]
@@ -123,21 +129,16 @@ def _align_primers(fasta: str, tmp_out_file: str):
     subprocess.run(['muscle', '-super5', fasta, '-output', tmp_out_file, '-nt'], check=True, text=True)
     return [str(record.seq).upper() for record in SeqIO.parse(tmp_out_file, 'fasta')]
 
-def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str = ''):
-    lengths = [len(seq) for seq in seqs]
+def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str, direction: PrimerDirection):
     counts_df = lm.alignment_to_matrix(sequences=seqs, to_type='counts', characters_to_ignore='-N')
     counts_df = counts_df.map(lambda x: x / total_seqs)
     width_in = 4.8  # 340px at 96 CSS px/in (SVG web standard)
     height_in = width_in * (4.8 / 6.4)  # preserve default matplotlib aspect ratio
     fig, ax = plt.subplots(figsize=(width_in, height_in))
     lm.Logo(counts_df, color_scheme='classic', ax=ax)
-    if primer_seq:
-        ax.set_xticks(range(len(primer_seq)))
-        ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace', fontsize=12)
-        ax.set_xlabel("Reference primer", fontsize=14)
-    else:
-        ax.set_xticks(range(1, np.max(lengths), 2))
-        ax.set_xlabel("Base positions", fontsize=14)
+    ax.set_xticks(range(len(primer_seq)))
+    ax.set_xticklabels(list(primer_seq.upper()), fontfamily='monospace', fontsize=12)
+    ax.set_xlabel(f"{direction.value.title()} primer", fontsize=14)
     ax.tick_params(axis='both', labelsize=12)
     ax.set_ylabel("Base frequency", fontsize=14)
     ax.set_ylim((0, 1))
@@ -146,10 +147,10 @@ def _draw_logo(seqs: list[str], logo_path: str, total_seqs: int, primer_seq: str
         fig.savefig(logo_path, format='svg', bbox_inches='tight')
     plt.close(fig)
 
-def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: str, primer_seq: str = ''):
+def logo_plot(info_path: str, meta_path: str, fasta_path: str, primer_size: int, logo_path: str, direction: PrimerDirection, primer_seq: str = ''):
     total_seqs = _write_primer_fasta(info_path, meta_path, fasta_path, primer_size, direction)
     seqs = _align_primers(fasta_path, f'{fasta_path}.tmp')
-    _draw_logo(seqs, logo_path, total_seqs, primer_seq)
+    _draw_logo(seqs, logo_path, total_seqs, primer_seq, direction)
 
 
 @dataclass
