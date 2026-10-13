@@ -2,13 +2,15 @@
 
 **Meta**barcoding **D**ata**b**ase **Gen**erator (MetaDbGen), an automated workflow for the curation of high-quality and reproducible reference sequence databases for metabarcoding applications.
 
+A manuscript is currently in preparation.
+
 ## Installation
 
 This application uses a Conda environment for dependency management. Please [install Conda](https://docs.conda.io/projects/conda/en/stable/index.html) if you don't have it already on your device.
 
 ### Supported Platforms
 
-Linux, macOS, and Windows are supported on x64 architecture; macOS is also supported on ARM (aarch64).
+Linux and macOS are supported on x64 architecture; macOS is also supported on ARM (aarch64). While we try to support Windows as well, this is no longer possible because the dependence [HMMER](https://hmmer.org/) doesn't support Windows. However, you can still run MetaDbGen inside [WSL2](https://learn.microsoft.com/windows/wsl/install).
 
 ### Creating a Conda Environment
 
@@ -30,7 +32,7 @@ conda activate [ENV_NAME]
 
 ## Usage
 
-The workflow is implemented using the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/v9.16.3/). Snakemake takes care of efficiently running the steps of the workflow.
+The workflow is implemented using the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/v9.16.3/). Snakemake takes care of efficiently running the steps of the workflow. We included Snakemake in the conda environment due to the high frequency of breaking changes. Although other versions of Snakemake than the currently supported version 9.16.3 may also work, we cannot guarantee it.
 
 Modify our example [config.yml](./config.yml) file to configure the workflow for your barcoding locus and taxonomic group of interest.
 
